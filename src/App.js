@@ -9,8 +9,8 @@ function App() {
     const num1 = parseInt(firstNumber, 10);
     const num2 = parseInt(secondNumber, 10);
 
-    if (num1 === num2 || isNaN(num1) || isNaN(num2)) {
-      alert("Введите правильные числа и первое число должно быть больше второго, а также оба числа не должны быть равны");
+    if (num1 >= num2 || num1 === num2 || isNaN(num1) || isNaN(num2)) {
+      alert("Введите правильные числа и второе число должно быть больше первого, а также оба числа не должны быть равны");
       return;
     }
 

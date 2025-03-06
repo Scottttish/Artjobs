@@ -9,7 +9,7 @@ function App() {
     const numberOne = parseInt(firstNumber);
     const numberTwo = parseInt(secondNumber);
 
-    if (isNaN(numberOne) || isNaN(numberTwo) || numberOne > numberTwo || numberOne == numberTwo) {
+    if (isNaN(numberOne) || isNaN(numberTwo) || numberOne > numberTwo || numberOne === numberTwo) {
       alert("Введите правильные числа и первое число должно быть больше второго, а также оба числа не должны быть равны");
       return;
     }

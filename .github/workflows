@@ -3,35 +3,30 @@ name: CI/CD Pipeline for React App
 on:
   push:
     branches:
-      - main  # Пайплайн будет запускаться при каждом пуше в ветку main
+      - main  
   pull_request:
     branches:
-      - main  # Пайплайн будет запускаться при pull-request в ветку main
+      - main  
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Пайплайн будет работать на последней версии Ubuntu
+    runs-on: ubuntu-latest  
 
     steps:
-      # 1. Checkout кода из репозитория
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # 2. Установка Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Используем Node.js версии 16
+          node-version: '16'  
 
-      # 3. Установка зависимостей
       - name: Install dependencies
-        run: npm install  # Устанавливаем все зависимости из package.json
+        run: npm install 
 
-      # 4. Сборка проекта
       - name: Build project
-        run: npm run build  # Выполняем команду для сборки проекта
+        run: npm run build 
 
-      # 5. Запуск юнит-тестов (если они есть)
       - name: Run tests
-        run: npm test -- --watchAll=false --coverage  # Запускаем тесты с покрытием (если они есть)
+        run: npm test 
 

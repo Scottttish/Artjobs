@@ -31,9 +31,8 @@ jobs:
         run: npm test 
 
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          branch: gh-pages 
-          folder: build  
+        run: |
+          npm install gh-pages --save-dev
+          npm run deploy
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}

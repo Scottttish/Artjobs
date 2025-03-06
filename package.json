@@ -15,7 +15,7 @@
     "@testing-library/dom": "^8.10.0",
     "gh-pages": "^3.2.3"  
   },
-  "homepage": "https://github.com/Scottttish/Randomizer.git", 
+  "homepage": "https://github.com/Scottttish/Randomizer", 
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

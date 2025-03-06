@@ -23,7 +23,7 @@ test('renders input fields and button', () => {
   expect(button).toBeInTheDocument();
 });
 
-test('generates random number', () => {
+test('generates random number within the correct range', () => {
   render(<App />);
   
   const firstInput = screen.getByPlaceholderText(/Введите первое число/i);
@@ -35,7 +35,7 @@ test('generates random number', () => {
 
   fireEvent.click(button);
 
-  const randomLabel = screen.getByTestId('rnd_number'); 
+  const randomLabel = screen.getByTestId('rnd_number');
   expect(randomLabel).toBeInTheDocument();
   
   const randomValue = parseInt(randomLabel.textContent);
@@ -54,6 +54,6 @@ test('alerts when invalid input is entered', () => {
   fireEvent.change(secondInput, { target: { value: '10' } });
 
   fireEvent.click(button);
- 
+  
   expect(window.alert).toHaveBeenCalledWith("Введите правильные числа и первое число должно быть больше второго, а также оба числа не должны быть равны");
 });

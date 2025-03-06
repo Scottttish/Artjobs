@@ -1,32 +1,44 @@
-import { useState } from "react";
-
 function App() {
-  const [firstNumber, setFirstNumber] = useState("");
-  const [secondNumber, setSecondNumber] = useState("");
-  const [randomNumber, setRandomNumber] = useState(null);
+  const [firstNumber, setFirstNumber] = React.useState('');
+  const [secondNumber, setSecondNumber] = React.useState('');
+  const [randomValue, setRandomValue] = React.useState(null);
 
-  const generateNumber = () => {
-    const numberOne = parseInt(firstNumber);
-    const numberTwo = parseInt(secondNumber);
+  const handleGenerateRandom = () => {
+    const num1 = parseInt(firstNumber, 10);
+    const num2 = parseInt(secondNumber, 10);
 
-    if (isNaN(numberOne) || isNaN(numberTwo) || numberOne > numberTwo || numberOne === numberTwo) {
+    if (num1 <= num2 || num1 === num2 || isNaN(num1) || isNaN(num2)) {
       alert("Введите правильные числа и первое число должно быть больше второго, а также оба числа не должны быть равны");
       return;
     }
 
-    const random = Math.floor(Math.random() * (numberTwo - numberOne + 1)) + numberOne;
-
-    setRandomNumber(random);
+    const random = Math.floor(Math.random() * (num1 - num2 + 1)) + num2;
+    setRandomValue(random);
   };
 
   return (
     <div>
       <h1>Рандомайзер</h1>
-      <input type="text" placeholder="Введите первое число" value={firstNumber} onChange={(e) => setFirstNumber(e.target.value)}/>
-      <input type="text" placeholder="Введите второе число" value={secondNumber}onChange={(e) => setSecondNumber(e.target.value)}/>
-
-      <button onClick={generateNumber}>Нажми</button>
-      <label className="rnd_number">{randomNumber}</label>
+      <input
+        type="number"
+        placeholder="Введите первое число"
+        value={firstNumber}
+        onChange={(e) => setFirstNumber(e.target.value)}
+      />
+      <input
+        type="number"
+        placeholder="Введите второе число"
+        value={secondNumber}
+        onChange={(e) => setSecondNumber(e.target.value)}
+      />
+      <button onClick={handleGenerateRandom}>Нажми</button>
+      
+      {/* Добавь data-testid сюда */}
+      {randomValue !== null && (
+        <div data-testid="rnd_number" className="rnd_number">
+          {randomValue}
+        </div>
+      )}
     </div>
   );
 }

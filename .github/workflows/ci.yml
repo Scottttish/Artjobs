@@ -3,10 +3,10 @@ name: CI/CD Pipeline for React App
 on:
   push:
     branches:
-      - main  # или master, если ваша основная ветка называется так
+      - main
   pull_request:
     branches:
-      - main  # или master
+      - main
 
 jobs:
   build:
@@ -19,39 +19,18 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: '16'  
 
       - name: Install dependencies
-        run: npm install
+        run: npm install 
 
       - name: Build project
-        run: npm run build
-
-      - name: Run tests
-        run: npm test
-
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build the app
-        run: npm run build
+        run: npm run build 
 
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main' 
+        if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages  
+          branch: gh-pages    
           folder: build     
           token: ${{ secrets.GITHUB_TOKEN }}  

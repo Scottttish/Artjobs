@@ -35,7 +35,7 @@ test('generates random number', () => {
 
   fireEvent.click(button);
 
-  const randomLabel = screen.getByText(/random number/i); 
+  const randomLabel = screen.getByClassName('rnd_number');
   expect(randomLabel).toBeInTheDocument();
   
   const randomValue = parseInt(randomLabel.textContent);

@@ -3,10 +3,10 @@ name: CI/CD Pipeline for React App
 on:
   push:
     branches:
-      - main 
+      - main  # или master, если ваша основная ветка называется так
   pull_request:
     branches:
-      - main  
+      - main  # или master
 
 jobs:
   build:
@@ -49,6 +49,9 @@ jobs:
         run: npm run build
 
       - name: Deploy to GitHub Pages
-        run: npm run deploy
-        env:
-          CI: false  
+        if: github.ref == 'refs/heads/main' 
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages  
+          folder: build     
+          token: ${{ secrets.GITHUB_TOKEN }}  

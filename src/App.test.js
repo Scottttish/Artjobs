@@ -1,6 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
 
+beforeEach(() => {
+  jest.spyOn(window, 'alert').mockImplementation(() => {});
+});
+
 test('renders Рандомайзер header', () => {
   render(<App />);
   const headerElement = screen.getByText(/Рандомайзер/i);
@@ -31,10 +35,12 @@ test('generates random number', () => {
 
   fireEvent.click(button);
 
-  const randomLabel = screen.getByClassName('rnd_number');
+  const randomLabel = screen.getByText(/random number/i); 
   expect(randomLabel).toBeInTheDocument();
-  expect(parseInt(randomLabel.textContent)).toBeGreaterThanOrEqual(5);
-  expect(parseInt(randomLabel.textContent)).toBeLessThanOrEqual(10);
+  
+  const randomValue = parseInt(randomLabel.textContent);
+  expect(randomValue).toBeGreaterThanOrEqual(5);
+  expect(randomValue).toBeLessThanOrEqual(10);
 });
 
 test('alerts when invalid input is entered', () => {

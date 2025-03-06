@@ -49,6 +49,5 @@ test('alerts when invalid input is entered', () => {
 
   fireEvent.click(button);
 
-  // Проверяем, что alert был вызван
   expect(window.alert).toHaveBeenCalledWith("Введите правильные числа и первое число должно быть больше второго, а также оба числа не должны быть равны");
 });

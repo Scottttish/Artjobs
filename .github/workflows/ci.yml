@@ -35,9 +35,6 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy to Vercel
         run: |
-          npm install gh-pages --save-dev
-          npm run deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          npx vercel --prod --confirm

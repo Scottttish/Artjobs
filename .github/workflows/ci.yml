@@ -40,4 +40,4 @@ jobs:
           npm install gh-pages --save-dev
           npm run deploy
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

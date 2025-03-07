@@ -2,7 +2,7 @@
   "name": "timer",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://scottttish.github.io/Randomizer/",
+  "homepage": "https://scottttish.github.io/Randomizer/",  // Убедитесь, что это правильный URL для вашего репозитория на GitHub Pages
   "dependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
@@ -19,7 +19,9 @@
     "start": "react-scripts start",
     "build": "CI=false react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",  // Добавьте этот скрипт для преддеплойной сборки
+    "deploy": "gh-pages -d build"  // Добавьте этот скрипт для деплоя на GitHub Pages
   },
   "eslintConfig": {
     "extends": [

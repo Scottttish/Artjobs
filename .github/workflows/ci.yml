@@ -31,5 +31,10 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Deploy to Vercel
-        run: |
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages 
+          folder: build  
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}

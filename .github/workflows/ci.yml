@@ -31,10 +31,10 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
-          branch: gh-pages 
-          folder: build  
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          ACCESS_TOKEN: ${{ secrets.GH_DOCS }}
+          BRANCH: gh-pages 
+          FOLDER: docs/_site 
+          CLEAN: true

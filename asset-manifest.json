@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/Randomizer/static/css/main.1353e08a.css",
+    "main.js": "/Randomizer/static/js/main.af3f39d6.js",
+    "index.html": "/Randomizer/index.html",
+    "main.1353e08a.css.map": "/Randomizer/static/css/main.1353e08a.css.map",
+    "main.af3f39d6.js.map": "/Randomizer/static/js/main.af3f39d6.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1353e08a.css",
+    "static/js/main.af3f39d6.js"
+  ]
+}

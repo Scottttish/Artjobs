@@ -20,7 +20,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+
+      - name: Clean npm cache
+        run: npm cache clean --force
+
+      - name: Remove package-lock and node_modules
+        run: rm -rf package-lock.json node_modules
 
       - name: Install dependencies
         run: npm install
@@ -36,5 +41,5 @@ jobs:
         with:
           ACCESS_TOKEN: ${{ secrets.GH_DOCS }}
           BRANCH: gh-pages 
-          FOLDER: docs/_site 
+          FOLDER: build 
           CLEAN: true

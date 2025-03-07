@@ -41,19 +41,19 @@ Vercel — для автоматического развёртывания пр
 GitHub Actions пайплайн настроен для выполнения задач при каждом пуше в ветку main или при отрытии пулл-реквеста на эту ветку. В рамках пайплайна определены шаги для стабильного и автоматизированного прогона тестов. 
 
 
-name: CI/CD Pipeline for React App
+    name: CI/CD Pipeline for React App
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    on:
+      push:
+        branches:
+          - main
+      pull_request:
+        branches:
+          - main
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+    jobs:
+      build:
+        runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code

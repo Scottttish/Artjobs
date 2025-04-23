@@ -1,0 +1,55 @@
+.ThreeDSection {
+    width: 1200px;
+    height: auto;
+    margin: 0 auto;
+    margin-bottom: 50px; 
+    position: relative;
+    overflow: visible;
+}
+
+.ThreeDSection-model-container {
+    position: absolute; 
+    top: 0;
+    right: 40px;
+    width: 600px;
+    height: 600px;
+}
+
+.ThreeDSection-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.ThreeDSection-content {
+    width: 500px;
+    position: relative;
+    color: #000;
+    text-align: left;
+    padding: 0px 40px;
+}
+
+.ThreeDSection-content h2 {
+    font-family: 'Marcellus', serif;
+    font-weight: normal;
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.ThreeDSection-content p {
+    font-family: 'Marcellus', serif;
+    font-weight: normal;
+    font-size: 20px;
+    color: #333;
+    line-height: 1.2;
+    margin-bottom: 15px; 
+}
+
+.ThreeDSection-content::after {
+    content: '';
+    display: block; 
+    width: 1120px;
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.3); 
+    margin-top: 70px; 
+    margin-left: 0px; 
+}

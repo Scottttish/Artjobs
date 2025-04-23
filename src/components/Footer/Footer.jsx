@@ -9,7 +9,7 @@ import notionIcon from '../../assets/notion-icon.png';
 
 function Footer() {
   return (
-    <footer className="Footer">
+    <footer id="contacts" className="Footer">
       <div className="Footer-container">
         <div className="Footer-contact">
           <div className="Footer-contact-item">

@@ -66,7 +66,7 @@ function HeroSection() {
   };
 
   return (
-    <section className="HeroSection">
+    <section id="home" className="HeroSection">
       <div className="HeroSection-slider">
         <Slider {...heroSettings}>
           {slides.map((slide, index) => (

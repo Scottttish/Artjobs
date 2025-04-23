@@ -1,6 +1,5 @@
 import './Footer.css';
 
-// Импортируем иконки
 import locationIcon from '../../assets/location-icon.png';
 import phoneIcon from '../../assets/phone-icon.png';
 import emailIcon from '../../assets/email-icon.png';

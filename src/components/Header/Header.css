@@ -8,11 +8,11 @@
   background-color: #fff;
   display: flex;
   align-items: center;
-  z-index: 1000; 
+  z-index: 1000;
 }
 
 .Header-logo {
-  margin-left: 40px;
+  margin-left: 40px; 
 }
 
 .Header-logo img {
@@ -21,7 +21,7 @@
 }
 
 .Header-nav {
-  width: 553px;
+  width: 650px; 
   height: 14px;
   margin-left: 149px; 
   margin-top: 38px;

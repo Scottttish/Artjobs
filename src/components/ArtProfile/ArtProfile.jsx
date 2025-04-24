@@ -253,4 +253,4 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
   );
 };
 
-export default App;
+export default ArtistProfile;

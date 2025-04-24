@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import './AuthModal.css';
-import mainImage from '../../assets/main.jpg';
 
 function AuthModal({ onClose }) {
   const [isLogin, setIsLogin] = useState(false);
@@ -11,6 +10,7 @@ function AuthModal({ onClose }) {
   const [email, setEmail] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
+  const [name, setName] = useState('');
 
   const handleEmailChange = (e) => {
     const value = e.target.value;
@@ -42,32 +42,50 @@ function AuthModal({ onClose }) {
     return strength;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (isEmailValid !== true) {
-      return; 
+      return;
     }
 
     if (!isLogin && !selectedRole) {
-      return; 
+      return;
     }
 
     if (!isLogin && !passwordMatch) {
-      return; 
+      return;
     }
 
     if (!isLogin && passwordStrength !== 4) {
-      return; 
+      return;
     }
 
-    console.log({
-      email,
-      password,
-      role: selectedRole,
-      isLogin,
-    });
-    onClose();
+    try {
+      const response = await fetch('http://localhost:5000/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          role: selectedRole,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        console.log('User registered:', data);
+        onClose();
+      } else {
+        console.log('Error:', data.message);
+      }
+    } catch (err) {
+      console.error('Error during registration:', err);
+    }
   };
 
   return (
@@ -109,7 +127,14 @@ function AuthModal({ onClose }) {
             {!isLogin && (
               <label>
                 Имя
-                <input type="text" placeholder="Введите своё имя" className="auth-name" required />
+                <input
+                  type="text"
+                  placeholder="Введите своё имя"
+                  className="auth-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
               </label>
             )}
 

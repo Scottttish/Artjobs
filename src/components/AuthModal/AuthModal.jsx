@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import './AuthModal.css';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient('https://your-project-id.supabase.co', 'public-anon-key');
 
 function AuthModal({ onClose }) {
   const [isLogin, setIsLogin] = useState(false);
@@ -62,27 +65,29 @@ function AuthModal({ onClose }) {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          name,
-          role: selectedRole,
-        }),
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
       });
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        console.log('User registered:', data);
-        onClose();
-      } else {
-        console.log('Error:', data.message);
+      if (error) {
+        console.error('Error during registration:', error.message);
+        return;
       }
+
+      await supabase
+        .from('users')
+        .insert([
+          {
+            email,
+            name,
+            role: selectedRole,
+            user_id: data.user.id,
+          },
+        ]);
+
+      console.log('User registered successfully');
+      onClose();
     } catch (err) {
       console.error('Error during registration:', err);
     }

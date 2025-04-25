@@ -1,13 +1,43 @@
-import { useState } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom'; // Заменяем Link на NavLink
+import { useState, useEffect } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
 import './Header.css';
 import logo from '../../assets/logo.png';
+import icon from '../../assets/icon.png'; // Импортируем иконку
 import AuthModal from '../AuthModal/AuthModal';
+
+// Инициализация Supabase клиента
+const supabase = createClient(
+  'https://jvccejerkjfnkwtqumcd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
+);
 
 function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false); // Для выпадающего меню
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Проверка статуса авторизации при загрузке компонента
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      setIsAuthenticated(!!sessionData.session);
+    };
+
+    checkSession();
+
+    // Подписка на изменения состояния авторизации
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    // Очистка подписки при размонтировании компонента
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const scrollToSection = (sectionId) => {
     const section = document.getElementById(sectionId);
@@ -24,6 +54,28 @@ function Header() {
     } else {
       scrollToSection('home');
     }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setIsAuthenticated(false);
+      setShowDropdown(false); // Закрываем меню после выхода
+      alert('Вы успешно вышли из аккаунта!');
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('Ошибка при выходе из аккаунта.');
+    }
+  };
+
+  const handleSettings = () => {
+    // Здесь можно добавить переход на страницу настроек
+    navigate('/settings');
+    setShowDropdown(false);
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
   };
 
   return (
@@ -45,22 +97,50 @@ function Header() {
           >
             Контакты
           </a>
-          <NavLink to="/3d" className={({ isActive }) => (isActive ? 'active' : '')}>3D</NavLink>
-          <NavLink to="/motion" className={({ isActive }) => (isActive ? 'active' : '')}>Моушн</NavLink>
-          <NavLink to="/illustration" className={({ isActive }) => (isActive ? 'active' : '')}>Иллюстрация</NavLink>
-          <NavLink to="/interior" className={({ isActive }) => (isActive ? 'active' : '')}>Интерьер</NavLink>
-          <NavLink to="/other" className={({ isActive }) => (isActive ? 'active' : '')}>Другое</NavLink>
+          <NavLink to="/3d" className={({ isActive }) => (isActive ? 'active' : '')}>
+            3D
+          </NavLink>
+          <NavLink to="/motion" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Моушн
+          </NavLink>
+          <NavLink to="/illustration" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Иллюстрация
+          </NavLink>
+          <NavLink to="/interior" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Интерьер
+          </NavLink>
+          <NavLink to="/other" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Другое
+          </NavLink>
         </nav>
         <div className="Header-auth">
-          <a
-            href="#login"
-            onClick={(e) => {
-              e.preventDefault();
-              setShowAuthModal(true);
-            }}
-          >
-            Войти/Регистрация
-          </a>
+          {isAuthenticated ? (
+            <div className="user-menu">
+              <img
+                src={icon}
+                alt="User Icon"
+                className="user-icon"
+                onClick={toggleDropdown}
+                style={{ cursor: 'pointer', width: '40px', height: '40px' }} // Настраиваем размер иконки
+              />
+              {showDropdown && (
+                <div className="dropdown-menu">
+                  <button onClick={handleSettings}>Настройки</button>
+                  <button onClick={handleLogout}>Выйти</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <a
+              href="#login"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowAuthModal(true);
+              }}
+            >
+              Войти/Регистрация
+            </a>
+          )}
         </div>
       </header>
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}

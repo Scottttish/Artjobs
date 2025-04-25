@@ -3,6 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 import './AuthModal.css';
 import mainImage from '../../assets/main.jpg';
 
+// Функция для создания задержки
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
@@ -52,6 +55,9 @@ function AuthModal({ onClose }) {
 
   const handleRegister = async () => {
     try {
+      // Добавляем задержку перед запросом, чтобы избежать rate limit
+      await delay(1000); // Задержка 1 секунда
+
       // Регистрация через Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -61,7 +67,7 @@ function AuthModal({ onClose }) {
       if (authError) {
         console.error('Auth error:', authError);
         if (authError.status === 429) {
-          setError('Слишком много запросов. Пожалуйста, подождите 55 секунд и попробуйте снова.');
+          setError('Слишком много запросов. Пожалуйста, подождите несколько секунд и попробуйте снова.');
         } else {
           setError(authError.message || 'Ошибка регистрации');
         }
@@ -69,7 +75,7 @@ function AuthModal({ onClose }) {
       }
 
       if (!authData.user) {
-        console.error('No user data returned from signUp');
+        console.error('No user data returned from signUp:', authData);
         setError('Не удалось получить данные пользователя');
         throw new Error('No user data');
       }
@@ -83,7 +89,7 @@ function AuthModal({ onClose }) {
       }
 
       if (!sessionData.session) {
-        console.error('No active session found');
+        console.error('No active session found:', sessionData);
         setError('Сессия пользователя не найдена');
         throw new Error('No active session');
       }
@@ -95,7 +101,7 @@ function AuthModal({ onClose }) {
 
       if (dbError) {
         console.error('Database error:', dbError);
-        setError('Ошибка при сохранении данных пользователя: ' + (dbError.message || ' not-null constraint'));
+        setError('Ошибка при сохранении данных пользователя: ' + (dbError.message || 'Неизвестная ошибка'));
         throw dbError;
       }
 

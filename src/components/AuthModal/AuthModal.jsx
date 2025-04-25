@@ -5,7 +5,7 @@ import mainImage from '../../assets/main.jpg';
 
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
 );
 
 function AuthModal({ onClose }) {
@@ -15,7 +15,7 @@ function AuthModal({ onClose }) {
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
   const [error, setError] = useState(null);
@@ -23,7 +23,7 @@ function AuthModal({ onClose }) {
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setEmail(value);
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|ru|org|co\.uk|gov|edu|io|travel)$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const isValid = emailRegex.test(value);
     setIsEmailValid(isValid);
   };
@@ -58,12 +58,19 @@ function AuthModal({ onClose }) {
         password,
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        if (authError.status === 429) {
+          setError('Слишком много запросов. Пожалуйста, подождите 55 секунд и попробуйте снова.');
+        } else {
+          setError(authError.message);
+        }
+        throw authError;
+      }
 
       // Сохранение дополнительных данных в таблицу users
       const { error: dbError } = await supabase
         .from('users')
-        .insert([{ user_id: authData.user.id, email, name, role: selectedRole }]);
+        .insert([{ user_id: authData.user.id, email, username, role: selectedRole }]);
 
       if (dbError) {
         console.error('Database error:', dbError);
@@ -73,7 +80,6 @@ function AuthModal({ onClose }) {
       alert('Регистрация успешна! Проверьте email для подтверждения.');
       onClose();
     } catch (err) {
-      setError(err.message);
       console.error(err);
     }
   };
@@ -117,8 +123,8 @@ function AuthModal({ onClose }) {
         setError('Пароль слишком слабый');
         return;
       }
-      if (!name) {
-        setError('Введите имя');
+      if (!username) {
+        setError('Введите имя пользователя');
         return;
       }
       await handleRegister();
@@ -167,13 +173,13 @@ function AuthModal({ onClose }) {
           <form className="auth-form" onSubmit={handleSubmit}>
             {!isLogin && (
               <label>
-                Имя
+                Имя пользователя
                 <input
                   type="text"
-                  placeholder="Введите своё имя"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="auth-name"
+                  placeholder="Введите имя пользователя"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="auth-username"
                   required
                 />
               </label>

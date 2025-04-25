@@ -67,6 +67,13 @@ function AuthModal({ onClose }) {
         throw authError;
       }
 
+      // Проверка сессии
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        setError('Ошибка получения сессии пользователя');
+        throw sessionError;
+      }
+
       // Сохранение дополнительных данных в таблицу users
       const { error: dbError } = await supabase
         .from('users')
@@ -74,13 +81,14 @@ function AuthModal({ onClose }) {
 
       if (dbError) {
         console.error('Database error:', dbError);
+        setError('Ошибка при сохранении данных пользователя: ' + dbError.message);
         throw dbError;
       }
 
       alert('Регистрация успешна! Проверьте email для подтверждения.');
       onClose();
     } catch (err) {
-      console.error(err);
+      console.error('Registration error:', err);
     }
   };
 

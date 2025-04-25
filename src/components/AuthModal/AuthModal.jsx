@@ -59,19 +59,33 @@ function AuthModal({ onClose }) {
       });
 
       if (authError) {
+        console.error('Auth error:', authError);
         if (authError.status === 429) {
           setError('Слишком много запросов. Пожалуйста, подождите 55 секунд и попробуйте снова.');
         } else {
-          setError(authError.message);
+          setError(authError.message || 'Ошибка регистрации');
         }
         throw authError;
       }
 
+      if (!authData.user) {
+        console.error('No user data returned from signUp');
+        setError('Не удалось получить данные пользователя');
+        throw new Error('No user data');
+      }
+
       // Проверка сессии
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData.session) {
-        setError('Ошибка получения сессии пользователя');
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        setError('Ошибка получения сессии: ' + (sessionError.message || 'Неизвестная ошибка'));
         throw sessionError;
+      }
+
+      if (!sessionData.session) {
+        console.error('No active session found');
+        setError('Сессия пользователя не найдена');
+        throw new Error('No active session');
       }
 
       // Сохранение дополнительных данных в таблицу users, включая password
@@ -81,14 +95,15 @@ function AuthModal({ onClose }) {
 
       if (dbError) {
         console.error('Database error:', dbError);
-        setError('Ошибка при сохранении данных пользователя: ' + dbError.message);
+        setError('Ошибка при сохранении данных пользователя: ' + (dbError.message || 'Неизвестная ошибка'));
         throw dbError;
       }
 
       alert('Регистрация успешна! Проверьте email для подтверждения.');
       onClose();
     } catch (err) {
-      console.error('Registration error:', err);
+      console.error('Registration error:', err || 'Unknown error');
+      setError('Ошибка регистрации: ' + (err?.message || 'Неизвестная ошибка'));
     }
   };
 
@@ -99,13 +114,16 @@ function AuthModal({ onClose }) {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
 
       alert('Вход успешен!');
       onClose();
     } catch (err) {
       setError('Неверный email или пароль');
-      console.error(err);
+      console.error('Login error:', err);
     }
   };
 
@@ -255,7 +273,7 @@ function AuthModal({ onClose }) {
             </button>
 
             <p className="login-link">
-              {isLogin ? 'У вас нет аккаунта? ' : 'У вас уже есть аккаунт? '}
+              {isLogin ? 'У вас нет аккаунта? ' : 'У вас уже есть ак的文件
               <a href="#" onClick={(e) => { e.preventDefault(); setIsLogin(!isLogin); }}>
                 {isLogin ? 'Зарегистрируйтесь' : 'Войти'}
               </a>

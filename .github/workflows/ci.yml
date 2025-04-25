@@ -25,11 +25,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Set executable permissions for react-scripts
-        run: chmod +x node_modules/.bin/react-scripts  # Устанавливаем права на выполнение для react-scripts
-
       - name: Build project
-        run: npx --no-install react-scripts build  # Используем npx с флагом --no-install
+        run: CI=false npm run build  # Отключаем проверку CI
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4

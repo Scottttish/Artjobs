@@ -1,8 +1,8 @@
 .Header {
-  position: fixed; 
+  position: fixed;
   top: 0;
-  left: 50%; 
-  transform: translateX(-50%); 
+  left: 50%;
+  transform: translateX(-50%);
   width: 1200px;
   height: 90px;
   background-color: #fff;
@@ -12,7 +12,7 @@
 }
 
 .Header-logo {
-  margin-left: 40px; 
+  margin-left: 40px;
 }
 
 .Header-logo img {
@@ -21,9 +21,9 @@
 }
 
 .Header-nav {
-  width: 650px; 
+  width: 650px;
   height: 14px;
-  margin-left: 149px; 
+  margin-left: 149px;
   margin-top: 38px;
   margin-bottom: 38px;
   display: flex;
@@ -37,19 +37,24 @@
   font-size: 12px;
   color: #000;
   text-decoration: none;
-  margin-right: 30px; 
+  margin-right: 30px;
 }
 
 .Header-nav a:last-child {
-  margin-right: 0; 
+  margin-right: 0;
 }
 
 .Header-nav a:hover {
   text-decoration: underline;
 }
 
+.Header-nav .active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
 .Header-auth {
-  margin-left: auto; 
+  margin-left: auto;
   margin-right: 40px;
 }
 

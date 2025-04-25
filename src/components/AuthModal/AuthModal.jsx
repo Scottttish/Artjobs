@@ -255,4 +255,12 @@ function AuthModal({ onClose }) {
 
 const getProgressBarColor = (strength) => {
   switch (strength) {
-    case 1: return 'red
+    case 1: return 'red';
+    case 2: return 'orange';
+    case 3: return 'yellowgreen';
+    case 4: return 'green';
+    default: return 'lightgray';
+  }
+};
+
+export default AuthModal;

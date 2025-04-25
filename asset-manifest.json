@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/Artjobs/static/css/main.e3fff1ec.css",
-    "main.js": "/Artjobs/static/js/main.79118cba.js",
+    "main.js": "/Artjobs/static/js/main.36a369fa.js",
     "static/js/952.179b258d.chunk.js": "/Artjobs/static/js/952.179b258d.chunk.js",
     "static/media/news-image4.jpg": "/Artjobs/static/media/news-image4.847a87fac8349a555c7d.jpg",
     "static/media/main.jpg": "/Artjobs/static/media/main.30df9d3ea4c957abbea4.jpg",
@@ -18,6 +18,7 @@
     "static/media/phone-icon.png": "/Artjobs/static/media/phone-icon.48617ad3296f9173ad56.png",
     "static/media/tiktok-icon.png": "/Artjobs/static/media/tiktok-icon.56d6cba12a287412972b.png",
     "static/media/location-icon.png": "/Artjobs/static/media/location-icon.06e5c03f381f8b3e408f.png",
+    "static/media/icon.png": "/Artjobs/static/media/icon.70d9f2f3ed43a93a0b1c.png",
     "static/media/logo.png": "/Artjobs/static/media/logo.a96377176f4056009f39.png",
     "static/media/instagram-icon.png": "/Artjobs/static/media/instagram-icon.2f7409c1928c1a9a0068.png",
     "static/media/email-icon.png": "/Artjobs/static/media/email-icon.3dc909430ffdbc070029.png",
@@ -28,11 +29,11 @@
     "static/media/slick.woff": "/Artjobs/static/media/slick.295183786cd8a1389865.woff",
     "index.html": "/Artjobs/index.html",
     "main.e3fff1ec.css.map": "/Artjobs/static/css/main.e3fff1ec.css.map",
-    "main.79118cba.js.map": "/Artjobs/static/js/main.79118cba.js.map",
+    "main.36a369fa.js.map": "/Artjobs/static/js/main.36a369fa.js.map",
     "952.179b258d.chunk.js.map": "/Artjobs/static/js/952.179b258d.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e3fff1ec.css",
-    "static/js/main.79118cba.js"
+    "static/js/main.36a369fa.js"
   ]
 }

@@ -1,12 +1,7 @@
 import { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import axios from 'axios';
 import './AuthModal.css';
 import mainImage from '../../assets/main.jpg';
-
-const supabase = createClient(
-  'https://jvccejerkjfnkwtqumcd.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
-);
 
 function AuthModal({ onClose }) {
   const [isLogin, setIsLogin] = useState(false);
@@ -15,8 +10,10 @@ function AuthModal({ onClose }) {
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleEmailChange = (e) => {
     const value = e.target.value;
@@ -48,39 +45,65 @@ function AuthModal({ onClose }) {
     return strength;
   };
 
+  const handleRegister = async () => {
+    try {
+      const response = await axios.post('https://ваш-сервер.onrender.com/register', {
+        email,
+        password,
+        role: selectedRole,
+        name,
+      });
+
+      alert(response.data.message);
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Ошибка при регистрации');
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post('https://ваш-сервер.onrender.com/login', {
+        email,
+        password,
+      });
+
+      alert(response.data.message);
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Ошибка при входе');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
 
-    if (isEmailValid !== true) return;
-    if (!isLogin && !selectedRole) return;
-    if (!isLogin && !passwordMatch) return;
-    if (!isLogin && passwordStrength !== 4) return;
+    if (isEmailValid !== true) {
+      setError('Введите корректный email');
+      return;
+    }
 
-    if (isLogin) {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .eq('password', password)
-        .single();
-
-      if (error || !data) {
-        alert('Ваш аккаунт не зарегистрирован');
-      } else {
-        alert('Успешный вход');
-        onClose();
+    if (!isLogin) {
+      if (!selectedRole) {
+        setError('Выберите роль');
+        return;
       }
+      if (!passwordMatch) {
+        setError('Пароли не совпадают');
+        return;
+      }
+      if (passwordStrength !== 4) {
+        setError('Пароль слишком слабый');
+        return;
+      }
+      if (!name) {
+        setError('Введите имя');
+        return;
+      }
+      await handleRegister();
     } else {
-      const { error } = await supabase
-        .from('users')
-        .insert([{ email, password, role: selectedRole }]);
-
-      if (error) {
-        alert('Ошибка при регистрации');
-      } else {
-        alert('Регистрация прошла успешно');
-        onClose();
-      }
+      await handleLogin();
     }
   };
 
@@ -96,6 +119,8 @@ function AuthModal({ onClose }) {
           <p className={`auth-p ${isLogin ? 'auth-p-login' : 'auth-p-register'}`}>
             {isLogin ? 'Введите почту и пароль для входа' : 'Добро пожаловать. Пожалуйста, введите ваши данные'}
           </p>
+
+          {error && <p className="auth-error" style={{ color: 'red' }}>{error}</p>}
 
           <button className="auth-google-button">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/480px-Google_%22G%22_logo.svg.png" alt="Google" className="google-icon" />
@@ -113,7 +138,7 @@ function AuthModal({ onClose }) {
                 required
               >
                 <option value="" disabled hidden>Выберите роль</option>
-                <option value="artist">Художник</option>
+                <option canzone="artist">Художник</option>
                 <option value="hirer">Работодатель</option>
               </select>
             </div>
@@ -123,7 +148,14 @@ function AuthModal({ onClose }) {
             {!isLogin && (
               <label>
                 Имя
-                <input type="text" placeholder="Введите своё имя" className="auth-name" required />
+                <input
+                  type="text"
+                  placeholder="Введите своё имя"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="auth-name"
+                  required
+                />
               </label>
             )}
 

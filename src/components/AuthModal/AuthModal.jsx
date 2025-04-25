@@ -1,6 +1,12 @@
 import { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import './AuthModal.css';
 import mainImage from '../../assets/main.jpg';
+
+const supabase = createClient(
+  'https://jvccejerkjfnkwtqumcd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
+);
 
 function AuthModal({ onClose }) {
   const [isLogin, setIsLogin] = useState(false);
@@ -12,11 +18,9 @@ function AuthModal({ onClose }) {
   const [isEmailValid, setIsEmailValid] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
 
-  // Валидация email с поддержкой всех возможных TLD
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setEmail(value);
-    // Универсальное регулярное выражение для email с чётким концом строки
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|ru|org|co\.uk|gov|edu|io|travel)$/;
     const isValid = emailRegex.test(value);
     setIsEmailValid(isValid);
@@ -37,44 +41,47 @@ function AuthModal({ onClose }) {
 
   const evaluatePasswordStrength = (password) => {
     let strength = 0;
-    if (/[a-zA-Zа-яё]/.test(password)) strength++; // Буквы
-    if (/[A-ZА-ЯЁ]/.test(password) && /[a-zа-яё]/.test(password)) strength++; // Буквы разного регистра
-    if (/\d/.test(password)) strength++; // Цифры
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++; // Специальные символы
+    if (/[a-zA-Zа-яё]/.test(password)) strength++;
+    if (/[A-ZА-ЯЁ]/.test(password) && /[a-zа-яё]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
     return strength;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Проверка валидности email
-    if (isEmailValid !== true) {
-      return; // Форма не отправляется
-    }
+    if (isEmailValid !== true) return;
+    if (!isLogin && !selectedRole) return;
+    if (!isLogin && !passwordMatch) return;
+    if (!isLogin && passwordStrength !== 4) return;
 
-    // Проверка роли (обязательна только при регистрации)
-    if (!isLogin && !selectedRole) {
-      return; // Форма не отправляется
-    }
+    if (isLogin) {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .eq('password', password)
+        .single();
 
-    // Проверка совпадения паролей (только при регистрации)
-    if (!isLogin && !passwordMatch) {
-      return; // Форма не отправляется
-    }
+      if (error || !data) {
+        alert('Ваш аккаунт не зарегистрирован');
+      } else {
+        alert('Успешный вход');
+        onClose();
+      }
+    } else {
+      const { error } = await supabase
+        .from('users')
+        .insert([{ email, password, role: selectedRole }]);
 
-    // Проверка силы пароля (только при регистрации)
-    if (!isLogin && passwordStrength !== 4) {
-      return; // Форма не отправляется, если пароль не максимально сильный
+      if (error) {
+        alert('Ошибка при регистрации');
+      } else {
+        alert('Регистрация прошла успешно');
+        onClose();
+      }
     }
-
-    // Если все проверки пройдены, отправляем форму
-    console.log({
-      email,
-      password,
-      role: selectedRole,
-      isLogin,
-    });
-    onClose();
   };
 
   return (

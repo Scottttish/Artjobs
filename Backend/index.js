@@ -3,27 +3,24 @@ const app = express();
 const { Pool } = require('pg');
 const cors = require('cors');
 
-// Подключение к базе данных PostgreSQL
 const pool = new Pool({
   user: 'postgres', 
   host: 'db.jvccejerkjfnkwtqumcd.supabase.co',
   database: 'postgres',
-  password: 'your_password',
+  password: 'aPEJFvRbyKDoGKJj',
   port: 5432,
 });
 
 app.use(cors());
-app.use(express.json()); // Для парсинга JSON в теле запроса
+app.use(express.json());
 
-// Маршрут для регистрации пользователя
 app.post('/register', async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, password, role, username } = req.body;
 
   try {
-    // Вставка данных в таблицу users
     const result = await pool.query(
-      'INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING *',
-      [email, password, role]
+      'INSERT INTO users (email, password, role, username) VALUES ($1, $2, $3, $4) RETURNING *',
+      [email, password, role, username]
     );
 
     res.status(201).json({
@@ -32,6 +29,15 @@ app.post('/register', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Ошибка при регистрации!', error: error.message });
+  }
+});
+
+app.get('/users', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM users');
+    res.status(200).json(result.rows);
+  } catch (error) {
+    res.status(500).json({ message: 'Ошибка при получении пользователей!', error: error.message });
   }
 });
 

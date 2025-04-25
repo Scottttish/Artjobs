@@ -95,7 +95,7 @@ function AuthModal({ onClose }) {
 
       if (dbError) {
         console.error('Database error:', dbError);
-        setError('Ошибка при сохранении данных пользователя: ' + (dbError.message || 'Неизвестная ошибка'));
+        setError('Ошибка при сохранении данных пользователя: ' + (dbError.message || ' not-null constraint'));
         throw dbError;
       }
 
@@ -273,7 +273,7 @@ function AuthModal({ onClose }) {
             </button>
 
             <p className="login-link">
-              {isLogin ? 'У вас нет аккаунта? ' : 'У вас уже есть ак的文件
+              {isLogin ? 'У вас нет аккаунта? ' : 'У вас уже есть аккаунт? '}
               <a href="#" onClick={(e) => { e.preventDefault(); setIsLogin(!isLogin); }}>
                 {isLogin ? 'Зарегистрируйтесь' : 'Войти'}
               </a>

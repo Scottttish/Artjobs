@@ -1,7 +1,12 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { createClient } from '@supabase/supabase-js';
 import './AuthModal.css';
 import mainImage from '../../assets/main.jpg';
+
+const supabase = createClient(
+  'https://jvccejerkjfnkwtqumcd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
+);
 
 function AuthModal({ onClose }) {
   const [isLogin, setIsLogin] = useState(false);
@@ -47,31 +52,46 @@ function AuthModal({ onClose }) {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post('https://ваш-сервер.onrender.com/register', {
+      // Регистрация через Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        role: selectedRole,
-        name,
       });
 
-      alert(response.data.message);
+      if (authError) throw authError;
+
+      // Сохранение дополнительных данных в таблицу users
+      const { error: dbError } = await supabase
+        .from('users')
+        .insert([{ user_id: authData.user.id, email, name, role: selectedRole }]);
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw dbError;
+      }
+
+      alert('Регистрация успешна! Проверьте email для подтверждения.');
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || 'Ошибка при регистрации');
+      setError(err.message);
+      console.error(err);
     }
   };
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('https://ваш-сервер.onrender.com/login', {
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      alert(response.data.message);
+      if (error) throw error;
+
+      alert('Вход успешен!');
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || 'Ошибка при входе');
+      setError('Неверный email или пароль');
+      console.error(err);
     }
   };
 
@@ -138,7 +158,7 @@ function AuthModal({ onClose }) {
                 required
               >
                 <option value="" disabled hidden>Выберите роль</option>
-                <option canzone="artist">Художник</option>
+                <option value="artist">Художник</option>
                 <option value="hirer">Работодатель</option>
               </select>
             </div>
@@ -235,12 +255,4 @@ function AuthModal({ onClose }) {
 
 const getProgressBarColor = (strength) => {
   switch (strength) {
-    case 1: return 'red';
-    case 2: return 'orange';
-    case 3: return 'yellowgreen';
-    case 4: return 'green';
-    default: return 'lightgray';
-  }
-};
-
-export default AuthModal;
+    case 1: return 'red

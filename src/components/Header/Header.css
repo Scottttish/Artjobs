@@ -70,3 +70,44 @@
 .Header-auth a:hover {
   text-decoration: underline;
 }
+
+.user-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.user-icon {
+  border-radius: 50%; /* Для круглой иконки */
+  transition: opacity 0.3s;
+}
+
+.user-icon:hover {
+  opacity: 0.8;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 120px;
+}
+
+.dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-menu button:hover {
+  background-color: #f0f0f0;
+}

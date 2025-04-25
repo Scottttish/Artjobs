@@ -70,7 +70,7 @@ function AuthModal({ onClose }) {
       // Сохранение дополнительных данных в таблицу users
       const { error: dbError } = await supabase
         .from('users')
-        .insert([{ user_id: authData.user.id, email, username, role: selectedRole }]);
+        .insert([{ id: authData.user.id, email, username, role: selectedRole }]);
 
       if (dbError) {
         console.error('Database error:', dbError);

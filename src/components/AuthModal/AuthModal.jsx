@@ -90,14 +90,14 @@ function AuthModal({ onClose }) {
 
       if (!sessionData.session) {
         console.error('No active session found:', sessionData);
-        setError('Сессия пользователя не найдена');
+        setError('Сессия пользователя не найдена. Пожалуйста, попробуйте снова.');
         throw new Error('No active session');
       }
 
-      // Сохранение дополнительных данных в таблицу users, включая password
+      // Сохранение дополнительных данных в таблицу users, без password
       const { error: dbError } = await supabase
         .from('users')
-        .insert([{ id: authData.user.id, email, username, role: selectedRole, password }]);
+        .insert([{ id: authData.user.id, email, username, role: selectedRole }]);
 
       if (dbError) {
         console.error('Database error:', dbError);
@@ -105,7 +105,7 @@ function AuthModal({ onClose }) {
         throw dbError;
       }
 
-      alert('Регистрация успешна! Проверьте email для подтверждения.');
+      alert('Регистрация успешна!');
       onClose();
     } catch (err) {
       console.error('Registration error:', err || 'Unknown error');

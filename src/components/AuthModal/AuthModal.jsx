@@ -2,17 +2,17 @@ import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import './AuthModal.css';
 import mainImage from '../../assets/main.jpg';
+import { useNavigate } from 'react-router-dom'; // Импортируем useNavigate
 
-// Функция для создания задержки
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Создание клиента Supabase (рекомендуется вынести в supabase.js)
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
 );
 
 function AuthModal({ onClose }) {
+  const navigate = useNavigate(); // Добавляем useNavigate
   const [isLogin, setIsLogin] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -68,7 +68,7 @@ function AuthModal({ onClose }) {
         throw error;
       }
 
-      return !!data; // Возвращает true, если пользователь найден, false, если нет
+      return !!data;
     } catch (err) {
       console.error('Error checking user existence:', err);
       return false;
@@ -77,16 +77,14 @@ function AuthModal({ onClose }) {
 
   const handleRegister = async () => {
     try {
-      await delay(1000); // Задержка для предотвращения rate limit
+      await delay(1000);
 
-      // Проверка, существует ли пользователь в таблице users
       const userExistsInUsersTable = await checkUserExistsInUsersTable(email);
       if (userExistsInUsersTable) {
         setError('Этот email уже зарегистрирован. Попробуйте войти.');
         return;
       }
 
-      // Регистрация через Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -96,7 +94,7 @@ function AuthModal({ onClose }) {
         console.error('Auth error:', authError);
         if (authError.message.includes('User already registered')) {
           setError('Этот email уже зарегистрирован в системе. Попробуйте войти или используйте другой email.');
-          setIsLogin(true); // Переключаем на форму входа
+          setIsLogin(true);
         } else if (authError.status === 429) {
           setError('Слишком много запросов. Пожалуйста, подождите несколько секунд и попробуйте снова.');
         } else {
@@ -111,7 +109,6 @@ function AuthModal({ onClose }) {
         throw new Error('No user data');
       }
 
-      // Проверка сессии
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) {
         console.error('Session error:', sessionError);
@@ -125,7 +122,6 @@ function AuthModal({ onClose }) {
         throw new Error('No active session');
       }
 
-      // Сохранение данных в таблицу users, включая пароль
       const { error: dbError } = await supabase
         .from('users')
         .insert([{ id: authData.user.id, email, username, role: selectedRole, password }]);
@@ -137,10 +133,15 @@ function AuthModal({ onClose }) {
       }
 
       alert('Регистрация успешна!');
+      // Перенаправляем в зависимости от роли
+      if (selectedRole === 'artist') {
+        navigate('/artprofile');
+      } else if (selectedRole === 'hirer') {
+        navigate('/hirerprofile');
+      }
       onClose();
     } catch (err) {
       console.error('Registration error:', err);
-      // Ошибка уже установлена в соответствующих блоках
     }
   };
 
@@ -156,7 +157,25 @@ function AuthModal({ onClose }) {
         throw error;
       }
 
+      // После входа получаем роль пользователя и перенаправляем
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('email', email)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user role:', userError);
+        setError('Ошибка получения данных пользователя');
+        return;
+      }
+
       alert('Вход успешен!');
+      if (userData.role === 'artist') {
+        navigate('/artprofile');
+      } else if (userData.role === 'hirer') {
+        navigate('/hirerprofile');
+      }
       onClose();
     } catch (err) {
       setError('Неверный email или пароль');

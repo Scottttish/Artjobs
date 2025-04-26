@@ -50,20 +50,22 @@ function ArtProfile() {
 
       if (userError) {
         console.error('Error fetching user data:', userError);
+        console.error('Error details:', userError.message, userError.details, userError.hint);
         setError('Ошибка загрузки данных пользователя: ' + userError.message);
         setLoading(false);
         return;
       }
 
-      // Загрузка дополнительных данных из таблицы additionalInfo
+      // Загрузка дополнительных данных из таблицы additionalinfo
       const { data: additionalData, error: additionalError } = await supabase
-        .from('additionalInfo')
-        .select('drawingLevel, preferredMedium, experienceYears, portfolioLink, artDescription')
+        .from('additionalinfo')
+        .select('drawinglevel, preferredmedium, experienceyears, portfoliolink, artdescription')
         .eq('user_id', userId)
         .single();
 
       if (additionalError && additionalError.code !== 'PGRST116') {
         console.error('Error fetching additional info:', additionalError);
+        console.error('Error details:', additionalError.message, additionalError.details, additionalError.hint);
         setError('Ошибка загрузки дополнительных данных: ' + additionalError.message);
         setLoading(false);
         return;
@@ -79,22 +81,23 @@ function ArtProfile() {
 
       if (!additionalData) {
         const { error: insertError } = await supabase
-          .from('additionalInfo')
+          .from('additionalinfo')
           .insert({ user_id: userId, ...artSkills });
 
         if (insertError) {
           console.error('Error creating additional info:', insertError);
+          console.error('Error details:', insertError.message, insertError.details, insertError.hint);
           setError('Ошибка создания дополнительных данных: ' + insertError.message);
           setLoading(false);
           return;
         }
       } else {
         artSkills = {
-          drawingLevel: additionalData.drawingLevel || 'Новичок',
-          preferredMedium: additionalData.preferredMedium || 'Карандаш',
-          experienceYears: additionalData.experienceYears || 0,
-          portfolioLink: additionalData.portfolioLink || '',
-          artDescription: additionalData.artDescription || ''
+          drawingLevel: additionalData.drawinglevel || 'Новичок',
+          preferredMedium: additionalData.preferredmedium || 'Карандаш',
+          experienceYears: additionalData.experienceyears || 0,
+          portfolioLink: additionalData.portfoliolink || '',
+          artDescription: additionalData.artdescription || ''
         };
       }
 
@@ -128,26 +131,26 @@ function ArtProfile() {
         )
         .subscribe();
 
-      // Подписка на изменения в таблице additionalInfo
+      // Подписка на изменения в таблице additionalinfo
       const additionalInfoSubscription = supabase
-        .channel('additionalInfo-changes')
+        .channel('additionalinfo-changes')
         .on(
           'postgres_changes',
           {
             event: 'UPDATE',
             schema: 'public',
-            table: 'additionalInfo',
+            table: 'additionalinfo',
             filter: `user_id=eq.${userId}`
           },
           (payload) => {
             setUser(prev => ({
               ...prev,
               artSkills: {
-                drawingLevel: payload.new.drawingLevel || prev.artSkills.drawingLevel,
-                preferredMedium: payload.new.preferredMedium || prev.artSkills.preferredMedium,
-                experienceYears: payload.new.experienceYears || prev.artSkills.experienceYears,
-                portfolioLink: payload.new.portfolioLink || prev.artSkills.portfolioLink,
-                artDescription: payload.new.artDescription || prev.artSkills.artDescription
+                drawingLevel: payload.new.drawinglevel || prev.artSkills.drawingLevel,
+                preferredMedium: payload.new.preferredmedium || prev.artSkills.preferredMedium,
+                experienceYears: payload.new.experienceyears || prev.artSkills.experienceYears,
+                portfolioLink: payload.new.portfoliolink || prev.artSkills.portfolioLink,
+                artDescription: payload.new.artdescription || prev.artSkills.artDescription
               }
             }));
           }
@@ -276,26 +279,28 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
 
     if (userError) {
       console.error('Error updating user info:', userError);
+      console.error('Error details:', userError.message, userError.details, userError.hint);
       alert('Ошибка при сохранении данных пользователя: ' + userError.message);
       return;
     }
 
-    // Обновление дополнительных данных в таблице additionalInfo
+    // Обновление дополнительных данных в таблице additionalinfo
     const updatedAdditionalData = {
-      drawingLevel: editedUser.artSkills.drawingLevel,
-      preferredMedium: editedUser.artSkills.preferredMedium,
-      experienceYears: Number(editedUser.artSkills.experienceYears),
-      portfolioLink: editedUser.artSkills.portfolioLink,
-      artDescription: editedUser.artSkills.artDescription
+      drawinglevel: editedUser.artSkills.drawingLevel,
+      preferredmedium: editedUser.artSkills.preferredMedium,
+      experienceyears: Number(editedUser.artSkills.experienceYears),
+      portfoliolink: editedUser.artSkills.portfolioLink,
+      artdescription: editedUser.artSkills.artDescription
     };
 
     const { error: additionalError } = await supabase
-      .from('additionalInfo')
+      .from('additionalinfo')
       .update(updatedAdditionalData)
       .eq('user_id', userId);
 
     if (additionalError) {
       console.error('Error updating additional info:', additionalError);
+      console.error('Error details:', additionalError.message, additionalError.details, additionalError.hint);
       alert('Ошибка при сохранении дополнительных данных: ' + additionalError.message);
       return;
     }

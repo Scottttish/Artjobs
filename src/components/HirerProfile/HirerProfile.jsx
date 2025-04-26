@@ -1,22 +1,108 @@
-import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import React, { useState } from 'react';
 import './HirerProfile.css';
 
-// Инициализация Supabase клиента
-const supabase = createClient(
-  'https://jvccejerkjfnkwtqumcd.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
-);
-
 const HirerProfile = () => {
-  const [historyItems, setHistoryItems] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [historyItems, setHistoryItems] = useState([
+    { number: '0J.20233JHN92004', date: '26 JAN 2023', status: 'Delivered', statusClass: 'delivered', title: 'Sample Delivery' },
+    { number: '0J.20233JHN92005', date: '26 JAN 2023', status: 'Transit', statusClass: 'transit', title: 'Sample Transit' },
+  ]);
+
+  const [products, setProducts] = useState([
+    {
+      id: 'nks3722',
+      title: 'Muslim Bride & Groom Finder',
+      direction: '3D',
+      date: '26 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '640 days',
+      durationTooltip: '15.02.2021 - 16.11.2022',
+      description: 'A platform designed to connect individuals seeking marriage partners. Features advanced matching algorithms and user-friendly interfaces.',
+    },
+    {
+      id: 'nks3723',
+      title: 'Real Estate Website',
+      direction: 'Моушн',
+      date: '25 JAN 2023',
+      status: 'Active',
+      price: '$17,000',
+      duration: '500 days',
+      durationTooltip: '15.03.2021 - 30.07.2022',
+      description: 'A dynamic website for real estate listings. Includes motion graphics for enhanced user engagement and property visualization.',
+    },
+    {
+      id: 'nks3724',
+      title: 'Job Seeker & Job Finder',
+      direction: 'Иллюстрация',
+      date: '24 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '600 days',
+      durationTooltip: '10.01.2021 - 05.09.2022',
+      description: 'A job portal with custom illustrations. Simplifies job searching and hiring with visually appealing designs.',
+    },
+    {
+      id: 'nks3725',
+      title: 'Medical CRM',
+      direction: 'Другое',
+      date: '23 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '720 days',
+      durationTooltip: '01.01.2021 - 31.12.2022',
+      description: 'A CRM tailored for medical professionals. Streamlines patient management and administrative tasks.',
+    },
+    {
+      id: 'nks3726',
+      title: 'Grocery Shop CRM',
+      direction: '3D',
+      date: '22 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '550 days',
+      durationTooltip: '20.02.2021 - 25.08.2022',
+      description: 'A CRM for grocery stores with 3D visualizations. Enhances inventory tracking and customer management.',
+    },
+    {
+      id: 'nks3727',
+      title: 'E-commerce Website with CRM',
+      direction: 'Моушн',
+      date: '21 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '680 days',
+      durationTooltip: '05.02.2021 - 15.12.2022',
+      description: 'An e-commerce platform with integrated CRM. Features motion-based product showcases for better user experience.',
+    },
+    {
+      id: 'nks3728',
+      title: 'Fintech - Daily Money Management',
+      direction: 'Иллюстрация',
+      date: '20 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '620 days',
+      durationTooltip: '12.02.2021 - 01.11.2022',
+      description: 'A fintech app with custom illustrations. Helps users manage daily finances with intuitive visuals.',
+    },
+    {
+      id: 'nks3729',
+      title: 'Job Portal Website',
+      direction: 'Другое',
+      date: '19 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '590 days',
+      durationTooltip: '18.02.2021 - 10.10.2022',
+      description: 'A comprehensive job portal. Offers robust features for job seekers and employers.',
+    },
+  ]);
+
   const [userInfo, setUserInfo] = useState({
-    nickname: '',
-    email: '',
-    password: '********'
+    nickname: 'User123',
+    email: 'user@example.com',
+    password: '********',
   });
-  const [loading, setLoading] = useState(true);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [tempUserInfo, setTempUserInfo] = useState({ ...userInfo });
@@ -31,73 +117,11 @@ const HirerProfile = () => {
     startDate: '',
     endDate: '',
     price: '',
-    status: 'Active'
+    status: 'Active',
   });
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDirection, setSelectedDirection] = useState('All Products');
-
-  // Загрузка данных пользователя и продуктов из Supabase
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData.session) {
-        console.error('Session error:', sessionError);
-        setLoading(false);
-        return;
-      }
-
-      // Загрузка пользовательских данных
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('nickname, email')
-        .eq('id', sessionData.session.user.id)
-        .single();
-
-      if (userError) {
-        console.error('Error fetching user data:', userError);
-      } else {
-        setUserInfo({
-          nickname: userData.nickname || 'User123',
-          email: userData.email || 'user@example.com',
-          password: '********'
-        });
-        setTempUserInfo({
-          nickname: userData.nickname || 'User123',
-          email: userData.email || 'user@example.com',
-          password: '********'
-        });
-      }
-
-      // Загрузка продуктов
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select('*')
-        .eq('user_id', sessionData.session.user.id);
-
-      if (productsError) {
-        console.error('Error fetching products:', productsError);
-      } else {
-        setProducts(productsData || []);
-      }
-
-      // Загрузка истории
-      const { data: historyData, error: historyError } = await supabase
-        .from('history')
-        .select('*')
-        .eq('user_id', sessionData.session.user.id);
-
-      if (historyError) {
-        console.error('Error fetching history:', historyError);
-      } else {
-        setHistoryItems(historyData || []);
-      }
-
-      setLoading(false);
-    };
-
-    fetchData();
-  }, []);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -116,33 +140,9 @@ const HirerProfile = () => {
     setTempUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const saveChanges = async () => {
-    setLoading(true);
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      console.error('No session found');
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await supabase
-      .from('users')
-      .update({
-        nickname: tempUserInfo.nickname,
-        email: tempUserInfo.email
-      })
-      .eq('id', sessionData.session.user.id);
-
-    if (error) {
-      console.error('Error saving user info:', error);
-      alert('Ошибка при сохранении данных.');
-    } else {
-      setUserInfo({ ...tempUserInfo });
-      alert('Данные успешно сохранены!');
-    }
-
+  const saveChanges = () => {
+    setUserInfo({ ...tempUserInfo });
     setModalOpen(false);
-    setLoading(false);
   };
 
   const openProductModal = (product = null) => {
@@ -157,7 +157,7 @@ const HirerProfile = () => {
         startDate: startDate,
         endDate: endDate,
         price: product.price,
-        status: product.status
+        status: product.status,
       });
     } else {
       setIsEditing(false);
@@ -169,7 +169,7 @@ const HirerProfile = () => {
         startDate: '',
         endDate: '',
         price: '',
-        status: 'Active'
+        status: 'Active',
       });
     }
     setProductModalOpen(true);
@@ -189,25 +189,16 @@ const HirerProfile = () => {
     return `${diffDays} days`;
   };
 
-  const saveProduct = async () => {
+  const saveProduct = () => {
     const { title, direction, description, startDate, endDate, price, status } = tempProduct;
     if (!title || !direction || !description || !startDate || !endDate || !price || !status) {
-      alert('Все поля обязательны!');
+      alert('All fields are required!');
       return;
     }
-
-    setLoading(true);
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      console.error('No session found');
-      setLoading(false);
-      return;
-    }
-
     const currentDate = new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
     }).toUpperCase();
     const duration = calculateDuration(startDate, endDate);
     const productData = {
@@ -220,34 +211,15 @@ const HirerProfile = () => {
       price,
       duration,
       durationTooltip: `${startDate} - ${endDate}`,
-      user_id: sessionData.session.user.id
     };
 
-    let error;
     if (isEditing) {
-      ({ error } = await supabase
-        .from('products')
-        .update(productData)
-        .eq('id', editingProductId));
+      setProducts(products.map((p) => (p.id === editingProductId ? productData : p)));
     } else {
-      ({ error } = await supabase.from('products').insert([productData]));
+      setProducts([...products, productData]);
     }
-
-    if (error) {
-      console.error('Error saving product:', error);
-      alert('Ошибка при сохранении продукта.');
-    } else {
-      if (isEditing) {
-        setProducts(products.map((p) => (p.id === editingProductId ? productData : p)));
-      } else {
-        setProducts([...products, productData]);
-      }
-      alert('Продукт успешно сохранен!');
-    }
-
     setProductModalOpen(false);
     setSelectedProducts([]);
-    setLoading(false);
   };
 
   const handleCheckboxToggle = (productId) => {
@@ -258,22 +230,9 @@ const HirerProfile = () => {
     );
   };
 
-  const handleDelete = async () => {
-    setLoading(true);
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .in('id', selectedProducts);
-
-    if (error) {
-      console.error('Error deleting products:', error);
-      alert('Ошибка при удалении продуктов.');
-    } else {
-      setProducts(products.filter((product) => !selectedProducts.includes(product.id)));
-      setSelectedProducts([]);
-      alert('Продукты успешно удалены!');
-    }
-    setLoading(false);
+  const handleDelete = () => {
+    setProducts(products.filter((product) => !selectedProducts.includes(product.id)));
+    setSelectedProducts([]);
   };
 
   const handleRename = () => {
@@ -283,90 +242,45 @@ const HirerProfile = () => {
     }
   };
 
-  const handleComplete = async (product) => {
-    setLoading(true);
+  const handleComplete = (product) => {
     const currentDate = new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
     }).toUpperCase();
-
-    const historyItem = {
-      number: product.id,
-      title: product.title,
-      date: currentDate,
-      status: 'Completed',
-      statusClass: 'completed',
-      user_id: product.user_id
-    };
-
-    const { error: historyError } = await supabase.from('history').insert([historyItem]);
-    if (historyError) {
-      console.error('Error adding to history:', historyError);
-      alert('Ошибка при добавлении в историю.');
-      setLoading(false);
-      return;
-    }
-
-    const { error: deleteError } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', product.id);
-
-    if (deleteError) {
-      console.error('Error deleting product:', deleteError);
-      alert('Ошибка при удалении продукта.');
-    } else {
-      setHistoryItems([historyItem, ...historyItems]);
-      setProducts(products.filter((p) => p.id !== product.id));
-      alert('Продукт успешно завершен!');
-    }
-    setLoading(false);
+    setHistoryItems([
+      {
+        number: product.id,
+        title: product.title,
+        date: currentDate,
+        status: 'Completed',
+        statusClass: 'completed',
+      },
+      ...historyItems,
+    ]);
+    setProducts(products.filter((p) => p.id !== product.id));
   };
 
-  const handleReject = async (product) => {
-    setLoading(true);
+  const handleReject = (product) => {
     const currentDate = new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
     }).toUpperCase();
-
-    const historyItem = {
-      number: product.id,
-      title: product.title,
-      date: currentDate,
-      status: 'Rejected',
-      statusClass: 'rejected',
-      user_id: product.user_id
-    };
-
-    const { error: historyError } = await supabase.from('history').insert([historyItem]);
-    if (historyError) {
-      console.error('Error adding to history:', historyError);
-      alert('Ошибка при добавлении в историю.');
-      setLoading(false);
-      return;
-    }
-
-    const { error: deleteError } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', product.id);
-
-    if (deleteError) {
-      console.error('Error deleting product:', deleteError);
-      alert('Ошибка при удалении продукта.');
-    } else {
-      setHistoryItems([historyItem, ...historyItems]);
-      setProducts(products.filter((p) => p.id !== product.id));
-      alert('Продукт успешно отклонен!');
-    }
-    setLoading(false);
+    setHistoryItems([
+      {
+        number: product.id,
+        title: product.title,
+        date: currentDate,
+        status: 'Rejected',
+        statusClass: 'rejected',
+      },
+      ...historyItems,
+    ]);
+    setProducts(products.filter((p) => p.id !== product.id));
   };
 
-  const handleRestore = async (historyItem) => {
-    setLoading(true);
+  const handleRestore = (historyItem) => {
     const product = {
       id: historyItem.number,
       title: historyItem.title,
@@ -377,55 +291,13 @@ const HirerProfile = () => {
       duration: '600 days',
       durationTooltip: '01.01.2023 - 01.07.2024',
       description: 'Restored product',
-      user_id: historyItem.user_id
     };
-
-    const { error: productError } = await supabase.from('products').insert([product]);
-    if (productError) {
-      console.error('Error restoring product:', productError);
-      alert('Ошибка при восстановлении продукта.');
-      setLoading(false);
-      return;
-    }
-
-    const { error: historyError } = await supabase
-      .from('history')
-      .delete()
-      .eq('number', historyItem.number);
-
-    if (historyError) {
-      console.error('Error deleting history item:', historyError);
-      alert('Ошибка при удалении элемента истории.');
-    } else {
-      setProducts([...products, product]);
-      setHistoryItems(historyItems.filter((item) => item.number !== historyItem.number));
-      alert('Продукт успешно восстановлен!');
-    }
-    setLoading(false);
+    setProducts([...products, product]);
+    setHistoryItems(historyItems.filter((item) => item.number !== historyItem.number));
   };
 
-  const handleDeleteHistory = async () => {
-    setLoading(true);
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      console.error('No session found');
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await supabase
-      .from('history')
-      .delete()
-      .eq('user_id', sessionData.session.user.id);
-
-    if (error) {
-      console.error('Error deleting history:', error);
-      alert('Ошибка при очистке истории.');
-    } else {
-      setHistoryItems([]);
-      alert('История успешно очищена!');
-    }
-    setLoading(false);
+  const handleDeleteHistory = () => {
+    setHistoryItems([]);
   };
 
   const handleSearchChange = (e) => {
@@ -440,15 +312,11 @@ const HirerProfile = () => {
     ? products
     : products.filter((product) => product.direction === selectedDirection);
 
-  if (loading) {
-    return <div className="hirer-loading">Загрузка...</div>;
-  }
-
   return (
-    <div className="hirer-dashboard">
-      <div className="hirer-sidebar">
-        <div className="hirer-image-upload">
-          <label htmlFor="imageUpload" className="hirer-upload-button">
+    <div className="dashboard">
+      <div className="sidebar">
+        <div className="image-upload">
+          <label htmlFor="imageUpload" className="upload-button">
             +
           </label>
           <input
@@ -460,47 +328,47 @@ const HirerProfile = () => {
           />
         </div>
 
-        <div className="hirer-user-info">
-          <div className="hirer-user-info-item">
+        <div className="user-info">
+          <div className="user-info-item">
             <span>Nickname: {userInfo.nickname}</span>
-            <button className="hirer-edit-button" onClick={openModal}>✏️</button>
+            <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
-          <div className="hirer-user-info-item">
+          <div className="user-info-item">
             <span>Email: {userInfo.email}</span>
-            <button className="hirer-edit-button" onClick={openModal}>✏️</button>
+            <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
-          <div className="hirer-user-info-item">
+          <div className="user-info-item">
             <span>Password: {userInfo.password}</span>
-            <button className="hirer-edit-button" onClick={openModal}>✏️</button>
+            <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
         </div>
 
-        <div className="hirer-history">
-          <div className="hirer-track-header">
+        <div className="history">
+          <div className="track-header">
             <input
               type="text"
-              placeholder="Введите номер квитанции"
+              placeholder="Enter the receipt number"
               value={searchQuery}
               onChange={handleSearchChange}
             />
-            <button>Отследить</button>
+            <button>Track Q</button>
           </div>
-          <div className="hirer-history-header">
-            <h3>История</h3>
-            <span onClick={handleDeleteHistory} className="hirer-delete-history">Очистить историю</span>
+          <div className="history-header">
+            <h3>HISTORY</h3>
+            <span onClick={handleDeleteHistory} className="delete-history">Delete History</span>
           </div>
-          <div className="hirer-history-content">
+          <div className="history-content">
             {filteredHistoryItems.length > 0 ? (
               filteredHistoryItems.map((item, index) => (
-                <div key={index} className="hirer-history-item">
-                  <div className="hirer-history-icon">📦</div>
-                  <div className="hirer-history-details">
+                <div key={index} className="history-item">
+                  <div className="history-icon">📦</div>
+                  <div className="history-details">
                     <p>{item.title || item.number}</p>
                     <span>{item.date}</span>
-                    <span className={`hirer-status ${item.statusClass}`}>{item.status}</span>
+                    <span className={`status ${item.statusClass}`}>{item.status}</span>
                   </div>
                   <button
-                    className="hirer-restore-button"
+                    className="restore-button"
                     onClick={() => handleRestore(item)}
                   >
                     🔄
@@ -508,101 +376,101 @@ const HirerProfile = () => {
                 </div>
               ))
             ) : (
-              <div className="hirer-no-history">Объявлений нет в истории</div>
+              <div className="no-history">Объявление нету в истории</div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="hirer-main-content">
-        <div className="hirer-filters">
+      <div className="main-content">
+        <div className="filters">
           <select
             value={selectedDirection}
             onChange={(e) => setSelectedDirection(e.target.value)}
           >
-            <option>Все продукты</option>
+            <option>All Products</option>
             <option>3D</option>
             <option>Моушн</option>
             <option>Иллюстрация</option>
             <option>Другое</option>
           </select>
           <select>
-            <option>Фильтр</option>
+            <option>Filter</option>
           </select>
           <select>
-            <option>Сортировать по: Время создания</option>
+            <option>Sort by: Created time</option>
           </select>
-          <button onClick={() => openProductModal()}>Создать новый +</button>
+          <button onClick={() => openProductModal()}>Create New +</button>
           <button
             onClick={handleRename}
             disabled={selectedProducts.length === 0}
             className={selectedProducts.length === 0 ? 'disabled' : 'rename'}
           >
-            Переименовать
+            Rename
           </button>
           <button
             onClick={handleDelete}
             disabled={selectedProducts.length === 0}
             className={selectedProducts.length === 0 ? 'disabled' : 'delete'}
           >
-            Удалить
+            Delete
           </button>
         </div>
-        <div className="hirer-product-grid">
+        <div className="product-grid">
           {filteredProducts.map((product, index) => (
-            <div key={index} className="hirer-product-card">
-              <div className="hirer-product-header">
-                <div className="hirer-product-title">
+            <div key={index} className="product-card">
+              <div className="product-header">
+                <div className="product-title">
                   <span>{product.title}</span>
                 </div>
                 <input
                   type="checkbox"
-                  className="hirer-product-checkbox"
+                  className="product-checkbox"
                   checked={selectedProducts.includes(product.id)}
                   onChange={() => handleCheckboxToggle(product.id)}
                 />
               </div>
-              <div className="hirer-product-direction-section">
+              <div className="product-direction-section">
                 <span>Направление</span>
                 <span>{product.direction}</span>
               </div>
-              <div className="hirer-product-description">
+              <div className="product-description">
                 <span>Описание</span>
-                <span className="hirer-description">{product.description}</span>
+                <span className="description">{product.description}</span>
               </div>
-              <div className="hirer-product-footer">
-                <div className="hirer-product-left">
-                  <div className="hirer-product-info">
+              <div className="product-footer">
+                <div className="product-left">
+                  <div className="product-info">
                     <span>Дата публикации</span>
                     <span>{product.date}</span>
                   </div>
-                  <div className="hirer-product-info">
+                  <div className="product-info">
                     <span>Стоимость</span>
                     <span>{product.price}</span>
                   </div>
                 </div>
-                <div className="hirer-product-right">
-                  <div className="hirer-product-info">
+                <div className="product-right">
+                  <div className="product-info">
                     <span>Срок</span>
-                    <span className="hirer-duration" title={product.durationTooltip}>
+                    <span className="duration" title={product.durationTooltip}>
                       {product.duration}
                     </span>
                   </div>
-                  <div className="hirer-product-info">
+                  <div className="product-info">
                     <span>Статус</span>
-                    <span className={`hirer-status ${product.status.toLowerCase()}`}>{product.status}</span>
+                    <span className={`status ${product.status.toLowerCase()}`}>{product.status}</span>
                   </div>
                 </div>
               </div>
-              <div className="hirer-product-actions">
+              <div className="product-actions">
                 <button
-                  className="hirer-complete-button"
+                  className="complete-button"
                   onClick={() => handleComplete(product)}
                 >
                   Завершить
                 </button>
                 <button
-                  className="hirer-reject-button"
+                  className="reject-button"
                   onClick={() => handleReject(product)}
                 >
                   Отклонить
@@ -614,11 +482,11 @@ const HirerProfile = () => {
       </div>
 
       {modalOpen && (
-        <div className="hirer-modal">
-          <div className="hirer-modal-content">
-            <h3>Редактировать информацию</h3>
-            <div className="hirer-modal-field">
-              <label>Никнейм</label>
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Edit User Info</h3>
+            <div className="modal-field">
+              <label>Nickname</label>
               <input
                 type="text"
                 name="nickname"
@@ -627,7 +495,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="hirer-modal-field">
+            <div className="modal-field">
               <label>Email</label>
               <input
                 type="email"
@@ -637,8 +505,8 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="hirer-modal-field">
-              <label>Пароль</label>
+            <div className="modal-field">
+              <label>Password</label>
               <input
                 type="password"
                 name="password"
@@ -647,20 +515,20 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="hirer-modal-buttons">
-              <button onClick={() => setModalOpen(false)}>Отмена</button>
-              <button onClick={saveChanges}>Сохранить</button>
+            <div className="modal-buttons">
+              <button onClick={() => setModalOpen(false)}>Cancel</button>
+              <button onClick={saveChanges}>Save</button>
             </div>
           </div>
         </div>
       )}
 
       {productModalOpen && (
-        <div className="hirer-modal">
-          <div className="hirer-modal-content">
-            <h3>{isEditing ? 'Редактировать продукт' : 'Добавить новый продукт'}</h3>
-            <div className="hirer-modal-field">
-              <label>Название</label>
+        <div className="modal">
+          <div className="modal-content">
+            <h3>{isEditing ? 'Edit Product' : 'Add New Product'}</h3>
+            <div className="modal-field">
+              <label>Title</label>
               <input
                 type="text"
                 name="title"
@@ -669,23 +537,23 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="hirer-modal-field">
-              <label>Направление</label>
+            <div className="modal-field">
+              <label>Direction</label>
               <select
                 name="direction"
                 value={tempProduct.direction}
                 onChange={handleProductInputChange}
                 required
               >
-                <option value="">Выберите направление</option>
+                <option value="">Select Direction</option>
                 <option value="3D">3D</option>
                 <option value="Моушн">Моушн</option>
                 <option value="Иллюстрация">Иллюстрация</option>
                 <option value="Другое">Другое</option>
               </select>
             </div>
-            <div className="hirer-modal-field">
-              <label>Описание</label>
+            <div className="modal-field">
+              <label>Description</label>
               <textarea
                 name="description"
                 value={tempProduct.description}
@@ -694,8 +562,8 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="hirer-modal-field">
-              <label>Дата начала</label>
+            <div className="modal-field">
+              <label>Start Date</label>
               <input
                 type="date"
                 name="startDate"
@@ -704,8 +572,8 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="hirer-modal-field">
-              <label>Дата окончания</label>
+            <div className="modal-field">
+              <label>End Date</label>
               <input
                 type="date"
                 name="endDate"
@@ -714,8 +582,8 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="hirer-modal-field">
-              <label>Стоимость</label>
+            <div className="modal-field">
+              <label>Price</label>
               <input
                 type="text"
                 name="price"
@@ -725,21 +593,21 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="hirer-modal-field">
-              <label>Статус</label>
+            <div className="modal-field">
+              <label>Status</label>
               <select
                 name="status"
                 value={tempProduct.status}
                 onChange={handleProductInputChange}
                 required
               >
-                <option value="Active">Активен</option>
-                <option value="Inactive">Неактивен</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
               </select>
             </div>
-            <div className="hirer-modal-buttons">
-              <button onClick={() => setProductModalOpen(false)}>Отмена</button>
-              <button onClick={saveProduct}>Сохранить</button>
+            <div className="modal-buttons">
+              <button onClick={() => setProductModalOpen(false)}>Cancel</button>
+              <button onClick={saveProduct}>Save</button>
             </div>
           </div>
         </div>

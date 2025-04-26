@@ -14,8 +14,8 @@ function ArtProfile() {
     nickname: '',
     email: '',
     artSkills: {
-      drawingLevel: 'Новичок',
-      preferredMedium: 'Карандаш',
+      drawingLevel: '',
+      preferredMedium: '',
       experienceYears: 0,
       portfolioLink: '',
       artDescription: ''
@@ -63,7 +63,7 @@ function ArtProfile() {
         .eq('user_id', userId)
         .single();
 
-      if (additionalError && additionalError.code !== 'PGRST116') {
+      if (additionalError) {
         console.error('Error fetching additional info:', additionalError);
         console.error('Error details:', additionalError.message, additionalError.details, additionalError.hint);
         setError('Ошибка загрузки дополнительных данных: ' + additionalError.message);
@@ -71,39 +71,17 @@ function ArtProfile() {
         return;
       }
 
-      let artSkills = {
-        drawingLevel: 'Новичок',
-        preferredMedium: 'Карандаш',
-        experienceYears: 0,
-        portfolioLink: '',
-        artDescription: ''
+      const artSkills = {
+        drawingLevel: additionalData.drawinglevel || '',
+        preferredMedium: additionalData.preferredmedium || '',
+        experienceYears: additionalData.experienceyears || 0,
+        portfolioLink: additionalData.portfoliolink || '',
+        artDescription: additionalData.artdescription || ''
       };
 
-      if (!additionalData) {
-        const { error: insertError } = await supabase
-          .from('additionalinfo')
-          .insert({ user_id: userId, ...artSkills });
-
-        if (insertError) {
-          console.error('Error creating additional info:', insertError);
-          console.error('Error details:', insertError.message, insertError.details, insertError.hint);
-          setError('Ошибка создания дополнительных данных: ' + insertError.message);
-          setLoading(false);
-          return;
-        }
-      } else {
-        artSkills = {
-          drawingLevel: additionalData.drawinglevel || 'Новичок',
-          preferredMedium: additionalData.preferredmedium || 'Карандаш',
-          experienceYears: additionalData.experienceyears || 0,
-          portfolioLink: additionalData.portfoliolink || '',
-          artDescription: additionalData.artdescription || ''
-        };
-      }
-
       const userState = {
-        nickname: userData.username || 'user_312',
-        email: userData.email || 'hacker@example.com',
+        nickname: userData.username || '',
+        email: userData.email || '',
         artSkills
       };
 
@@ -220,8 +198,8 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
   const [editedUser, setEditedUser] = useState({
     ...user,
     artSkills: user.artSkills || {
-      drawingLevel: 'Новичок',
-      preferredMedium: 'Карандаш',
+      drawingLevel: '',
+      preferredMedium: '',
       experienceYears: 0,
       portfolioLink: '',
       artDescription: ''
@@ -326,7 +304,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
               placeholder="Введите ваш никнейм"
             />
           ) : (
-            <span className="value">{user.nickname}</span>
+            <span className="value">{user.nickname || 'Не указано'}</span>
           )}
         </div>
 
@@ -341,7 +319,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
               className="email-input"
             />
           ) : (
-            <span className="value">{user.email}</span>
+            <span className="value">{user.email || 'Не указано'}</span>
           )}
         </div>
       </div>
@@ -362,7 +340,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
               <option value="Профессионал">Профессионал</option>
             </select>
           ) : (
-            <span className="value">{user.artSkills.drawingLevel}</span>
+            <span className="value">{user.artSkills.drawingLevel || 'Не указано'}</span>
           )}
         </div>
 
@@ -380,7 +358,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
               <option value="Цифровое искусство">Цифровое искусство</option>
             </select>
           ) : (
-            <span className="value">{user.artSkills.preferredMedium}</span>
+            <span className="value">{user.artSkills.preferredMedium || 'Не указано'}</span>
           )}
         </div>
 
@@ -395,7 +373,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
               min="0"
             />
           ) : (
-            <span className="value">{user.artSkills.experienceYears}</span>
+            <span className="value">{user.artSkills.experienceYears || 0}</span>
           )}
         </div>
 

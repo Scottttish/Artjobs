@@ -1,5 +1,4 @@
-/* Основной контейнер */
-.hirer-dashboard {
+.dashboard {
     width: 1200px;
     margin: 0 auto;
     display: flex;
@@ -12,7 +11,7 @@
 }
 
 /* Боковая панель */
-.hirer-sidebar {
+.sidebar {
     width: 300px;
     padding: 20px;
     background-color: #f5f5f5;
@@ -22,20 +21,20 @@
 }
 
 /* Основной контент */
-.hirer-main-content {
+.main-content {
     flex: 1;
     padding: 20px;
     box-sizing: border-box;
 }
 
 /* Стили для загрузки изображения */
-.hirer-image-upload {
+.image-upload {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
 }
 
-.hirer-upload-button {
+.upload-button {
     width: 50px;
     height: 50px;
     background-color: #0078d4;
@@ -48,28 +47,28 @@
     cursor: pointer;
 }
 
-.hirer-upload-button:hover {
+.upload-button:hover {
     background-color: #005fa3;
 }
 
 /* Стили для информации о пользователе */
-.hirer-user-info {
+.user-info {
     margin-bottom: 20px;
 }
 
-.hirer-user-info-item {
+.user-info-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
 }
 
-.hirer-user-info-item span {
+.user-info-item span {
     color: #333333;
     font-size: 14px;
 }
 
-.hirer-edit-button {
+.edit-button {
     background: none;
     border: none;
     cursor: pointer;
@@ -77,17 +76,17 @@
 }
 
 /* Стили для истории */
-.hirer-history {
+.history {
     margin-top: 20px;
 }
 
-.hirer-track-header {
+.track-header {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
 }
 
-.hirer-track-header input {
+.track-header input {
     flex: 1;
     padding: 8px 12px;
     border: 1px solid #d0d0d0;
@@ -95,7 +94,7 @@
     font-size: 0.9rem;
 }
 
-.hirer-track-header button {
+.track-header button {
     padding: 8px 12px;
     background: #0078d4;
     color: white;
@@ -104,38 +103,38 @@
     cursor: pointer;
 }
 
-.hirer-track-header button:hover {
+.track-header button:hover {
     background: #005fa3;
 }
 
-.hirer-history-header {
+.history-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
 }
 
-.hirer-history-header h3 {
+.history-header h3 {
     color: #000000;
     font-size: 1.2rem;
 }
 
-.hirer-delete-history {
+.delete-history {
     color: #d32f2f;
     cursor: pointer;
     font-size: 0.9rem;
 }
 
-.hirer-delete-history:hover {
+.delete-history:hover {
     color: #b71c1c;
 }
 
-.hirer-history-content {
+.history-content {
     max-height: 300px;
     overflow-y: auto;
 }
 
-.hirer-history-item {
+.history-item {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -143,75 +142,85 @@
     border-bottom: 1px solid #e0e0e0;
 }
 
-.hirer-history-icon {
+.history-icon {
     font-size: 20px;
 }
 
-.hirer-history-details {
+.history-details {
     flex: 1;
 }
 
-.hirer-history-details p {
+.history-details p {
     margin: 0;
     font-size: 0.9rem;
     color: #333333;
 }
 
-.hirer-history-details span {
+.history-details span {
     font-size: 0.8rem;
     color: #666666;
 }
 
-.hirer-status {
+.status {
     margin-left: 10px;
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.8rem;
 }
 
-.hirer-status.completed {
+.status.completed {
     background-color: #2e7d32;
     color: white;
 }
 
-.hirer-status.rejected {
+.status.rejected {
     background-color: #d32f2f;
     color: white;
 }
 
-.hirer-status.active {
+.status.delivered {
     background-color: #2e7d32;
     color: white;
 }
 
-.hirer-status.inactive {
+.status.transit {
+    background-color: #ff9800;
+    color: white;
+}
+
+.status.active {
+    background-color: #2e7d32;
+    color: white;
+}
+
+.status.inactive {
     background-color: #d32f2f;
     color: white;
 }
 
-.hirer-restore-button {
+.restore-button {
     background: none;
     border: none;
     cursor: pointer;
     font-size: 16px;
 }
 
-.hirer-no-history {
+.no-history {
     text-align: center;
     color: #666666;
     font-size: 0.9rem;
 }
 
 /* Фильтры */
-.hirer-filters {
+.filters {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
     flex-wrap: wrap;
 }
 
-.hirer-filters select,
-.hirer-filters button {
+.filters select,
+.filters button {
     padding: 8px 12px;
     border: 1px solid #d0d0d0;
     border-radius: 4px;
@@ -219,45 +228,45 @@
     cursor: pointer;
 }
 
-.hirer-filters button {
+.filters button {
     background: #0078d4;
     color: white;
     border: none;
 }
 
-.hirer-filters button:hover {
+.filters button:hover {
     background: #005fa3;
 }
 
-.hirer-filters button.disabled {
+.filters button.disabled {
     background: #cccccc;
     cursor: not-allowed;
 }
 
-.hirer-filters .rename {
+.filters .rename {
     background: #2e7d32;
 }
 
-.hirer-filters .rename:hover {
+.filters .rename:hover {
     background: #1b5e20;
 }
 
-.hirer-filters .delete {
+.filters .delete {
     background: #d32f2f;
 }
 
-.hirer-filters .delete:hover {
+.filters .delete:hover {
     background: #b71c1c;
 }
 
 /* Сетка продуктов */
-.hirer-product-grid {
+.product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
 }
 
-.hirer-product-card {
+.product-card {
     background: white;
     border-radius: 8px;
     padding: 15px;
@@ -268,7 +277,7 @@
     min-height: 300px;
 }
 
-.hirer-product-header {
+.product-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -276,12 +285,12 @@
     position: relative;
 }
 
-.hirer-product-title {
+.product-title {
     flex: 1;
     padding-right: 30px;
 }
 
-.hirer-product-title span {
+.product-title span {
     font-size: 1rem;
     color: #333333;
     word-wrap: break-word;
@@ -293,41 +302,41 @@
     text-overflow: ellipsis;
 }
 
-.hirer-product-checkbox {
+.product-checkbox {
     position: absolute;
     top: 50%;
     right: 0;
     transform: translateY(-50%);
 }
 
-.hirer-product-direction-section {
+.product-direction-section {
     display: flex;
     flex-direction: column;
     margin-bottom: 15px;
 }
 
-.hirer-product-direction-section span:first-child {
+.product-direction-section span:first-child {
     font-size: 0.9rem;
     color: #666666;
 }
 
-.hirer-product-direction-section span:last-child {
+.product-direction-section span:last-child {
     font-size: 0.9rem;
     color: #333333;
 }
 
-.hirer-product-description {
+.product-description {
     display: flex;
     flex-direction: column;
     margin-bottom: 15px;
 }
 
-.hirer-product-description span:first-child {
+.product-description span:first-child {
     font-size: 0.9rem;
     color: #666666;
 }
 
-.hirer-description {
+.description {
     font-size: 0.9rem;
     color: #333333;
     line-height: 1.4;
@@ -335,47 +344,47 @@
     overflow-wrap: break-word;
 }
 
-.hirer-product-footer {
+.product-footer {
     display: flex;
     justify-content: space-between;
     margin-top: auto;
 }
 
-.hirer-product-left,
-.hirer-product-right {
+.product-left,
+.product-right {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.hirer-product-info {
+.product-info {
     display: flex;
     flex-direction: column;
 }
 
-.hirer-product-info span:first-child {
+.product-info span:first-child {
     font-size: 0.9rem;
     color: #666666;
 }
 
-.hirer-product-info span:last-child {
+.product-info span:last-child {
     font-size: 0.9rem;
     color: #333333;
 }
 
-.hirer-duration {
+.duration {
     color: #0078d4;
     cursor: pointer;
 }
 
-.hirer-product-actions {
+.product-actions {
     display: flex;
     justify-content: space-between;
     margin-top: 10px;
 }
 
-.hirer-complete-button,
-.hirer-reject-button {
+.complete-button,
+.reject-button {
     flex: 1;
     padding: 8px;
     border: none;
@@ -384,26 +393,26 @@
     font-size: 0.9rem;
 }
 
-.hirer-complete-button {
+.complete-button {
     background: #2e7d32;
     color: white;
 }
 
-.hirer-complete-button:hover {
+.complete-button:hover {
     background: #1b5e20;
 }
 
-.hirer-reject-button {
+.reject-button {
     background: #d32f2f;
     color: white;
 }
 
-.hirer-reject-button:hover {
+.reject-button:hover {
     background: #b71c1c;
 }
 
 /* Модальное окно */
-.hirer-modal {
+.modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -416,7 +425,7 @@
     z-index: 1001;
 }
 
-.hirer-modal-content {
+.modal-content {
     background: white;
     padding: 20px;
     border-radius: 8px;
@@ -426,25 +435,25 @@
     overflow-y: auto;
 }
 
-.hirer-modal-content h3 {
+.modal-content h3 {
     margin-bottom: 20px;
     color: #000000;
 }
 
-.hirer-modal-field {
+.modal-field {
     margin-bottom: 15px;
 }
 
-.hirer-modal-field label {
+.modal-field label {
     display: block;
     margin-bottom: 5px;
     color: #666666;
     font-size: 0.9rem;
 }
 
-.hirer-modal-field input,
-.hirer-modal-field select,
-.hirer-modal-field textarea {
+.modal-field input,
+.modal-field select,
+.modal-field textarea {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #d0d0d0;
@@ -453,18 +462,18 @@
     box-sizing: border-box;
 }
 
-.hirer-modal-field textarea {
+.modal-field textarea {
     resize: vertical;
 }
 
-.hirer-modal-buttons {
+.modal-buttons {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
     margin-top: 20px;
 }
 
-.hirer-modal-buttons button {
+.modal-buttons button {
     padding: 10px 20px;
     border: none;
     border-radius: 4px;
@@ -472,29 +481,20 @@
     font-size: 0.9rem;
 }
 
-.hirer-modal-buttons button:first-child {
+.modal-buttons button:first-child {
     background: #d32f2f;
     color: white;
 }
 
-.hirer-modal-buttons button:first-child:hover {
+.modal-buttons button:first-child:hover {
     background: #b71c1c;
 }
 
-.hirer-modal-buttons button:last-child {
+.modal-buttons button:last-child {
     background: #2e7d32;
     color: white;
 }
 
-.hirer-modal-buttons button:last-child:hover {
+.modal-buttons button:last-child:hover {
     background: #1b5e20;
-}
-
-/* Стили для загрузки */
-.hirer-loading {
-    text-align: center;
-    padding: 20px;
-    color: #666666;
-    width: 1200px;
-    margin: 110px auto 20px;
 }

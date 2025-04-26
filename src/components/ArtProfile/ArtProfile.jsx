@@ -240,4 +240,4 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
   );
 };
 
-export default ArtistProfile;
+export default ArtProfile;

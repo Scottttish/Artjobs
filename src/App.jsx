@@ -1,81 +1,193 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import Header from './components/Header/Header';
-import HeroSection from './components/HeroSection/HeroSection';
-import NewsSection from './components/NewsSection/NewsSection';
-import ThreeDSection from './components/3DSection/3DSection';
-import Footer from './components/Footer/Footer';
-import ThreeDPage from './components/ThreeDPage/ThreeDPage';
-import MotionPage from './components/MotionPage/MotionPage';
-import IllustrationPage from './components/IllustrationPage/IllustrationPage';
-import InteriorPage from './components/InteriorPage/InteriorPage';
-import OtherPage from './components/OtherPage/OtherPage';
-import ArtProfile from './components/ArtProfile/ArtProfile';
-import HirerProfile from './components/HirerProfile/HirerProfile';
-import './App.css';
+import { useState, useEffect } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
+import './Header.css';
+import logo from '../../assets/logo.png';
+import icon from '../../assets/icon.png';
+import AuthModal from '../AuthModal/AuthModal';
 
-// Компонент для прокрутки к началу страницы
-function ScrollToTop() {
-  const { pathname } = useLocation();
+// Инициализация Supabase клиента
+const supabase = createClient(
+  'https://jvccejerkjfnkwtqumcd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
+);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    console.log('ScrollToTop triggered for pathname:', pathname);
-  }, [pathname]);
+function Header() {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    console.log('ScrollToTop triggered on mount');
-    console.log('Initial scroll position:', window.scrollY);
+    const checkSession = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session) {
+        setIsAuthenticated(true);
+        const { data, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', sessionData.session.user.id)
+          .single();
 
-    const handleScroll = () => {
-      console.log('Scroll position changed to:', window.scrollY);
+        if (error) {
+          console.error('Error fetching user role:', error);
+        } else {
+          console.log('User role fetched:', data.role);
+          setUserRole(data.role);
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUserRole(null);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
 
-    const focusedElement = document.activeElement;
-    console.log('Focused element on mount:', focusedElement);
+    checkSession();
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
+      setIsAuthenticated(!!session);
+      if (session) {
+        const { data, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching user role:', error);
+        } else {
+          console.log('User role fetched on auth change:', data.role);
+          setUserRole(data.role);
+        }
+      } else {
+        setUserRole(null);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  return null;
-}
+  const scrollToSection = (sectionId) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
-function App() {
-  console.log('App component rendered');
+  const handleHomeClick = (e) => {
+    e.preventDefault();
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => scrollToSection('home'), 100);
+    } else {
+      scrollToSection('home');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setIsAuthenticated(false);
+      setUserRole(null);
+      setShowDropdown(false);
+      alert('Вы успешно вышли из аккаунта!');
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('Ошибка при выходе из аккаунта.');
+    }
+  };
+
+  const handleSettings = () => {
+    console.log('Settings clicked, user role:', userRole);
+    if (userRole === 'artist') {
+      console.log('Navigating to /artprofile');
+      navigate('/artprofile');
+    } else if (userRole === 'hirer') {
+      console.log('Navigating to /hirerprofile');
+      navigate('/hirerprofile');
+    } else {
+      console.log('No role defined, navigating to /settings');
+      navigate('/settings');
+    }
+    setShowDropdown(false);
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
   return (
-    <Router basename="/Artjobs">
-      <div className="App">
-        <ScrollToTop />
-        <Header />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <HeroSection />
-                <NewsSection />
-                <ThreeDSection />
-              </>
-            }
-          />
-          <Route path="/3d" element={<ThreeDPage />} />
-          <Route path="/motion" element={<MotionPage />} />
-          <Route path="/illustration" element={<IllustrationPage />} />
-          <Route path="/interior" element={<InteriorPage />} />
-          <Route path="/other" element={<OtherPage />} />
-          <Route path="/artprofile" element={<ArtProfile />} />
-          <Route path="/hirerprofile" element={<HirerProfile />} />
-        </Routes>
-        <Footer />
-      </div>
-    </Router>
+    <>
+      <header className="Header">
+        <div className="Header-logo">
+          <img src={logo} alt="Logo" />
+        </div>
+        <nav className="Header-nav">
+          <a href="#home" onClick={handleHomeClick}>
+            Главная
+          </a>
+          <a
+            href="#contacts"
+            onClick={(e) => {
+              e.preventDefault();
+              scrollToSection('contacts');
+            }}
+          >
+            Контакты
+          </a>
+          <NavLink to="/3d" className={({ isActive }) => (isActive ? 'active' : '')}>
+            3D
+          </NavLink>
+          <NavLink to="/motion" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Моушн
+          </NavLink>
+          <NavLink to="/illustration" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Иллюстрация
+          </NavLink>
+          <NavLink to="/interior" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Интерьер
+          </NavLink>
+          <NavLink to="/other" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Другое
+          </NavLink>
+        </nav>
+        <div className="Header-auth">
+          {isAuthenticated ? (
+            <div className="user-menu">
+              <img
+                src={icon}
+                alt="User Icon"
+                className="user-icon"
+                onClick={toggleDropdown}
+                style={{ cursor: 'pointer', width: '40px', height: '40px', borderRadius: '50%' }}
+              />
+              {showDropdown && (
+                <div className="dropdown-menu">
+                  <button onClick={handleSettings}>Настройки</button>
+                  <button onClick={handleLogout}>Выйти</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <a
+              href="#login"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowAuthModal(true);
+              }}
+            >
+              Войти/Регистрация
+            </a>
+          )}
+        </div>
+      </header>
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+    </>
   );
 }
 
-export default App;
+export default Header;

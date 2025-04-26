@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useEffect } from 'react'; // Импортируем useEffect
-import { useLocation } from 'react-router-dom'; // Импортируем useLocation
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from './components/Header/Header';
 import HeroSection from './components/HeroSection/HeroSection';
 import NewsSection from './components/NewsSection/NewsSection';
@@ -18,8 +18,25 @@ function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    console.log('ScrollToTop triggered for pathname:', pathname);
   }, [pathname]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    console.log('ScrollToTop triggered on mount');
+
+    const handleScroll = () => {
+      console.log('Scroll position changed to:', window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll);
+
+    // Логируем элемент в фокусе
+    const focusedElement = document.activeElement;
+    console.log('Focused element on mount:', focusedElement);
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return null;
 }
@@ -28,7 +45,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <ScrollToTop /> {/* Добавляем ScrollToTop */}
+        <ScrollToTop />
         <Header />
         <Routes>
           <Route

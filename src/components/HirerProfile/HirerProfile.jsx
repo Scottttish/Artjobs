@@ -481,6 +481,9 @@ const HirerProfile = () => {
       },
       ...historyItems,
     ]);
+
+    // Удаляем продукт из состояния products, чтобы он исчез из интерфейса
+    setProducts(products.filter(p => p.id !== product.id));
   };
 
   const handleReject = async (product) => {
@@ -536,6 +539,9 @@ const HirerProfile = () => {
       },
       ...historyItems,
     ]);
+
+    // Удаляем продукт из состояния products, чтобы он исчез из интерфейса
+    setProducts(products.filter(p => p.id !== product.id));
   };
 
   const handleRestore = async (historyItem) => {
@@ -546,32 +552,7 @@ const HirerProfile = () => {
       return;
     }
 
-    const userId = sessionData.session.user.id;
-    const table = historyItem.table_name;
-
-    const currentDate = new Date();
-    const productData = {
-      user_id: userId,
-      title: historyItem.title,
-      category: table === 'three_d' ? '3D' : table === 'interior' ? 'Интерьер' : table === 'motion' ? 'Моушн' : table === 'illustration' ? 'Иллюстрация' : 'Другое',
-      description: 'Restored product',
-      published_at: currentDate.toISOString(),
-      start_date: new Date('2023-01-01').toISOString(),
-      end_date: new Date('2024-07-01').toISOString(),
-      price: '$19,000',
-      status: 'Active',
-    };
-
-    console.log('Restoring product to table:', table);
-    console.log('Product data:', productData);
-
-    const { data, error: insertError } = await supabase.from(table).insert(productData).select();
-    if (insertError) {
-      console.error('Error restoring product:', insertError);
-      alert('Ошибка при восстановлении объявления: ' + insertError.message);
-      return;
-    }
-
+    // Удаляем запись из истории
     console.log(`Deleting from history, id: ${historyItem.id}`);
     const { error: deleteError } = await supabase.from('history').delete().eq('id', historyItem.id);
     if (deleteError) {
@@ -580,21 +561,38 @@ const HirerProfile = () => {
       return;
     }
 
+    // Находим продукт в базе данных
+    const table = historyItem.table_name;
+    const { data: productData, error: fetchError } = await supabase
+      .from(table)
+      .select('id, title, category, description, published_at, start_date, end_date, price, status')
+      .eq('id', historyItem.publication_id)
+      .single();
+
+    if (fetchError || !productData) {
+      console.error('Error fetching product:', fetchError);
+      alert('Ошибка при восстановлении продукта: ' + (fetchError?.message || 'Продукт не найден'));
+      return;
+    }
+
+    // Добавляем продукт обратно в состояние products
     setProducts([...products, {
-      id: data[0].id,
-      title: historyItem.title,
+      id: productData.id,
+      title: productData.title,
       direction: productData.category,
-      description: 'Restored product',
-      date: currentDate.toLocaleDateString('en-GB', {
+      description: productData.description,
+      date: new Date(productData.published_at).toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
       }).toUpperCase(),
-      status: 'Active',
-      price: '$19,000',
-      duration: '600 days',
-      durationTooltip: '01 JAN 2023 - 01 JUL 2024',
+      status: productData.status,
+      price: productData.price,
+      duration: calculateDuration(productData.start_date, productData.end_date),
+      durationTooltip: `${new Date(productData.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} - ${new Date(productData.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`,
     }]);
+
+    // Удаляем запись из состояния historyItems
     setHistoryItems(historyItems.filter((item) => item.id !== historyItem.id));
   };
 
@@ -663,9 +661,14 @@ const HirerProfile = () => {
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Фильтруем продукты, исключая те, что есть в истории
+  const visibleProducts = products.filter(product =>
+    !historyItems.some(historyItem => historyItem.publication_id === product.id)
+  );
+
   const filteredProducts = selectedDirection === 'All Products'
-    ? products
-    : products.filter((product) => product.direction === selectedDirection);
+    ? visibleProducts
+    : visibleProducts.filter((product) => product.direction === selectedDirection);
 
   if (loading) {
     return <div className="loading">Загрузка...</div>;

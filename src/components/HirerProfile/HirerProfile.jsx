@@ -108,7 +108,7 @@ const HirerProfile = () => {
       }
 
       // Загрузка продуктов из всех таблиц
-      const tables = ['illustration', 'motion', 'other', 'three_d', 'interior']; // Добавили three_d
+      const tables = ['illustration', 'motion', 'other', 'three_d', 'interior'];
       let allProducts = [];
 
       for (const table of tables) {
@@ -135,7 +135,7 @@ const HirerProfile = () => {
             status: product.status,
             price: product.price,
             duration: calculateDuration(product.start_date, product.end_date),
-            durationTooltip: `${new Date(product.start_date).toLocaleDateString('en-GB')} - ${new Date(product.end_date).toLocaleDateString('en-GB')}`,
+            durationTooltip: `${new Date(product.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} - ${new Date(product.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`,
           }));
           allProducts = [...allProducts, ...mappedProducts];
         }
@@ -204,15 +204,22 @@ const HirerProfile = () => {
       const [startDate, endDate] = product.durationTooltip.split(' - ');
       const formatDate = (dateStr) => {
         try {
-          const [day, month, year] = dateStr.split('.');
-          const formatted = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          // Ожидаем формат "01 JAN 2023"
+          const [day, monthStr, year] = dateStr.trim().split(' ');
+          const monthNames = {
+            JAN: '01', FEB: '02', MAR: '03', APR: '04', MAY: '05', JUN: '06',
+            JUL: '07', AUG: '08', SEP: '09', OCT: '10', NOV: '11', DEC: '12'
+          };
+          const month = monthNames[monthStr.toUpperCase()];
+          if (!month) throw new Error('Invalid month');
+          const formatted = `${year}-${month}-${day}`;
           if (!isValidDateFormat(formatted)) {
             throw new Error('Invalid date format');
           }
           return formatted;
         } catch (err) {
           console.error('Error formatting date:', err);
-          alert('Ошибка: Неверный формат даты. Ожидается ДД.ММ.ГГГГ (например, 01.01.2023).');
+          alert('Ошибка: Неверный формат даты. Ожидается "01 JAN 2023".');
           return '';
         }
       };
@@ -276,8 +283,8 @@ const HirerProfile = () => {
 
     const userId = sessionData.session.user.id;
     const tableMap = {
-      '3D': 'three_d', // Исправлено: 3D теперь сохраняется в three_d
-      'Интерьер': 'interior', // Добавлено: Интерьер сохраняется в interior
+      '3D': 'three_d',
+      'Интерьер': 'interior',
       'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
@@ -330,7 +337,7 @@ const HirerProfile = () => {
           return;
         }
 
-        setEditingProductId(data[0].id); // Обновляем ID после вставки в новую таблицу
+        setEditingProductId(data[0].id);
       }
 
       setProducts(products.map((p) => (p.id === editingProductId ? {
@@ -346,7 +353,7 @@ const HirerProfile = () => {
         status,
         price,
         duration: calculateDuration(startDate, endDate),
-        durationTooltip: `${new Date(startDate).toLocaleDateString('en-GB')} - ${new Date(endDate).toLocaleDateString('en-GB')}`,
+        durationTooltip: `${new Date(startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} - ${new Date(endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`,
       } : p)));
     } else {
       const { data, error } = await supabase.from(table).insert(productData).select();
@@ -370,7 +377,7 @@ const HirerProfile = () => {
         status,
         price,
         duration: calculateDuration(startDate, endDate),
-        durationTooltip: `${new Date(startDate).toLocaleDateString('en-GB')} - ${new Date(endDate).toLocaleDateString('en-GB')}`,
+        durationTooltip: `${new Date(startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} - ${new Date(endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`,
       }]);
     }
 
@@ -440,7 +447,7 @@ const HirerProfile = () => {
     const currentDate = new Date();
     const historyData = {
       user_id: userId,
-      number: product.id, // Убедимся, что это строка, так как в базе ожидается UUID
+      number: product.id,
       title: product.title,
       date: currentDate.toISOString(),
       status: 'Completed',
@@ -501,7 +508,7 @@ const HirerProfile = () => {
     const currentDate = new Date();
     const historyData = {
       user_id: userId,
-      number: product.id, // Убедимся, что это строка, так как в базе ожидается UUID
+      number: product.id,
       title: product.title,
       date: currentDate.toISOString(),
       status: 'Rejected',
@@ -603,7 +610,7 @@ const HirerProfile = () => {
       status: 'Active',
       price: '$19,000',
       duration: '600 days',
-      durationTooltip: '01.01.2023 - 01.07.2024',
+      durationTooltip: '01 JAN 2023 - 01 JUL 2024',
     }]);
     setHistoryItems(historyItems.filter((item) => item.number !== historyItem.number));
   };
@@ -676,7 +683,7 @@ const HirerProfile = () => {
           </div>
           <div className="user-info-item">
             <span>Password: {userInfo.password}</span>
-            <button className="edit-button" onClick={openModal}>✏️</button>
+            <button className "edit-button" onClick={openModal}>✏️</button>
           </div>
         </div>
 
@@ -702,7 +709,7 @@ const HirerProfile = () => {
                   <div className="history-details">
                     <p>{item.title || item.number}</p>
                     <span>{item.date}</span>
-                    <span className={`status ${item.statusClass}`}>{item.status}</span>
+                    <span className={`status ${item.status.toLowerCase()}`}>{item.status}</span>
                   </div>
                   <button
                     className="restore-button"

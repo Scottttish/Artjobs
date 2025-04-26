@@ -62,21 +62,30 @@ function ThreeDPage() {
           // Расчёт дедлайна (разница между end_date и start_date в днях)
           const startDate = new Date(job.start_date);
           const endDate = new Date(job.end_date);
-          const deadlineDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+          
+          // Проверка на валидность дат
+          let deadlineDays = 'Не указано';
+          if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+            deadlineDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            deadlineDays = `${deadlineDays} дней`;
+          }
 
           // Форматирование даты публикации
-          const publishedDate = new Date(job.published_at).toLocaleDateString('ru-RU', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          });
+          const publishedDateObj = new Date(job.published_at);
+          const publishedDate = !isNaN(publishedDateObj.getTime())
+            ? publishedDateObj.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              })
+            : 'Не указано';
 
           return {
             ...job,
             company: userData.username || 'Неизвестный работодатель',
-            salary: `${job.price} ₸`,
+            salary: job.price ? `${job.price} ₸` : 'Не указано',
             publishedDate,
-            deadline: `${deadlineDays} дней`
+            deadline: deadlineDays
           };
         })
       );

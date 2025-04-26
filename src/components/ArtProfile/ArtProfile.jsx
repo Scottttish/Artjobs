@@ -106,20 +106,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
     <div className="profile-details-container">
       <div className="section">
         <h3>Основная информация</h3>
-        
-        <div className="detail-row">
-          <span className="label">Полное имя:</span>
-          {editMode ? (
-            <input
-              type="text"
-              name="fullName"
-              value={editedUser.fullName}
-              onChange={handleInputChange}
-            />
-          ) : (
-            <span className="value">{user.fullName}</span>
-          )}
-        </div>
+       
 
         <div className="detail-row">
           <span className="label">Никнейм:</span>

@@ -6,6 +6,7 @@ import mainImage from '../../assets/main.jpg';
 // Функция для создания задержки
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Создание клиента Supabase (лучше вынести в отдельный файл supabase.js)
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
@@ -22,6 +23,7 @@ function AuthModal({ onClose }) {
   const [isEmailValid, setIsEmailValid] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
   const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Защита от повторных отправок
 
   const handleEmailChange = (e) => {
     const value = e.target.value;
@@ -55,8 +57,7 @@ function AuthModal({ onClose }) {
 
   const handleRegister = async () => {
     try {
-      // Добавляем задержку перед запросом, чтобы избежать rate limit
-      await delay(1000); // Задержка 1 секунда
+      await delay(1000); // Задержка для предотвращения rate limit
 
       // Регистрация через Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -66,7 +67,9 @@ function AuthModal({ onClose }) {
 
       if (authError) {
         console.error('Auth error:', authError);
-        if (authError.status === 429) {
+        if (authError.message.includes('User already registered')) {
+          setError('Этот email уже зарегистрирован. Попробуйте войти или используйте другой email.');
+        } else if (authError.status === 429) {
           setError('Слишком много запросов. Пожалуйста, подождите несколько секунд и попробуйте снова.');
         } else {
           setError(authError.message || 'Ошибка регистрации');
@@ -94,7 +97,7 @@ function AuthModal({ onClose }) {
         throw new Error('No active session');
       }
 
-      // Сохранение дополнительных данных в таблицу users, без password
+      // Сохранение дополнительных данных в таблицу users
       const { error: dbError } = await supabase
         .from('users')
         .insert([{ id: authData.user.id, email, username, role: selectedRole }]);
@@ -108,8 +111,8 @@ function AuthModal({ onClose }) {
       alert('Регистрация успешна!');
       onClose();
     } catch (err) {
-      console.error('Registration error:', err || 'Unknown error');
-      setError('Ошибка регистрации: ' + (err?.message || 'Неизвестная ошибка'));
+      console.error('Registration error:', err);
+      // Ошибка уже установлена в блоках выше, поэтому здесь не нужно повторно вызывать setError
     }
   };
 
@@ -135,33 +138,39 @@ function AuthModal({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return; // Предотвращаем повторные отправки
+    setIsSubmitting(true);
     setError(null);
 
-    if (isEmailValid !== true) {
-      setError('Введите корректный email');
-      return;
-    }
+    try {
+      if (isEmailValid !== true) {
+        setError('Введите корректный email');
+        return;
+      }
 
-    if (!isLogin) {
-      if (!selectedRole) {
-        setError('Выберите роль');
-        return;
+      if (!isLogin) {
+        if (!selectedRole) {
+          setError('Выберите роль');
+          return;
+        }
+        if (!passwordMatch) {
+          setError('Пароли не совпадают');
+          return;
+        }
+        if (passwordStrength !== 4) {
+          setError('Пароль слишком слабый');
+          return;
+        }
+        if (!username) {
+          setError('Введите имя пользователя');
+          return;
+        }
+        await handleRegister();
+      } else {
+        await handleLogin();
       }
-      if (!passwordMatch) {
-        setError('Пароли не совпадают');
-        return;
-      }
-      if (passwordStrength !== 4) {
-        setError('Пароль слишком слабый');
-        return;
-      }
-      if (!username) {
-        setError('Введите имя пользователя');
-        return;
-      }
-      await handleRegister();
-    } else {
-      await handleLogin();
+    } finally {
+      setIsSubmitting(false); // Разблокируем кнопку после завершения
     }
   };
 
@@ -172,7 +181,7 @@ function AuthModal({ onClose }) {
         <div className="auth-block">
           <button className="auth-close-button" onClick={onClose}>×</button>
           <h2 className={`auth-h2 ${isLogin ? 'auth-h2-login' : 'auth-h2-register'}`}>
-            {isLogin ? 'Вход в аккаунт' : 'Создайте свой аккаунт'}
+            {isLogin ? 'Вход в Аккаунт' : 'Создайте Свой Аккаунт'}
           </h2>
           <p className={`auth-p ${isLogin ? 'auth-p-login' : 'auth-p-register'}`}>
             {isLogin ? 'Введите почту и пароль для входа' : 'Добро пожаловать. Пожалуйста, введите ваши данные'}
@@ -181,7 +190,11 @@ function AuthModal({ onClose }) {
           {error && <p className="auth-error" style={{ color: 'red' }}>{error}</p>}
 
           <button className="auth-google-button">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/480px-Google_%22G%22_logo.svg.png" alt="Google" className="google-icon" />
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/480px-Google_%22G%22_logo.svg.png"
+              alt="Google"
+              className="google-icon"
+            />
             Войти с помощью Google
           </button>
 
@@ -195,7 +208,9 @@ function AuthModal({ onClose }) {
                 className="auth-select"
                 required
               >
-                <option value="" disabled hidden>Выберите роль</option>
+                <option value="" disabled hidden>
+                  Выберите роль
+                </option>
                 <option value="artist">Художник</option>
                 <option value="hirer">Работодатель</option>
               </select>
@@ -274,13 +289,20 @@ function AuthModal({ onClose }) {
               <p className="checkbox-text">Я согласен с условиями и конфиденциальностью.</p>
             </label>
 
-            <button type="submit" className="auth-submit-button">
+            <button type="submit" className="auth-submit-button" disabled={isSubmitting}>
               {isLogin ? 'Войти' : 'Зарегистрироваться'}
             </button>
 
             <p className="login-link">
               {isLogin ? 'У вас нет аккаунта? ' : 'У вас уже есть аккаунт? '}
-              <a href="#" onClick={(e) => { e.preventDefault(); setIsLogin(!isLogin); }}>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsLogin(!isLogin);
+                  setError(null); // Очищаем ошибку при переключении
+                }}
+              >
                 {isLogin ? 'Зарегистрируйтесь' : 'Войти'}
               </a>
             </p>
@@ -293,11 +315,16 @@ function AuthModal({ onClose }) {
 
 const getProgressBarColor = (strength) => {
   switch (strength) {
-    case 1: return 'red';
-    case 2: return 'orange';
-    case 3: return 'yellowgreen';
-    case 4: return 'green';
-    default: return 'lightgray';
+    case 1:
+      return 'red';
+    case 2:
+      return 'orange';
+    case 3:
+      return 'yellowgreen';
+    case 4:
+      return 'green';
+    default:
+      return 'lightgray';
   }
 };
 

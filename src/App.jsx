@@ -1,193 +1,31 @@
-import { useState, useEffect } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
-import './Header.css';
-import logo from '../../assets/logo.png';
-import icon from '../../assets/icon.png';
-import AuthModal from '../AuthModal/AuthModal';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Header from './components/Header/Header';
+import HomePage from './components/HomePage'; // Главная страница
+import ArtProfile from './components/ArtProfile/ArtProfile';
+import HirerProfile from './components/HirerProfile/HirerProfile';
+import ThreeDPage from './components/ThreeDPage';
+import MotionPage from './components/MotionPage';
+import IllustrationPage from './components/IllustrationPage';
+import InteriorPage from './components/InteriorPage';
+import OtherPage from './components/OtherPage';
+import './App.css';
 
-// Инициализация Supabase клиента
-const supabase = createClient(
-  'https://jvccejerkjfnkwtqumcd.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
-);
-
-function Header() {
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [userRole, setUserRole] = useState(null);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session) {
-        setIsAuthenticated(true);
-        const { data, error } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', sessionData.session.user.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching user role:', error);
-        } else {
-          console.log('User role fetched:', data.role);
-          setUserRole(data.role);
-        }
-      } else {
-        setIsAuthenticated(false);
-        setUserRole(null);
-      }
-    };
-
-    checkSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event);
-      setIsAuthenticated(!!session);
-      if (session) {
-        const { data, error } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching user role:', error);
-        } else {
-          console.log('User role fetched on auth change:', data.role);
-          setUserRole(data.role);
-        }
-      } else {
-        setUserRole(null);
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, []);
-
-  const scrollToSection = (sectionId) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const handleHomeClick = (e) => {
-    e.preventDefault();
-    if (location.pathname !== '/') {
-      navigate('/');
-      setTimeout(() => scrollToSection('home'), 100);
-    } else {
-      scrollToSection('home');
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      setIsAuthenticated(false);
-      setUserRole(null);
-      setShowDropdown(false);
-      alert('Вы успешно вышли из аккаунта!');
-    } catch (error) {
-      console.error('Logout error:', error);
-      alert('Ошибка при выходе из аккаунта.');
-    }
-  };
-
-  const handleSettings = () => {
-    console.log('Settings clicked, user role:', userRole);
-    if (userRole === 'artist') {
-      console.log('Navigating to /artprofile');
-      navigate('/artprofile');
-    } else if (userRole === 'hirer') {
-      console.log('Navigating to /hirerprofile');
-      navigate('/hirerprofile');
-    } else {
-      console.log('No role defined, navigating to /settings');
-      navigate('/settings');
-    }
-    setShowDropdown(false);
-  };
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
-
+function App() {
   return (
-    <>
-      <header className="Header">
-        <div className="Header-logo">
-          <img src={logo} alt="Logo" />
-        </div>
-        <nav className="Header-nav">
-          <a href="#home" onClick={handleHomeClick}>
-            Главная
-          </a>
-          <a
-            href="#contacts"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection('contacts');
-            }}
-          >
-            Контакты
-          </a>
-          <NavLink to="/3d" className={({ isActive }) => (isActive ? 'active' : '')}>
-            3D
-          </NavLink>
-          <NavLink to="/motion" className={({ isActive }) => (isActive ? 'active' : '')}>
-            Моушн
-          </NavLink>
-          <NavLink to="/illustration" className={({ isActive }) => (isActive ? 'active' : '')}>
-            Иллюстрация
-          </NavLink>
-          <NavLink to="/interior" className={({ isActive }) => (isActive ? 'active' : '')}>
-            Интерьер
-          </NavLink>
-          <NavLink to="/other" className={({ isActive }) => (isActive ? 'active' : '')}>
-            Другое
-          </NavLink>
-        </nav>
-        <div className="Header-auth">
-          {isAuthenticated ? (
-            <div className="user-menu">
-              <img
-                src={icon}
-                alt="User Icon"
-                className="user-icon"
-                onClick={toggleDropdown}
-                style={{ cursor: 'pointer', width: '40px', height: '40px', borderRadius: '50%' }}
-              />
-              {showDropdown && (
-                <div className="dropdown-menu">
-                  <button onClick={handleSettings}>Настройки</button>
-                  <button onClick={handleLogout}>Выйти</button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <a
-              href="#login"
-              onClick={(e) => {
-                e.preventDefault();
-                setShowAuthModal(true);
-              }}
-            >
-              Войти/Регистрация
-            </a>
-          )}
-        </div>
-      </header>
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
-    </>
+    <Router>
+      <Header />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/artist-profile" element={<ArtProfile />} />
+        <Route path="/hirer-profile" element={<HirerProfile />} />
+        <Route path="/3d" element={<ThreeDPage />} />
+        <Route path="/motion" element={<MotionPage />} />
+        <Route path="/illustration" element={<IllustrationPage />} />
+        <Route path="/interior" element={<InteriorPage />} />
+        <Route path="/other" element={<OtherPage />} />
+      </Routes>
+    </Router>
   );
 }
 
-export default Header;
+export default App;

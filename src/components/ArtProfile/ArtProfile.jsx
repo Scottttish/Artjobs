@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import './Profile.css';
+import './ArtProfile.css';
 
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',

@@ -432,14 +432,14 @@ const HirerProfile = () => {
     : products.filter((product) => product.direction === selectedDirection);
 
   if (loading) {
-    return <div className="loading">Загрузка...</div>;
+    return <div className="hirer-loading">Загрузка...</div>;
   }
 
   return (
-    <div className="dashboard">
-      <div className="sidebar">
-        <div className="image-upload">
-          <label htmlFor="imageUpload" className="upload-button">
+    <div className="hirer-dashboard">
+      <div className="hirer-sidebar">
+        <div className="hirer-image-upload">
+          <label htmlFor="imageUpload" className="hirer-upload-button">
             +
           </label>
           <input
@@ -451,23 +451,23 @@ const HirerProfile = () => {
           />
         </div>
 
-        <div className="user-info">
-          <div className="user-info-item">
+        <div className="hirer-user-info">
+          <div className="hirer-user-info-item">
             <span>Nickname: {userInfo.nickname}</span>
-            <button className="edit-button" onClick={openModal}>✏️</button>
+            <button className="hirer-edit-button" onClick={openModal}>✏️</button>
           </div>
-          <div className="user-info-item">
+          <div className="hirer-user-info-item">
             <span>Email: {userInfo.email}</span>
-            <button className="edit-button" onClick={openModal}>✏️</button>
+            <button className="hirer-edit-button" onClick={openModal}>✏️</button>
           </div>
-          <div className="user-info-item">
+          <div className="hirer-user-info-item">
             <span>Password: {userInfo.password}</span>
-            <button className="edit-button" onClick={openModal}>✏️</button>
+            <button className="hirer-edit-button" onClick={openModal}>✏️</button>
           </div>
         </div>
 
-        <div className="history">
-          <div className="track-header">
+        <div className="hirer-history">
+          <div className="hirer-track-header">
             <input
               type="text"
               placeholder="Введите номер квитанции"
@@ -476,22 +476,22 @@ const HirerProfile = () => {
             />
             <button>Отследить</button>
           </div>
-          <div className="history-header">
+          <div className="hirer-history-header">
             <h3>История</h3>
-            <span onClick={handleDeleteHistory} className="delete-history">Очистить историю</span>
+            <span onClick={handleDeleteHistory} className="hirer-delete-history">Очистить историю</span>
           </div>
-          <div className="history-content">
+          <div className="hirer-history-content">
             {filteredHistoryItems.length > 0 ? (
               filteredHistoryItems.map((item, index) => (
-                <div key={index} className="history-item">
-                  <div className="history-icon">📦</div>
-                  <div className="history-details">
+                <div key={index} className="hirer-history-item">
+                  <div className="hirer-history-icon">📦</div>
+                  <div className="hirer-history-details">
                     <p>{item.title || item.number}</p>
                     <span>{item.date}</span>
-                    <span className={`status ${item.statusClass}`}>{item.status}</span>
+                    <span className={`hirer-status ${item.statusClass}`}>{item.status}</span>
                   </div>
                   <button
-                    className="restore-button"
+                    className="hirer-restore-button"
                     onClick={() => handleRestore(item)}
                   >
                     🔄
@@ -499,14 +499,14 @@ const HirerProfile = () => {
                 </div>
               ))
             ) : (
-              <div className="no-history">Объявлений нет в истории</div>
+              <div className="hirer-no-history">Объявлений нет в истории</div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="main-content">
-        <div className="filters">
+      <div className="hirer-main-content">
+        <div className="hirer-filters">
           <select
             value={selectedDirection}
             onChange={(e) => setSelectedDirection(e.target.value)}
@@ -539,61 +539,61 @@ const HirerProfile = () => {
             Удалить
           </button>
         </div>
-        <div className="product-grid">
+        <div className="hirer-product-grid">
           {filteredProducts.map((product, index) => (
-            <div key={index} className="product-card">
-              <div className="product-header">
-                <div className="product-title">
+            <div key={index} className="hirer-product-card">
+              <div className="hirer-product-header">
+                <div className="hirer-product-title">
                   <span>{product.title}</span>
                 </div>
                 <input
                   type="checkbox"
-                  className="product-checkbox"
+                  className="hirer-product-checkbox"
                   checked={selectedProducts.includes(product.id)}
                   onChange={() => handleCheckboxToggle(product.id)}
                 />
               </div>
-              <div className="product-direction-section">
+              <div className="hirer-product-direction-section">
                 <span>Направление</span>
                 <span>{product.direction}</span>
               </div>
-              <div className="product-description">
+              <div className="hirer-product-description">
                 <span>Описание</span>
-                <span className="description">{product.description}</span>
+                <span className="hirer-description">{product.description}</span>
               </div>
-              <div className="product-footer">
-                <div className="product-left">
-                  <div className="product-info">
+              <div className="hirer-product-footer">
+                <div className="hirer-product-left">
+                  <div className="hirer-product-info">
                     <span>Дата публикации</span>
                     <span>{product.date}</span>
                   </div>
-                  <div className="product-info">
+                  <div className="hirer-product-info">
                     <span>Стоимость</span>
                     <span>{product.price}</span>
                   </div>
                 </div>
-                <div className="product-right">
-                  <div className="product-info">
+                <div className="hirer-product-right">
+                  <div className="hirer-product-info">
                     <span>Срок</span>
-                    <span className="duration" title={product.durationTooltip}>
+                    <span className="hirer-duration" title={product.durationTooltip}>
                       {product.duration}
                     </span>
                   </div>
-                  <div className="product-info">
+                  <div className="hirer-product-info">
                     <span>Статус</span>
-                    <span className={`status ${product.status.toLowerCase()}`}>{product.status}</span>
+                    <span className={`hirer-status ${product.status.toLowerCase()}`}>{product.status}</span>
                   </div>
                 </div>
               </div>
-              <div className="product-actions">
+              <div className="hirer-product-actions">
                 <button
-                  className="complete-button"
+                  className="hirer-complete-button"
                   onClick={() => handleComplete(product)}
                 >
                   Завершить
                 </button>
                 <button
-                  className="reject-button"
+                  className="hirer-reject-button"
                   onClick={() => handleReject(product)}
                 >
                   Отклонить
@@ -605,10 +605,10 @@ const HirerProfile = () => {
       </div>
 
       {modalOpen && (
-        <div className="modal">
-          <div className="modal-content">
+        <div className="hirer-modal">
+          <div className="hirer-modal-content">
             <h3>Редактировать информацию</h3>
-            <div className="modal-field">
+            <div className="hirer-modal-field">
               <label>Никнейм</label>
               <input
                 type="text"
@@ -618,7 +618,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="modal-field">
+            <div className="hirer-modal-field">
               <label>Email</label>
               <input
                 type="email"
@@ -628,7 +628,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="modal-field">
+            <div className="hirer-modal-field">
               <label>Пароль</label>
               <input
                 type="password"
@@ -638,7 +638,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="modal-buttons">
+            <div className="hirer-modal-buttons">
               <button onClick={() => setModalOpen(false)}>Отмена</button>
               <button onClick={saveChanges}>Сохранить</button>
             </div>
@@ -647,10 +647,10 @@ const HirerProfile = () => {
       )}
 
       {productModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
+        <div className="hirer-modal">
+          <div className="hirer-modal-content">
             <h3>{isEditing ? 'Редактировать продукт' : 'Добавить новый продукт'}</h3>
-            <div className="modal-field">
+            <div className="hirer-modal-field">
               <label>Название</label>
               <input
                 type="text"
@@ -660,7 +660,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="modal-field">
+            <div className="hirer-modal-field">
               <label>Направление</label>
               <select
                 name="direction"
@@ -675,7 +675,7 @@ const HirerProfile = () => {
                 <option value="Другое">Другое</option>
               </select>
             </div>
-            <div className="modal-field">
+            <div className="hirer-modal-field">
               <label>Описание</label>
               <textarea
                 name="description"
@@ -685,7 +685,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="modal-field">
+            <div className="hirer-modal-field">
               <label>Дата начала</label>
               <input
                 type="date"
@@ -695,7 +695,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="modal-field">
+            <div className="hirer-modal-field">
               <label>Дата окончания</label>
               <input
                 type="date"
@@ -705,7 +705,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="modal-field">
+            <div className="hirer-modal-field">
               <label>Стоимость</label>
               <input
                 type="text"
@@ -716,7 +716,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="modal-field">
+            <div className="hirer-modal-field">
               <label>Статус</label>
               <select
                 name="status"
@@ -728,7 +728,7 @@ const HirerProfile = () => {
                 <option value="Inactive">Неактивен</option>
               </select>
             </div>
-            <div className="modal-buttons">
+            <div className="hirer-modal-buttons">
               <button onClick={() => setProductModalOpen(false)}>Отмена</button>
               <button onClick={saveProduct}>Сохранить</button>
             </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import './3DPage.css';
 
-// Инициализация Supabase клиента с новым ключом
+// Инициализация Supabase клиента
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
@@ -21,7 +21,7 @@ function ThreeDPage() {
       // Загрузка вакансий из таблицы three_d
       const { data: jobData, error: jobError } = await supabase
         .from('three_d')
-        .select('id, user_id, title, description, published_at, started_date, end_date, price, status, category')
+        .select('id, user_id, title, description, published_at, start_date, end_date, price, status, category')
         .eq('category', '3D');
 
       if (jobError) {
@@ -59,8 +59,8 @@ function ThreeDPage() {
             return { ...job, company: 'Неизвестный работодатель' };
           }
 
-          // Расчёт дедлайна (разница между end_date и started_date в днях)
-          const startDate = new Date(job.started_date);
+          // Расчёт дедлайна (разница между end_date и start_date в днях)
+          const startDate = new Date(job.start_date);
           const endDate = new Date(job.end_date);
           const deadlineDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
 

@@ -17,6 +17,7 @@ const HirerProfile = () => {
     password: '',
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [tempUserInfo, setTempUserInfo] = useState({ ...userInfo });
   const [productModalOpen, setProductModalOpen] = useState(false);
@@ -39,11 +40,13 @@ const HirerProfile = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
 
       // Получение сессии пользователя
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData.session) {
         console.error('Session error:', sessionError);
+        setError('Пожалуйста, войдите в систему.');
         setLoading(false);
         return;
       }
@@ -59,6 +62,7 @@ const HirerProfile = () => {
 
       if (userError) {
         console.error('Error fetching user data:', userError);
+        setError('Ошибка загрузки данных пользователя.');
       } else {
         setUserInfo({
           nickname: userData.username || 'User123',
@@ -80,6 +84,7 @@ const HirerProfile = () => {
 
       if (historyError) {
         console.error('Error fetching history:', historyError);
+        setError('Ошибка загрузки истории.');
       } else {
         setHistoryItems(historyData.map(item => ({
           number: item.number,
@@ -95,7 +100,7 @@ const HirerProfile = () => {
       }
 
       // Загрузка продуктов из всех таблиц
-      const tables = ['illustration', 'moation', 'other', 'interior'];
+      const tables = ['illustration', 'motion', 'other', 'interior'];
       let allProducts = [];
 
       for (const table of tables) {
@@ -106,6 +111,7 @@ const HirerProfile = () => {
 
         if (error) {
           console.error(`Error fetching from ${table}:`, error);
+          setError(`Ошибка загрузки данных из таблицы ${table}.`);
         } else {
           const mappedProducts = data.map(product => ({
             id: product.id,
@@ -154,6 +160,7 @@ const HirerProfile = () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       console.error('No session found');
+      alert('Пожалуйста, войдите в систему.');
       return;
     }
 
@@ -232,20 +239,20 @@ const HirerProfile = () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       console.error('No session found');
+      alert('Пожалуйста, войдите в систему.');
       return;
     }
 
     const userId = sessionData.session.user.id;
     const tableMap = {
       '3D': 'interior',
-      'Моушн': 'moation',
+      'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
     };
     const table = tableMap[direction] || 'other';
 
     const currentDate = new Date();
-    const duration = calculateDuration(startDate, endDate);
     const productData = {
       user_id: userId,
       title,
@@ -277,12 +284,17 @@ const HirerProfile = () => {
         }
       } else {
         // Удаляем из старой таблицы и добавляем в новую
-        await supabase.from(oldTable).delete().eq('id', editingProductId);
-        const { error } = await supabase.from(table).insert(productData);
+        const { error: deleteError } = await supabase.from(oldTable).delete().eq('id', editingProductId);
+        if (deleteError) {
+          console.error('Error deleting product from old table:', deleteError);
+          alert('Ошибка при удалении старого объявления.');
+          return;
+        }
 
-        if (error) {
-          console.error('Error moving product:', error);
-          alert('Ошибка при перемещении объявления.');
+        const { error: insertError } = await supabase.from(table).insert(productData);
+        if (insertError) {
+          console.error('Error inserting product into new table:', insertError);
+          alert('Ошибка при создании нового объявления.');
           return;
         }
       }
@@ -299,7 +311,7 @@ const HirerProfile = () => {
         }).toUpperCase(),
         status,
         price,
-        duration,
+        duration: calculateDuration(startDate, endDate),
         durationTooltip: `${new Date(startDate).toLocaleDateString('en-GB')} - ${new Date(endDate).toLocaleDateString('en-GB')}`,
       } : p)));
     } else {
@@ -307,7 +319,7 @@ const HirerProfile = () => {
 
       if (error) {
         console.error('Error creating product:', error);
-        alert('Ошибка при создании объявления.');
+        alert('Ошибка при создании объявления: ' + error.message);
         return;
       }
 
@@ -323,7 +335,7 @@ const HirerProfile = () => {
         }).toUpperCase(),
         status,
         price,
-        duration,
+        duration: calculateDuration(startDate, endDate),
         durationTooltip: `${new Date(startDate).toLocaleDateString('en-GB')} - ${new Date(endDate).toLocaleDateString('en-GB')}`,
       }]);
     }
@@ -343,7 +355,7 @@ const HirerProfile = () => {
   const handleDelete = async () => {
     const tableMap = {
       '3D': 'interior',
-      'Моушн': 'moation',
+      'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
     };
@@ -375,13 +387,14 @@ const HirerProfile = () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       console.error('No session found');
+      alert('Пожалуйста, войдите в систему.');
       return;
     }
 
     const userId = sessionData.session.user.id;
     const tableMap = {
       '3D': 'interior',
-      'Моушн': 'moation',
+      'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
     };
@@ -399,7 +412,7 @@ const HirerProfile = () => {
     const { error: insertError } = await supabase.from('history').insert(historyData);
     if (insertError) {
       console.error('Error adding to history:', insertError);
-      alert('Ошибка при добавлении в историю.');
+      alert('Ошибка при добавлении в историю: ' + insertError.message);
       return;
     }
 
@@ -431,13 +444,14 @@ const HirerProfile = () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       console.error('No session found');
+      alert('Пожалуйста, войдите в систему.');
       return;
     }
 
     const userId = sessionData.session.user.id;
     const tableMap = {
       '3D': 'interior',
-      'Моушн': 'moation',
+      'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
     };
@@ -455,7 +469,7 @@ const HirerProfile = () => {
     const { error: insertError } = await supabase.from('history').insert(historyData);
     if (insertError) {
       console.error('Error adding to history:', insertError);
-      alert('Ошибка при добавлении в историю.');
+      alert('Ошибка при добавлении в историю: ' + insertError.message);
       return;
     }
 
@@ -487,13 +501,14 @@ const HirerProfile = () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       console.error('No session found');
+      alert('Пожалуйста, войдите в систему.');
       return;
     }
 
     const userId = sessionData.session.user.id;
     const tableMap = {
       '3D': 'interior',
-      'Моушн': 'moation',
+      'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
     };
@@ -548,6 +563,7 @@ const HirerProfile = () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       console.error('No session found');
+      alert('Пожалуйста, войдите в систему.');
       return;
     }
 
@@ -577,6 +593,10 @@ const HirerProfile = () => {
 
   if (loading) {
     return <div className="loading">Загрузка...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
   }
 
   return (
@@ -860,7 +880,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className="modal-field">
+            <div className "modal-field">
               <label>Status</label>
               <select
                 name="status"

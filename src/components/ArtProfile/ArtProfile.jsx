@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './Profile.css';
+import './ArtProfile.css';
 
 function App() {
   const [currentTime, setCurrentTime] = useState(new Date());

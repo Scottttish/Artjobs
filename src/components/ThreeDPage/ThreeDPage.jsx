@@ -21,14 +21,28 @@ function ThreeDPage() {
       // Загрузка вакансий из таблицы three_d
       const { data: jobData, error: jobError } = await supabase
         .from('three_d')
-        .select('id, user_id, title, description, published_at, start_date, end_date, price, status')
+        .select('id, user_id, title, description, published_at, started_date, end_date, price, status, category')
         .eq('category', '3D');
 
       if (jobError) {
-        console.error('Error fetching jobs:', jobError);
+        console.error('Error fetching jobs from three_d:', jobError);
         setError('Ошибка загрузки вакансий: ' + jobError.message);
         setLoading(false);
         return;
+      }
+
+      console.log('Fetched jobs from three_d:', jobData);
+
+      // Если данных нет, проверяем, какие категории существуют
+      if (jobData.length === 0) {
+        const { data: allCategories, error: categoryError } = await supabase
+          .from('three_d')
+          .select('category');
+        if (categoryError) {
+          console.error('Error fetching categories:', categoryError);
+        } else {
+          console.log('Available categories in three_d:', [...new Set(allCategories.map(job => job.category))]);
+        }
       }
 
       // Для каждой вакансии получаем никнейм работодателя
@@ -41,12 +55,12 @@ function ThreeDPage() {
             .single();
 
           if (userError) {
-            console.error('Error fetching user data:', userError);
+            console.error('Error fetching user data for user_id', job.user_id, ':', userError);
             return { ...job, company: 'Неизвестный работодатель' };
           }
 
-          // Расчёт дедлайна (разница между end_date и start_date в днях)
-          const startDate = new Date(job.start_date);
+          // Расчёт дедлайна (разница между end_date и started_date в днях)
+          const startDate = new Date(job.started_date);
           const endDate = new Date(job.end_date);
           const deadlineDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
 

@@ -62,14 +62,13 @@ function ArtProfile() {
         .eq('user_id', userId)
         .single();
 
-      if (additionalError && additionalError.code !== 'PGRST116') { // PGRST116 означает, что запись не найдена
+      if (additionalError && additionalError.code !== 'PGRST116') {
         console.error('Error fetching additional info:', additionalError);
         setError('Ошибка загрузки дополнительных данных: ' + additionalError.message);
         setLoading(false);
         return;
       }
 
-      // Если записи нет, создаем новую
       let artSkills = {
         drawingLevel: 'Новичок',
         preferredMedium: 'Карандаш',
@@ -99,16 +98,70 @@ function ArtProfile() {
         };
       }
 
-      setUser({
+      const userState = {
         nickname: userData.username || 'user_312',
         email: userData.email || 'hacker@example.com',
         artSkills
-      });
+      };
 
+      setUser(userState);
       setLoading(false);
     };
 
     fetchUserData();
+
+    // Подписка на изменения в таблице users
+    const userSubscription = supabase
+      .channel('users-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'users',
+          filter: `id=eq.${supabase.auth.getSession().then(({ data }) => data.session?.user.id})`
+        },
+        (payload) => {
+          setUser(prev => ({
+            ...prev,
+            nickname: payload.new.username || prev.nickname,
+            email: payload.new.email || prev.email
+          }));
+        }
+      )
+      .subscribe();
+
+    // Подписка на изменения в таблице additionalInfo
+    const additionalInfoSubscription = supabase
+      .channel('additionalInfo-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'additionalInfo',
+          filter: `user_id=eq.${supabase.auth.getSession().then(({ data }) => data.session?.user.id})`
+        },
+        (payload) => {
+          setUser(prev => ({
+            ...prev,
+            artSkills: {
+              drawingLevel: payload.new.drawingLevel || prev.artSkills.drawingLevel,
+              preferredMedium: payload.new.preferredMedium || prev.artSkills.preferredMedium,
+              experienceYears: payload.new.experienceYears || prev.artSkills.experienceYears,
+              portfolioLink: payload.new.portfolioLink || prev.artSkills.portfolioLink,
+              artDescription: payload.new.artDescription || prev.artSkills.artDescription
+            }
+          }));
+        }
+      )
+      .subscribe();
+
+    // Очистка подписок при размонтировании компонента
+    return () => {
+      supabase.removeChannel(userSubscription);
+      supabase.removeChannel(additionalInfoSubscription);
+    };
   }, []);
 
   useEffect(() => {

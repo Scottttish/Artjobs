@@ -1,19 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import './ArtProfile.css';
-
-// Инициализация Supabase клиента
-const supabase = createClient(
-  'https://jvccejerkjfnkwtqumcd.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
-);
 
 function ArtProfile() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [user, setUser] = useState({
-    fullName: '',
-    nickname: '',
-    email: '',
+    fullName: 'Иван Иванов',
+    nickname: 'user_312',
+    email: 'hacker@example.com',
     artSkills: {
       drawingLevel: 'Новичок',
       preferredMedium: 'Карандаш',
@@ -22,78 +15,16 @@ function ArtProfile() {
       artDescription: ''
     }
   });
-  const [loading, setLoading] = useState(true);
 
-  // Загрузка данных пользователя из Supabase
   useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData.session) {
-        console.error('Session error:', sessionError);
-        setLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('users')
-        .select('fullName, nickname, email, artSkills')
-        .eq('id', sessionData.session.user.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user data:', error);
-      } else {
-        setUser({
-          fullName: data.fullName || 'Иван Иванов',
-          nickname: data.nickname || 'user_312',
-          email: data.email || 'hacker@example.com',
-          artSkills: data.artSkills || {
-            drawingLevel: 'Новичок',
-            preferredMedium: 'Карандаш',
-            experienceYears: 0,
-            portfolioLink: '',
-            artDescription: ''
-          }
-        });
-      }
-      setLoading(false);
-    };
-
-    fetchUserData();
-
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const handleSaveProfile = async (updatedUser) => {
-    setLoading(true);
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      console.error('No session found');
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await supabase
-      .from('users')
-      .update({
-        fullName: updatedUser.fullName,
-        nickname: updatedUser.nickname,
-        email: updatedUser.email,
-        artSkills: updatedUser.artSkills
-      })
-      .eq('id', sessionData.session.user.id);
-
-    if (error) {
-      console.error('Error saving user data:', error);
-      alert('Ошибка при сохранении профиля.');
-    } else {
-      setUser(updatedUser);
-      alert('Профиль успешно сохранен!');
-    }
-    setLoading(false);
+  const handleSaveProfile = (updatedUser) => {
+    setUser(updatedUser);
   };
 
   const formatTime = (date) => {
@@ -107,10 +38,6 @@ function ArtProfile() {
       second: '2-digit'
     });
   };
-
-  if (loading) {
-    return <div className="loading">Загрузка...</div>;
-  }
 
   return (
     <div className="app-container">
@@ -179,21 +106,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
     <div className="profile-details-container">
       <div className="section">
         <h3>Основная информация</h3>
-        <div className="detail-row">
-          <span className="label">Полное имя:</span>
-          {editMode ? (
-            <input
-              type="text"
-              name="fullName"
-              value={editedUser.fullName}
-              onChange={handleInputChange}
-              placeholder="Введите ваше имя"
-            />
-          ) : (
-            <span className="value">{user.fullName}</span>
-          )}
-        </div>
-
+        
         <div className="detail-row">
           <span className="label">Никнейм:</span>
           {editMode ? (

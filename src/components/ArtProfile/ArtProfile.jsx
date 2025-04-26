@@ -106,62 +106,62 @@ function ArtProfile() {
 
       setUser(userState);
       setLoading(false);
+
+      // Подписка на изменения в таблице users
+      const userSubscription = supabase
+        .channel('users-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'users',
+            filter: `id=eq.${userId}`
+          },
+          (payload) => {
+            setUser(prev => ({
+              ...prev,
+              nickname: payload.new.username || prev.nickname,
+              email: payload.new.email || prev.email
+            }));
+          }
+        )
+        .subscribe();
+
+      // Подписка на изменения в таблице additionalInfo
+      const additionalInfoSubscription = supabase
+        .channel('additionalInfo-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'additionalInfo',
+            filter: `user_id=eq.${userId}`
+          },
+          (payload) => {
+            setUser(prev => ({
+              ...prev,
+              artSkills: {
+                drawingLevel: payload.new.drawingLevel || prev.artSkills.drawingLevel,
+                preferredMedium: payload.new.preferredMedium || prev.artSkills.preferredMedium,
+                experienceYears: payload.new.experienceYears || prev.artSkills.experienceYears,
+                portfolioLink: payload.new.portfolioLink || prev.artSkills.portfolioLink,
+                artDescription: payload.new.artDescription || prev.artSkills.artDescription
+              }
+            }));
+          }
+        )
+        .subscribe();
+
+      // Очистка подписок при размонтировании компонента
+      return () => {
+        supabase.removeChannel(userSubscription);
+        supabase.removeChannel(additionalInfoSubscription);
+      };
     };
 
     fetchUserData();
-
-    // Подписка на изменения в таблице users
-    const userSubscription = supabase
-      .channel('users-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'users',
-          filter: `id=eq.${supabase.auth.getSession().then(({ data }) => data.session?.user.id})`
-        },
-        (payload) => {
-          setUser(prev => ({
-            ...prev,
-            nickname: payload.new.username || prev.nickname,
-            email: payload.new.email || prev.email
-          }));
-        }
-      )
-      .subscribe();
-
-    // Подписка на изменения в таблице additionalInfo
-    const additionalInfoSubscription = supabase
-      .channel('additionalInfo-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'additionalInfo',
-          filter: `user_id=eq.${supabase.auth.getSession().then(({ data }) => data.session?.user.id})`
-        },
-        (payload) => {
-          setUser(prev => ({
-            ...prev,
-            artSkills: {
-              drawingLevel: payload.new.drawingLevel || prev.artSkills.drawingLevel,
-              preferredMedium: payload.new.preferredMedium || prev.artSkills.preferredMedium,
-              experienceYears: payload.new.experienceYears || prev.artSkills.experienceYears,
-              portfolioLink: payload.new.portfolioLink || prev.artSkills.portfolioLink,
-              artDescription: payload.new.artDescription || prev.artSkills.artDescription
-            }
-          }));
-        }
-      )
-      .subscribe();
-
-    // Очистка подписок при размонтировании компонента
-    return () => {
-      supabase.removeChannel(userSubscription);
-      supabase.removeChannel(additionalInfoSubscription);
-    };
   }, []);
 
   useEffect(() => {
@@ -390,6 +390,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
               min="0"
             />
           ) : (
+            <span className="value">{user.art0
             <span className="value">{user.artSkills.experienceYears}</span>
           )}
         </div>

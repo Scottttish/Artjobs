@@ -390,7 +390,6 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
               min="0"
             />
           ) : (
-            <span className="value">{user.art0
             <span className="value">{user.artSkills.experienceYears}</span>
           )}
         </div>

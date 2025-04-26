@@ -1,69 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import './ArtProfile.css';
+import './Profile.css';
 
-const supabase = createClient(
-  'https://jvccejerkjfnkwtqumcd.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
-);
-
-function ArtistProfile() {
+function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({
+    fullName: 'Иван Иванов',
+    nickname: 'user_312',
+    email: 'hacker@example.com',
+    artSkills: {
+      drawingLevel: 'Новичок',
+      preferredMedium: 'Карандаш',
+      experienceYears: 0,
+      portfolioLink: '',
+      artDescription: ''
+    }
+  });
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session) {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', sessionData.session.user.id)
-          .single();
-        if (error) {
-          console.error('Ошибка получения данных:', error);
-        } else {
-          setUser({
-            fullName: data.username, // Используем username как fullName
-            nickname: data.username,
-            email: data.email,
-            artSkills: {
-              drawingLevel: 'Новичок', // Эти данные пока статические, можно добавить в БД
-              preferredMedium: 'Карандаш',
-              experienceYears: 0,
-              portfolioLink: '',
-              artDescription: ''
-            }
-          });
-        }
-      }
-    };
-
-    fetchUserData();
-
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const handleSaveProfile = async (updatedUser) => {
+  const handleSaveProfile = (updatedUser) => {
     setUser(updatedUser);
-    // Сохраняем изменения в базе данных
-    const { error } = await supabase
-      .from('users')
-      .update({
-        username: updatedUser.nickname,
-        email: updatedUser.email,
-      })
-      .eq('id', (await supabase.auth.getSession()).data.session.user.id);
-
-    if (error) {
-      console.error('Ошибка сохранения данных:', error);
-      alert('Ошибка при сохранении данных');
-    } else {
-      alert('Данные успешно сохранены!');
-    }
   };
 
   const formatTime = (date) => {
@@ -77,8 +38,6 @@ function ArtistProfile() {
       second: '2-digit'
     });
   };
-
-  if (!user) return <div>Загрузка...</div>;
 
   return (
     <div className="app-container">
@@ -148,6 +107,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
       <div className="section">
         <h3>Основная информация</h3>
        
+
         <div className="detail-row">
           <span className="label">Никнейм:</span>
           {editMode ? (

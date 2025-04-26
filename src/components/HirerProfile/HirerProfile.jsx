@@ -87,7 +87,7 @@ const HirerProfile = () => {
       // Загрузка истории
       const { data: historyData, error: historyError } = await supabase
         .from('history')
-        .select('id, number, title, date, status')
+        .select('id, publication_id, table_name, title, date, status')
         .eq('user_id', userId);
 
       if (historyError) {
@@ -95,7 +95,9 @@ const HirerProfile = () => {
         setError('Ошибка загрузки истории: ' + historyError.message);
       } else {
         setHistoryItems(historyData.map(item => ({
-          number: item.number,
+          id: item.id,
+          publication_id: item.publication_id,
+          table_name: item.table_name,
           title: item.title,
           date: new Date(item.date).toLocaleDateString('en-GB', {
             day: '2-digit',
@@ -447,7 +449,8 @@ const HirerProfile = () => {
     const currentDate = new Date();
     const historyData = {
       user_id: userId,
-      number: product.id,
+      publication_id: product.id,
+      table_name: table,
       title: product.title,
       date: currentDate.toISOString(),
       status: 'Completed',
@@ -462,17 +465,11 @@ const HirerProfile = () => {
       return;
     }
 
-    console.log(`Deleting product from table: ${table}, id: ${product.id}`);
-    const { error: deleteError } = await supabase.from(table).delete().eq('id', product.id);
-    if (deleteError) {
-      console.error('Error deleting product:', deleteError);
-      alert('Ошибка при удалении объявления: ' + deleteError.message);
-      return;
-    }
-
     setHistoryItems([
       {
-        number: product.id,
+        id: product.id,
+        publication_id: product.id,
+        table_name: table,
         title: product.title,
         date: currentDate.toLocaleDateString('en-GB', {
           day: '2-digit',
@@ -484,7 +481,6 @@ const HirerProfile = () => {
       },
       ...historyItems,
     ]);
-    setProducts(products.filter((p) => p.id !== product.id));
   };
 
   const handleReject = async (product) => {
@@ -508,7 +504,8 @@ const HirerProfile = () => {
     const currentDate = new Date();
     const historyData = {
       user_id: userId,
-      number: product.id,
+      publication_id: product.id,
+      table_name: table,
       title: product.title,
       date: currentDate.toISOString(),
       status: 'Rejected',
@@ -523,17 +520,11 @@ const HirerProfile = () => {
       return;
     }
 
-    console.log(`Deleting product from table: ${table}, id: ${product.id}`);
-    const { error: deleteError } = await supabase.from(table).delete().eq('id', product.id);
-    if (deleteError) {
-      console.error('Error deleting product:', deleteError);
-      alert('Ошибка при удалении объявления: ' + deleteError.message);
-      return;
-    }
-
     setHistoryItems([
       {
-        number: product.id,
+        id: product.id,
+        publication_id: product.id,
+        table_name: table,
         title: product.title,
         date: currentDate.toLocaleDateString('en-GB', {
           day: '2-digit',
@@ -545,7 +536,6 @@ const HirerProfile = () => {
       },
       ...historyItems,
     ]);
-    setProducts(products.filter((p) => p.id !== product.id));
   };
 
   const handleRestore = async (historyItem) => {
@@ -557,20 +547,13 @@ const HirerProfile = () => {
     }
 
     const userId = sessionData.session.user.id;
-    const tableMap = {
-      '3D': 'three_d',
-      'Интерьер': 'interior',
-      'Моушн': 'motion',
-      'Иллюстрация': 'illustration',
-      'Другое': 'other',
-    };
-    const table = 'other';
+    const table = historyItem.table_name;
 
     const currentDate = new Date();
     const productData = {
       user_id: userId,
       title: historyItem.title,
-      category: 'Другое',
+      category: table === 'three_d' ? '3D' : table === 'interior' ? 'Интерьер' : table === 'motion' ? 'Моушн' : table === 'illustration' ? 'Иллюстрация' : 'Другое',
       description: 'Restored product',
       published_at: currentDate.toISOString(),
       start_date: new Date('2023-01-01').toISOString(),
@@ -589,8 +572,8 @@ const HirerProfile = () => {
       return;
     }
 
-    console.log(`Deleting from history, number: ${historyItem.number}`);
-    const { error: deleteError } = await supabase.from('history').delete().eq('number', historyItem.number);
+    console.log(`Deleting from history, id: ${historyItem.id}`);
+    const { error: deleteError } = await supabase.from('history').delete().eq('id', historyItem.id);
     if (deleteError) {
       console.error('Error deleting from history:', deleteError);
       alert('Ошибка при удалении из истории: ' + deleteError.message);
@@ -600,7 +583,7 @@ const HirerProfile = () => {
     setProducts([...products, {
       id: data[0].id,
       title: historyItem.title,
-      direction: 'Другое',
+      direction: productData.category,
       description: 'Restored product',
       date: currentDate.toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -612,7 +595,7 @@ const HirerProfile = () => {
       duration: '600 days',
       durationTooltip: '01 JAN 2023 - 01 JUL 2024',
     }]);
-    setHistoryItems(historyItems.filter((item) => item.number !== historyItem.number));
+    setHistoryItems(historyItems.filter((item) => item.id !== historyItem.id));
   };
 
   const handleDeleteHistory = async () => {
@@ -624,15 +607,51 @@ const HirerProfile = () => {
     }
 
     const userId = sessionData.session.user.id;
-    console.log(`Deleting history for user_id: ${userId}`);
-    const { error } = await supabase.from('history').delete().eq('user_id', userId);
 
-    if (error) {
-      console.error('Error deleting history:', error);
-      alert('Ошибка при удалении истории: ' + error.message);
+    // Получаем все записи истории для текущего пользователя
+    const { data: historyData, error: fetchError } = await supabase
+      .from('history')
+      .select('publication_id, table_name')
+      .eq('user_id', userId);
+
+    if (fetchError) {
+      console.error('Error fetching history:', fetchError);
+      alert('Ошибка при получении истории: ' + fetchError.message);
       return;
     }
 
+    // Удаляем продукты из соответствующих таблиц
+    for (const item of historyData) {
+      const { publication_id, table_name } = item;
+      console.log(`Deleting product from table: ${table_name}, id: ${publication_id}`);
+      const { error: deleteProductError } = await supabase
+        .from(table_name)
+        .delete()
+        .eq('id', publication_id);
+
+      if (deleteProductError) {
+        console.error(`Error deleting product from ${table_name}:`, deleteProductError);
+        alert(`Ошибка при удалении продукта из таблицы ${table_name}: ${deleteProductError.message}`);
+        return;
+      }
+    }
+
+    // Удаляем записи из истории
+    console.log(`Deleting history for user_id: ${userId}`);
+    const { error: deleteHistoryError } = await supabase
+      .from('history')
+      .delete()
+      .eq('user_id', userId);
+
+    if (deleteHistoryError) {
+      console.error('Error deleting history:', deleteHistoryError);
+      alert('Ошибка при удалении истории: ' + deleteHistoryError.message);
+      return;
+    }
+
+    // Обновляем состояние: удаляем продукты, которые были в истории
+    const publicationIdsToDelete = historyData.map(item => item.publication_id);
+    setProducts(products.filter(product => !publicationIdsToDelete.includes(product.id)));
     setHistoryItems([]);
   };
 
@@ -707,7 +726,7 @@ const HirerProfile = () => {
                 <div key={index} className="history-item">
                   <div className="history-icon">📦</div>
                   <div className="history-details">
-                    <p>{item.title || item.number}</p>
+                    <p>{item.title || item.publication_id}</p>
                     <span>{item.date}</span>
                     <span className={`status ${item.status.toLowerCase()}`}>{item.status}</span>
                   </div>

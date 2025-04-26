@@ -11,7 +11,7 @@ import MotionPage from './components/MotionPage/MotionPage';
 import IllustrationPage from './components/IllustrationPage/IllustrationPage';
 import InteriorPage from './components/InteriorPage/InteriorPage';
 import OtherPage from './components/OtherPage/OtherPage';
-import ArtistProfile from './components/ArtProfile/ArtProfile'; // Импортируем ArtistProfile
+import ArtProfile from './components/ArtProfile/ArtProfile'; // Импортируем ArtistProfile
 import HirerProfile from './components/HirerProfile/HirerProfile'; // Импортируем HirerProfile
 import './App.css';
 

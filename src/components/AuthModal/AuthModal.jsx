@@ -6,7 +6,7 @@ import mainImage from '../../assets/main.jpg';
 // Функция для создания задержки
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Создание клиента Supabase (лучше вынести в отдельный файл supabase.js)
+// Создание клиента Supabase (рекомендуется вынести в supabase.js)
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
@@ -23,7 +23,7 @@ function AuthModal({ onClose }) {
   const [isEmailValid, setIsEmailValid] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
   const [error, setError] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Защита от повторных отправок
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleEmailChange = (e) => {
     const value = e.target.value;
@@ -55,9 +55,36 @@ function AuthModal({ onClose }) {
     return strength;
   };
 
+  const checkUserExistsInUsersTable = async (email) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking user in users table:', error);
+        throw error;
+      }
+
+      return !!data; // Возвращает true, если пользователь найден, false, если нет
+    } catch (err) {
+      console.error('Error checking user existence:', err);
+      return false;
+    }
+  };
+
   const handleRegister = async () => {
     try {
       await delay(1000); // Задержка для предотвращения rate limit
+
+      // Проверка, существует ли пользователь в таблице users
+      const userExistsInUsersTable = await checkUserExistsInUsersTable(email);
+      if (userExistsInUsersTable) {
+        setError('Этот email уже зарегистрирован. Попробуйте войти.');
+        return;
+      }
 
       // Регистрация через Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -68,7 +95,8 @@ function AuthModal({ onClose }) {
       if (authError) {
         console.error('Auth error:', authError);
         if (authError.message.includes('User already registered')) {
-          setError('Этот email уже зарегистрирован. Попробуйте войти или используйте другой email.');
+          setError('Этот email уже зарегистрирован в системе. Попробуйте войти или используйте другой email.');
+          setIsLogin(true); // Переключаем на форму входа
         } else if (authError.status === 429) {
           setError('Слишком много запросов. Пожалуйста, подождите несколько секунд и попробуйте снова.');
         } else {
@@ -97,10 +125,10 @@ function AuthModal({ onClose }) {
         throw new Error('No active session');
       }
 
-      // Сохранение дополнительных данных в таблицу users
+      // Сохранение данных в таблицу users, включая пароль
       const { error: dbError } = await supabase
         .from('users')
-        .insert([{ id: authData.user.id, email, username, role: selectedRole }]);
+        .insert([{ id: authData.user.id, email, username, role: selectedRole, password }]);
 
       if (dbError) {
         console.error('Database error:', dbError);
@@ -112,7 +140,7 @@ function AuthModal({ onClose }) {
       onClose();
     } catch (err) {
       console.error('Registration error:', err);
-      // Ошибка уже установлена в блоках выше, поэтому здесь не нужно повторно вызывать setError
+      // Ошибка уже установлена в соответствующих блоках
     }
   };
 
@@ -138,7 +166,7 @@ function AuthModal({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return; // Предотвращаем повторные отправки
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setError(null);
 
@@ -157,6 +185,10 @@ function AuthModal({ onClose }) {
           setError('Пароли не совпадают');
           return;
         }
+        if (password.length < 6) {
+          setError('Пароль должен содержать не менее 6 символов');
+          return;
+        }
         if (passwordStrength !== 4) {
           setError('Пароль слишком слабый');
           return;
@@ -170,7 +202,7 @@ function AuthModal({ onClose }) {
         await handleLogin();
       }
     } finally {
-      setIsSubmitting(false); // Разблокируем кнопку после завершения
+      setIsSubmitting(false);
     }
   };
 
@@ -300,7 +332,7 @@ function AuthModal({ onClose }) {
                 onClick={(e) => {
                   e.preventDefault();
                   setIsLogin(!isLogin);
-                  setError(null); // Очищаем ошибку при переключении
+                  setError(null);
                 }}
               >
                 {isLogin ? 'Зарегистрируйтесь' : 'Войти'}

@@ -3,9 +3,10 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import './Header.css';
 import logo from '../../assets/logo.png';
-import icon from '../../assets/icon.png';
+import icon from '../../assets/icon.png'; // Импортируем иконку
 import AuthModal from '../AuthModal/AuthModal';
 
+// Инициализация Supabase клиента
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
@@ -14,53 +15,29 @@ const supabase = createClient(
 function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [userRole, setUserRole] = useState(null); // Для хранения роли пользователя
+  const [showDropdown, setShowDropdown] = useState(false); // Для выпадающего меню
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Проверка статуса авторизации при загрузке компонента
   useEffect(() => {
     const checkSession = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session) {
-        setIsAuthenticated(true);
-        // Получаем роль пользователя из таблицы users
-        const { data: userData, error } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', sessionData.session.user.id)
-          .single();
-        if (!error && userData) {
-          setUserRole(userData.role);
-        }
-      } else {
-        setIsAuthenticated(false);
-        setUserRole(null);
-      }
+      setIsAuthenticated(!!sessionData.session);
     };
 
     checkSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        setIsAuthenticated(true);
-        const { data: userData } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        setUserRole(userData?.role || null);
-        navigate('/'); // Перенаправляем на главную после входа
-      } else {
-        setIsAuthenticated(false);
-        setUserRole(null);
-      }
+    // Подписка на изменения состояния авторизации
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
     });
 
+    // Очистка подписки при размонтировании компонента
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
 
   const scrollToSection = (sectionId) => {
     const section = document.getElementById(sectionId);
@@ -83,10 +60,8 @@ function Header() {
     try {
       await supabase.auth.signOut();
       setIsAuthenticated(false);
-      setUserRole(null);
-      setShowDropdown(false);
+      setShowDropdown(false); // Закрываем меню после выхода
       alert('Вы успешно вышли из аккаунта!');
-      navigate('/'); // Перенаправляем на главную после выхода
     } catch (error) {
       console.error('Logout error:', error);
       alert('Ошибка при выходе из аккаунта.');
@@ -94,12 +69,8 @@ function Header() {
   };
 
   const handleSettings = () => {
-    // Перенаправляем в личный кабинет в зависимости от роли
-    if (userRole === 'artist') {
-      navigate('/artist-profile');
-    } else if (userRole === 'hirer') {
-      navigate('/hirer-profile');
-    }
+    // Здесь можно добавить переход на страницу настроек
+    navigate('/settings');
     setShowDropdown(false);
   };
 
@@ -150,7 +121,7 @@ function Header() {
                 alt="User Icon"
                 className="user-icon"
                 onClick={toggleDropdown}
-                style={{ cursor: 'pointer', width: '40px', height: '40px' }}
+                style={{ cursor: 'pointer', width: '40px', height: '40px' }} // Настраиваем размер иконки
               />
               {showDropdown && (
                 <div className="dropdown-menu">

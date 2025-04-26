@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import './Header.css';
 import logo from '../../assets/logo.png';
-import icon from '../../assets/icon.png'; // Импортируем иконку
+import icon from '../../assets/icon.png';
 import AuthModal from '../AuthModal/AuthModal';
 
 // Инициализация Supabase клиента
@@ -15,22 +15,56 @@ const supabase = createClient(
 function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false); // Для выпадающего меню
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [userRole, setUserRole] = useState(null); // Состояние для роли пользователя
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Проверка статуса авторизации при загрузке компонента
+  // Проверка статуса авторизации и получение роли пользователя
   useEffect(() => {
     const checkSession = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
-      setIsAuthenticated(!!sessionData.session);
+      if (sessionData.session) {
+        setIsAuthenticated(true);
+        // Получаем данные пользователя из таблицы users
+        const { data: userData, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', sessionData.session.user.id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching user role:', error);
+        } else {
+          setUserRole(userData.role); // Устанавливаем роль
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUserRole(null);
+      }
     };
 
     checkSession();
 
     // Подписка на изменения состояния авторизации
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       setIsAuthenticated(!!session);
+      if (session) {
+        // Получаем роль пользователя при изменении состояния авторизации
+        const { data: userData, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching user role:', error);
+        } else {
+          setUserRole(userData.role);
+        }
+      } else {
+        setUserRole(null);
+      }
     });
 
     // Очистка подписки при размонтировании компонента
@@ -60,7 +94,8 @@ function Header() {
     try {
       await supabase.auth.signOut();
       setIsAuthenticated(false);
-      setShowDropdown(false); // Закрываем меню после выхода
+      setUserRole(null); // Сбрасываем роль
+      setShowDropdown(false);
       alert('Вы успешно вышли из аккаунта!');
     } catch (error) {
       console.error('Logout error:', error);
@@ -69,8 +104,17 @@ function Header() {
   };
 
   const handleSettings = () => {
-    // Здесь можно добавить переход на страницу настроек
     navigate('/settings');
+    setShowDropdown(false);
+  };
+
+  const handleProfileClick = () => {
+    // Перенаправление в зависимости от роли
+    if (userRole === 'artist') {
+      navigate('/artprofile');
+    } else if (userRole === 'hirer') {
+      navigate('/hirerprofile');
+    }
     setShowDropdown(false);
   };
 
@@ -121,10 +165,11 @@ function Header() {
                 alt="User Icon"
                 className="user-icon"
                 onClick={toggleDropdown}
-                style={{ cursor: 'pointer', width: '40px', height: '40px' }} // Настраиваем размер иконки
+                style={{ cursor: 'pointer', width: '40px', height: '40px' }}
               />
               {showDropdown && (
                 <div className="dropdown-menu">
+                  <button onClick={handleProfileClick}>Профиль</button>
                   <button onClick={handleSettings}>Настройки</button>
                   <button onClick={handleLogout}>Выйти</button>
                 </div>

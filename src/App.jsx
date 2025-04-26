@@ -11,7 +11,6 @@ import MotionPage from './components/MotionPage/MotionPage';
 import IllustrationPage from './components/IllustrationPage/IllustrationPage';
 import InteriorPage from './components/InteriorPage/InteriorPage';
 import OtherPage from './components/OtherPage/OtherPage';
-import NotFoundPage from './components/NotFoundPage/NotFoundPage';
 import './App.css';
 
 // Компонент для прокрутки к началу страницы
@@ -69,7 +68,6 @@ function App() {
           <Route path="/illustration" element={<IllustrationPage />} />
           <Route path="/interior" element={<InteriorPage />} />
           <Route path="/other" element={<OtherPage />} />
-          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         <Footer />
       </div>

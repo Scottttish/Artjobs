@@ -108,10 +108,11 @@ const HirerProfile = () => {
       }
 
       // Загрузка продуктов из всех таблиц
-      const tables = ['illustration', 'motion', 'other', 'interior'];
+      const tables = ['illustration', 'motion', 'other', 'three_d', 'interior']; // Добавили three_d
       let allProducts = [];
 
       for (const table of tables) {
+        console.log(`Fetching products from table: ${table}`);
         const { data, error } = await supabase
           .from(table)
           .select('id, title, category, description, published_at, start_date, end_date, price, status')
@@ -275,7 +276,8 @@ const HirerProfile = () => {
 
     const userId = sessionData.session.user.id;
     const tableMap = {
-      '3D': 'interior',
+      '3D': 'three_d', // Исправлено: 3D теперь сохраняется в three_d
+      'Интерьер': 'interior', // Добавлено: Интерьер сохраняется в interior
       'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
@@ -328,7 +330,7 @@ const HirerProfile = () => {
           return;
         }
 
-        editingProductId = data[0].id; // Обновляем ID после вставки в новую таблицу
+        setEditingProductId(data[0].id); // Обновляем ID после вставки в новую таблицу
       }
 
       setProducts(products.map((p) => (p.id === editingProductId ? {
@@ -386,7 +388,8 @@ const HirerProfile = () => {
 
   const handleDelete = async () => {
     const tableMap = {
-      '3D': 'interior',
+      '3D': 'three_d',
+      'Интерьер': 'interior',
       'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
@@ -395,6 +398,7 @@ const HirerProfile = () => {
     for (const productId of selectedProducts) {
       const product = products.find(p => p.id === productId);
       const table = tableMap[product.direction] || 'other';
+      console.log(`Deleting product from table: ${table}, id: ${productId}`);
       const { error } = await supabase.from(table).delete().eq('id', productId);
 
       if (error) {
@@ -425,7 +429,8 @@ const HirerProfile = () => {
 
     const userId = sessionData.session.user.id;
     const tableMap = {
-      '3D': 'interior',
+      '3D': 'three_d',
+      'Интерьер': 'interior',
       'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
@@ -435,7 +440,7 @@ const HirerProfile = () => {
     const currentDate = new Date();
     const historyData = {
       user_id: userId,
-      number: product.id,
+      number: product.id, // Убедимся, что это строка, так как в базе ожидается UUID
       title: product.title,
       date: currentDate.toISOString(),
       status: 'Completed',
@@ -450,6 +455,7 @@ const HirerProfile = () => {
       return;
     }
 
+    console.log(`Deleting product from table: ${table}, id: ${product.id}`);
     const { error: deleteError } = await supabase.from(table).delete().eq('id', product.id);
     if (deleteError) {
       console.error('Error deleting product:', deleteError);
@@ -484,7 +490,8 @@ const HirerProfile = () => {
 
     const userId = sessionData.session.user.id;
     const tableMap = {
-      '3D': 'interior',
+      '3D': 'three_d',
+      'Интерьер': 'interior',
       'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
@@ -494,7 +501,7 @@ const HirerProfile = () => {
     const currentDate = new Date();
     const historyData = {
       user_id: userId,
-      number: product.id,
+      number: product.id, // Убедимся, что это строка, так как в базе ожидается UUID
       title: product.title,
       date: currentDate.toISOString(),
       status: 'Rejected',
@@ -509,6 +516,7 @@ const HirerProfile = () => {
       return;
     }
 
+    console.log(`Deleting product from table: ${table}, id: ${product.id}`);
     const { error: deleteError } = await supabase.from(table).delete().eq('id', product.id);
     if (deleteError) {
       console.error('Error deleting product:', deleteError);
@@ -543,7 +551,8 @@ const HirerProfile = () => {
 
     const userId = sessionData.session.user.id;
     const tableMap = {
-      '3D': 'interior',
+      '3D': 'three_d',
+      'Интерьер': 'interior',
       'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
@@ -573,6 +582,7 @@ const HirerProfile = () => {
       return;
     }
 
+    console.log(`Deleting from history, number: ${historyItem.number}`);
     const { error: deleteError } = await supabase.from('history').delete().eq('number', historyItem.number);
     if (deleteError) {
       console.error('Error deleting from history:', deleteError);
@@ -607,6 +617,7 @@ const HirerProfile = () => {
     }
 
     const userId = sessionData.session.user.id;
+    console.log(`Deleting history for user_id: ${userId}`);
     const { error } = await supabase.from('history').delete().eq('user_id', userId);
 
     if (error) {
@@ -716,6 +727,7 @@ const HirerProfile = () => {
           >
             <option>All Products</option>
             <option>3D</option>
+            <option>Интерьер</option>
             <option>Моушн</option>
             <option>Иллюстрация</option>
             <option>Другое</option>
@@ -873,6 +885,7 @@ const HirerProfile = () => {
               >
                 <option value="">Select Direction</option>
                 <option value="3D">3D</option>
+                <option value="Интерьер">Интерьер</option>
                 <option value="Моушн">Моушн</option>
                 <option value="Иллюстрация">Иллюстрация</option>
                 <option value="Другое">Другое</option>

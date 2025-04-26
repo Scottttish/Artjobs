@@ -68,28 +68,26 @@ function ArtProfile() {
       const { data: additionalData, error: additionalError } = await supabase
         .from('additionalinfo')
         .select('drawinglevel, preferredmedium, experienceyears, portfoliolink, artdescription')
-        .eq('user_id', userId)
-        .single();
+        .eq('user_id', userId);
 
       if (additionalError) {
-        if (additionalError.code === 'PGRST116') {
-          // Если записи нет, оставляем artSkills пустым (как в начальном состоянии)
-          console.log('No additional info found for user, using empty values.');
-        } else {
-          console.error('Error fetching additional info:', additionalError);
-          console.error('Error details:', additionalError.message, additionalError.details, additionalError.hint);
-          setError('Ошибка загрузки дополнительных данных: ' + additionalError.message);
-          setLoading(false);
-          return;
-        }
-      } else {
+        console.error('Error fetching additional info:', additionalError);
+        console.error('Error details:', additionalError.message, additionalError.details, additionalError.hint);
+        setError('Ошибка загрузки дополнительных данных: ' + additionalError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (additionalData && additionalData.length > 0) {
         artSkills = {
-          drawingLevel: additionalData.drawinglevel || '',
-          preferredMedium: additionalData.preferredmedium || '',
-          experienceYears: additionalData.experienceyears || 0,
-          portfolioLink: additionalData.portfoliolink || '',
-          artDescription: additionalData.artdescription || ''
+          drawingLevel: additionalData[0].drawinglevel || '',
+          preferredMedium: additionalData[0].preferredmedium || '',
+          experienceYears: additionalData[0].experienceyears || 0,
+          portfolioLink: additionalData[0].portfoliolink || '',
+          artDescription: additionalData[0].artdescription || ''
         };
+      } else {
+        console.log('No additional info found for user, using empty values.');
       }
 
       const userState = {
@@ -279,8 +277,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
     const { data: existingData, error: fetchError } = await supabase
       .from('additionalinfo')
       .select('user_id')
-      .eq('user_id', userId)
-      .single();
+      .eq('user_id', userId);
 
     const updatedAdditionalData = {
       drawinglevel: editedUser.artSkills.drawingLevel,
@@ -291,7 +288,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
     };
 
     let additionalError;
-    if (!existingData && !fetchError) {
+    if (!existingData || existingData.length === 0) {
       // Если записи нет, создаем новую
       const { error: insertError } = await supabase
         .from('additionalinfo')

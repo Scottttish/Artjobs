@@ -1,12 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import './ArtProfile.css';
+
+// Инициализация Supabase клиента
+const supabase = createClient(
+  'https://jvccejerkjfnkwtqumcd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
+);
 
 function ArtProfile() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [user, setUser] = useState({
-    fullName: 'Иван Иванов',
-    nickname: 'user_312',
-    email: 'hacker@example.com',
+    nickname: '',
+    email: '',
     artSkills: {
       drawingLevel: 'Новичок',
       preferredMedium: 'Карандаш',
@@ -15,6 +21,95 @@ function ArtProfile() {
       artDescription: ''
     }
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Загрузка данных пользователя при монтировании компонента
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setLoading(true);
+      setError(null);
+
+      // Получение сессии пользователя
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        console.error('Session error:', sessionError);
+        setError('Пожалуйста, войдите в систему.');
+        setLoading(false);
+        return;
+      }
+
+      const userId = sessionData.session.user.id;
+
+      // Загрузка данных пользователя из таблицы users
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('username, email')
+        .eq('id', userId)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+        setError('Ошибка загрузки данных пользователя: ' + userError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Загрузка дополнительных данных из таблицы additionalInfo
+      const { data: additionalData, error: additionalError } = await supabase
+        .from('additionalInfo')
+        .select('drawingLevel, preferredMedium, experienceYears, portfolioLink, artDescription')
+        .eq('user_id', userId)
+        .single();
+
+      if (additionalError && additionalError.code !== 'PGRST116') { // PGRST116 означает, что запись не найдена
+        console.error('Error fetching additional info:', additionalError);
+        setError('Ошибка загрузки дополнительных данных: ' + additionalError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Если записи нет, создаем новую
+      let artSkills = {
+        drawingLevel: 'Новичок',
+        preferredMedium: 'Карандаш',
+        experienceYears: 0,
+        portfolioLink: '',
+        artDescription: ''
+      };
+
+      if (!additionalData) {
+        const { error: insertError } = await supabase
+          .from('additionalInfo')
+          .insert({ user_id: userId, ...artSkills });
+
+        if (insertError) {
+          console.error('Error creating additional info:', insertError);
+          setError('Ошибка создания дополнительных данных: ' + insertError.message);
+          setLoading(false);
+          return;
+        }
+      } else {
+        artSkills = {
+          drawingLevel: additionalData.drawingLevel || 'Новичок',
+          preferredMedium: additionalData.preferredMedium || 'Карандаш',
+          experienceYears: additionalData.experienceYears || 0,
+          portfolioLink: additionalData.portfolioLink || '',
+          artDescription: additionalData.artDescription || ''
+        };
+      }
+
+      setUser({
+        nickname: userData.username || 'user_312',
+        email: userData.email || 'hacker@example.com',
+        artSkills
+      });
+
+      setLoading(false);
+    };
+
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -38,6 +133,14 @@ function ArtProfile() {
       second: '2-digit'
     });
   };
+
+  if (loading) {
+    return <div className="loading">Загрузка...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
 
   return (
     <div className="app-container">
@@ -97,8 +200,55 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
     }
   }, [editMode]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      console.error('No session found');
+      alert('Пожалуйста, войдите в систему.');
+      return;
+    }
+
+    const userId = sessionData.session.user.id;
+
+    // Обновление основной информации пользователя в таблице users
+    const updatedUserData = {
+      username: editedUser.nickname,
+      email: editedUser.email
+    };
+
+    const { error: userError } = await supabase
+      .from('users')
+      .update(updatedUserData)
+      .eq('id', userId);
+
+    if (userError) {
+      console.error('Error updating user info:', userError);
+      alert('Ошибка при сохранении данных пользователя: ' + userError.message);
+      return;
+    }
+
+    // Обновление дополнительных данных в таблице additionalInfo
+    const updatedAdditionalData = {
+      drawingLevel: editedUser.artSkills.drawingLevel,
+      preferredMedium: editedUser.artSkills.preferredMedium,
+      experienceYears: Number(editedUser.artSkills.experienceYears),
+      portfolioLink: editedUser.artSkills.portfolioLink,
+      artDescription: editedUser.artSkills.artDescription
+    };
+
+    const { error: additionalError } = await supabase
+      .from('additionalInfo')
+      .update(updatedAdditionalData)
+      .eq('user_id', userId);
+
+    if (additionalError) {
+      console.error('Error updating additional info:', additionalError);
+      alert('Ошибка при сохранении дополнительных данных: ' + additionalError.message);
+      return;
+    }
+
     onSave(editedUser);
+    alert('Данные пользователя успешно сохранены!');
     setEditMode(false);
   };
 
@@ -106,7 +256,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
     <div className="profile-details-container">
       <div className="section">
         <h3>Основная информация</h3>
-        
+
         <div className="detail-row">
           <span className="label">Никнейм:</span>
           {editMode ? (

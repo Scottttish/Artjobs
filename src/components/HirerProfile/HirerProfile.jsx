@@ -1,13 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import React, { useState } from 'react';
 import './HirerProfile.css';
 
-const supabase = createClient(
-  'https://jvccejerkjfnkwtqumcd.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
-);
-
-const HirerProfile = () => {
+const App = () => {
   const [historyItems, setHistoryItems] = useState([
     { number: '0J.20233JHN92004', date: '26 JAN 2023', status: 'Delivered', statusClass: 'delivered', title: 'Sample Delivery' },
     { number: '0J.20233JHN92005', date: '26 JAN 2023', status: 'Transit', statusClass: 'transit', title: 'Sample Transit' },
@@ -25,37 +19,93 @@ const HirerProfile = () => {
       durationTooltip: '15.02.2021 - 16.11.2022',
       description: 'A platform designed to connect individuals seeking marriage partners. Features advanced matching algorithms and user-friendly interfaces.',
     },
-    // Оставшиеся продукты...
+    {
+      id: 'nks3723',
+      title: 'Real Estate Website',
+      direction: 'Моушн',
+      date: '25 JAN 2023',
+      status: 'Active',
+      price: '$17,000',
+      duration: '500 days',
+      durationTooltip: '15.03.2021 - 30.07.2022',
+      description: 'A dynamic website for real estate listings. Includes motion graphics for enhanced user engagement and property visualization.',
+    },
+    {
+      id: 'nks3724',
+      title: 'Job Seeker & Job Finder',
+      direction: 'Иллюстрация',
+      date: '24 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '600 days',
+      durationTooltip: '10.01.2021 - 05.09.2022',
+      description: 'A job portal with custom illustrations. Simplifies job searching and hiring with visually appealing designs.',
+    },
+    {
+      id: 'nks3725',
+      title: 'Medical CRM',
+      direction: 'Другое',
+      date: '23 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '720 days',
+      durationTooltip: '01.01.2021 - 31.12.2022',
+      description: 'A CRM tailored for medical professionals. Streamlines patient management and administrative tasks.',
+    },
+    {
+      id: 'nks3726',
+      title: 'Grocery Shop CRM',
+      direction: '3D',
+      date: '22 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '550 days',
+      durationTooltip: '20.02.2021 - 25.08.2022',
+      description: 'A CRM for grocery stores with 3D visualizations. Enhances inventory tracking and customer management.',
+    },
+    {
+      id: 'nks3727',
+      title: 'E-commerce Website with CRM',
+      direction: 'Моушн',
+      date: '21 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '680 days',
+      durationTooltip: '05.02.2021 - 15.12.2022',
+      description: 'An e-commerce platform with integrated CRM. Features motion-based product showcases for better user experience.',
+    },
+    {
+      id: 'nks3728',
+      title: 'Fintech - Daily Money Management',
+      direction: 'Иллюстрация',
+      date: '20 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '620 days',
+      durationTooltip: '12.02.2021 - 01.11.2022',
+      description: 'A fintech app with custom illustrations. Helps users manage daily finances with intuitive visuals.',
+    },
+    {
+      id: 'nks3729',
+      title: 'Job Portal Website',
+      direction: 'Другое',
+      date: '19 JAN 2023',
+      status: 'Active',
+      price: '$19,000',
+      duration: '590 days',
+      durationTooltip: '18.02.2021 - 10.10.2022',
+      description: 'A comprehensive job portal. Offers robust features for job seekers and employers.',
+    },
   ]);
 
-  const [userInfo, setUserInfo] = useState(null);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session) {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', sessionData.session.user.id)
-          .single();
-        if (error) {
-          console.error('Ошибка получения данных:', error);
-        } else {
-          setUserInfo({
-            nickname: data.username,
-            email: data.email,
-            password: data.password, // В реальном приложении не стоит хранить пароль в открытом виде
-          });
-        }
-      }
-    };
-
-    fetchUserData();
-  }, []);
+  const [userInfo, setUserInfo] = useState({
+    nickname: 'User123',
+    email: 'user@example.com',
+    password: '********',
+  });
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [tempUserInfo, setTempUserInfo] = useState(null);
+  const [tempUserInfo, setTempUserInfo] = useState({ ...userInfo });
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -90,24 +140,8 @@ const HirerProfile = () => {
     setTempUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const saveChanges = async () => {
+  const saveChanges = () => {
     setUserInfo({ ...tempUserInfo });
-    // Сохраняем изменения в базе данных
-    const { error } = await supabase
-      .from('users')
-      .update({
-        username: tempUserInfo.nickname,
-        email: tempUserInfo.email,
-        password: tempUserInfo.password,
-      })
-      .eq('id', (await supabase.auth.getSession()).data.session.user.id);
-
-    if (error) {
-      console.error('Ошибка сохранения данных:', error);
-      alert('Ошибка при сохранении данных');
-    } else {
-      alert('Данные успешно сохранены!');
-    }
     setModalOpen(false);
   };
 
@@ -277,8 +311,6 @@ const HirerProfile = () => {
   const filteredProducts = selectedDirection === 'All Products'
     ? products
     : products.filter((product) => product.direction === selectedDirection);
-
-  if (!userInfo) return <div>Загрузка...</div>;
 
   return (
     <div className="dashboard">

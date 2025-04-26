@@ -1,11 +1,21 @@
-
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  body {
+    background-color: transparent;
+    color: #555555; /* Softer gray for general text */
+  }
   
   .app-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     min-height: 100vh;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 0.95); /* White with slight transparency */
     border-radius: 12px;
   }
   
@@ -18,27 +28,27 @@
   .profile-header {
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e0e0e0; 
+    border-bottom: 1px solid #e0e0e0; /* Lighter border for the new theme */
   }
   
   .profile-header h1 {
-    color: #000000; 
+    color: #000000; /* Black for main header */
     font-size: 1.8rem;
     margin-bottom: 5px;
   }
   
   .current-time {
-    color: #666666; 
+    color: #666666; /* Slightly darker gray for time */
     font-size: 0.9rem;
     opacity: 0.9;
   }
   
   .profile-details-container {
-    background: rgba(255, 255, 255, 0.98); 
+    background: rgba(255, 255, 255, 0.98); /* Slightly more opaque white for the container */
     border-radius: 8px;
     padding: 30px;
     min-height: fit-content;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
   }
   
   .section {
@@ -48,13 +58,13 @@
   }
   
   .section h3 {
-    color: #000000;
+    color: #000000; /* Black for section titles */
     margin-bottom: 20px;
     font-size: 1.2rem;
   }
   
   .section h4 {
-    color: #444444; 
+    color: #444444; /* Darker gray for subheaders */
     margin: 15px 0 10px;
     font-size: 1rem;
   }
@@ -67,13 +77,13 @@
   
   .label {
     width: 200px;
-    color: #666666; 
+    color: #666666; /* Darker gray for labels */
     font-size: 0.9rem;
   }
   
   .value {
     flex: 1;
-    color: #555555; 
+    color: #555555; /* Softer gray for values */
   }
   
   .value-multiline {
@@ -88,9 +98,9 @@
     flex: 1;
     max-width: 300px;
     padding: 8px 12px;
-    background: #f8f8f8; 
-    border: 1px solid #d0d0d0;
-    color: #333333;
+    background: #f8f8f8; /* Very light gray for input backgrounds */
+    border: 1px solid #d0d0d0; /* Light border for inputs */
+    color: #333333; /* Darker text for input values */
     border-radius: 4px;
     font-size: 0.9rem;
   }
@@ -118,32 +128,32 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9rem;
-    transition: background-color 0.2s ease; 
+    transition: background-color 0.2s ease; /* Smooth hover effect */
   }
   
   .edit-btn {
-    background: #0078d4; 
+    background: #0078d4; /* Softer blue for edit button */
     color: white;
   }
   
   .edit-btn:hover {
-    background: #005fa3; 
+    background: #005fa3; /* Slightly darker blue on hover */
   }
   
   .save-btn {
-    background: #2e7d32; 
+    background: #2e7d32; /* Softer green for save button */
     color: white;
   }
   
   .save-btn:hover {
-    background: #1b5e20; 
+    background: #1b5e20; /* Slightly darker green on hover */
   }
   
   .cancel-btn {
-    background: #d32f2f; 
+    background: #d32f2f; /* Softer red for cancel button */
     color: white;
   }
   
   .cancel-btn:hover {
-    background: #b71c1c; 
+    background: #b71c1c; /* Slightly darker red on hover */
   }

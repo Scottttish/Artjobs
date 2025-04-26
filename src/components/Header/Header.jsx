@@ -15,55 +15,54 @@ function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+  const [userRole, setUserRole] = useState(null); // Для хранения роли пользователя
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Проверка статуса авторизации и получение роли
   useEffect(() => {
     const checkSession = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData.session) {
         setIsAuthenticated(true);
+        // Получаем данные пользователя из таблицы users
         const { data: userData, error } = await supabase
           .from('users')
           .select('role')
           .eq('id', sessionData.session.user.id)
           .single();
-        if (!error) {
-          setUserRole(userData.role);
+        if (error) {
+          console.error('Ошибка получения роли:', error);
         } else {
-          console.error('Error fetching user role:', error);
+          setUserRole(userData.role);
+          // Перенаправляем на страницу профиля после входа
+          if (userData.role === 'artist') {
+            navigate('/artprofile');
+          } else if (userData.role === 'hirer') {
+            navigate('/hirerprofile');
+          }
         }
       } else {
         setIsAuthenticated(false);
-        setUserRole(null);
       }
     };
 
     checkSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setIsAuthenticated(!!session);
-      if (session) {
-        const { data: userData, error } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        if (!error) {
-          setUserRole(userData.role);
-        } else {
-          console.error('Error fetching user role:', error);
-        }
-      } else {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        checkSession();
+      } else if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false);
         setUserRole(null);
+        navigate('/');
       }
     });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const scrollToSection = (sectionId) => {
     const section = document.getElementById(sectionId);
@@ -95,7 +94,8 @@ function Header() {
     }
   };
 
-  const handleProfileClick = () => {
+  const handleSettings = () => {
+    // Перенаправляем на страницу настроек в зависимости от роли
     if (userRole === 'artist') {
       navigate('/artprofile');
     } else if (userRole === 'hirer') {
@@ -115,13 +115,33 @@ function Header() {
           <img src={logo} alt="Logo" />
         </div>
         <nav className="Header-nav">
-          <a href="#home" onClick={handleHomeClick}>Главная</a>
-          <a href="#contacts" onClick={(e) => { e.preventDefault(); scrollToSection('contacts'); }}>Контакты</a>
-          <NavLink to="/3d" className={({ isActive }) => (isActive ? 'active' : '')}>3D</NavLink>
-          <NavLink to="/motion" className={({ isActive }) => (isActive ? 'active' : '')}>Моушн</NavLink>
-          <NavLink to="/illustration" className={({ isActive }) => (isActive ? 'active' : '')}>Иллюстрация</NavLink>
-          <NavLink to="/interior" className={({ isActive }) => (isActive ? 'active' : '')}>Интерьер</NavLink>
-          <NavLink to="/other" className={({ isActive }) => (isActive ? 'active' : '')}>Другое</NavLink>
+          <a href="#home" onClick={handleHomeClick}>
+            Главная
+          </a>
+          <a
+            href="#contacts"
+            onClick={(e) => {
+              e.preventDefault();
+              scrollToSection('contacts');
+            }}
+          >
+            Контакты
+          </a>
+          <NavLink to="/3d" className={({ isActive }) => (isActive ? 'active' : '')}>
+            3D
+          </NavLink>
+          <NavLink to="/motion" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Моушн
+          </NavLink>
+          <NavLink to="/illustration" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Иллюстрация
+          </NavLink>
+          <NavLink to="/interior" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Интерьер
+          </NavLink>
+          <NavLink to="/other" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Другое
+          </NavLink>
         </nav>
         <div className="Header-auth">
           {isAuthenticated ? (
@@ -135,13 +155,19 @@ function Header() {
               />
               {showDropdown && (
                 <div className="dropdown-menu">
-                  <button onClick={handleProfileClick}>Профиль</button>
+                  <button onClick={handleSettings}>Настройки</button>
                   <button onClick={handleLogout}>Выйти</button>
                 </div>
               )}
             </div>
           ) : (
-            <a href="#login" onClick={(e) => { e.preventDefault(); setShowAuthModal(true); }}>
+            <a
+              href="#login"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowAuthModal(true);
+              }}
+            >
               Войти/Регистрация
             </a>
           )}

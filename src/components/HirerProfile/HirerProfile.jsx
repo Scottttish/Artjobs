@@ -70,7 +70,7 @@ const HirerProfile = () => {
 
       if (userError) {
         console.error('Error fetching user data:', userError);
-        setError('Ошибка загрузки данных пользователя.');
+        setError('Ошибка загрузки данных пользователя: ' + userError.message);
       } else {
         setUserInfo({
           nickname: userData.username || 'User123',
@@ -92,7 +92,7 @@ const HirerProfile = () => {
 
       if (historyError) {
         console.error('Error fetching history:', historyError);
-        setError('Ошибка загрузки истории.');
+        setError('Ошибка загрузки истории: ' + historyError.message);
       } else {
         setHistoryItems(historyData.map(item => ({
           number: item.number,
@@ -119,7 +119,7 @@ const HirerProfile = () => {
 
         if (error) {
           console.error(`Error fetching from ${table}:`, error);
-          setError(`Ошибка загрузки данных из таблицы ${table}.`);
+          setError(`Ошибка загрузки данных из таблицы ${table}: ${error.message}`);
         } else {
           const mappedProducts = data.map(product => ({
             id: product.id,
@@ -173,14 +173,17 @@ const HirerProfile = () => {
     }
 
     const userId = sessionData.session.user.id;
+    const updatedUserData = {
+      username: tempUserInfo.nickname,
+      email: tempUserInfo.email,
+      password: tempUserInfo.password,
+    };
+
+    console.log('Updating user data:', updatedUserData);
 
     const { error } = await supabase
       .from('users')
-      .update({
-        username: tempUserInfo.nickname,
-        email: tempUserInfo.email,
-        password: tempUserInfo.password,
-      })
+      .update(updatedUserData)
       .eq('id', userId);
 
     if (error) {
@@ -198,7 +201,6 @@ const HirerProfile = () => {
       setIsEditing(true);
       setEditingProductId(product.id);
       const [startDate, endDate] = product.durationTooltip.split(' - ');
-      // Преобразуем даты из формата DD.MM.YYYY в YYYY-MM-DD
       const formatDate = (dateStr) => {
         try {
           const [day, month, year] = dateStr.split('.');
@@ -259,7 +261,6 @@ const HirerProfile = () => {
       return;
     }
 
-    // Валидация формата дат
     if (!isValidDateFormat(startDate) || !isValidDateFormat(endDate)) {
       alert('Ошибка: Даты должны быть в формате ГГГГ-ММ-ДД (например, 2023-01-01).');
       return;
@@ -275,7 +276,7 @@ const HirerProfile = () => {
     const userId = sessionData.session.user.id;
     const tableMap = {
       '3D': 'interior',
-      'Моушн': 'motion', // Исправлено с moation на motion
+      'Моушн': 'motion',
       'Иллюстрация': 'illustration',
       'Другое': 'other',
     };
@@ -294,13 +295,14 @@ const HirerProfile = () => {
       status,
     };
 
+    console.log('Saving product to table:', table);
+    console.log('Product data:', productData);
+
     if (isEditing) {
-      // Определяем, из какой таблицы нужно обновить продукт
       const oldProduct = products.find(p => p.id === editingProductId);
       const oldTable = tableMap[oldProduct.direction] || 'other';
 
       if (oldTable === table) {
-        // Обновляем в той же таблице
         const { error } = await supabase
           .from(table)
           .update(productData)
@@ -312,7 +314,6 @@ const HirerProfile = () => {
           return;
         }
       } else {
-        // Удаляем из старой таблицы и добавляем в новую
         const { error: deleteError } = await supabase.from(oldTable).delete().eq('id', editingProductId);
         if (deleteError) {
           console.error('Error deleting product from old table:', deleteError);
@@ -320,12 +321,14 @@ const HirerProfile = () => {
           return;
         }
 
-        const { error: insertError } = await supabase.from(table).insert(productData);
+        const { data, error: insertError } = await supabase.from(table).insert(productData).select();
         if (insertError) {
           console.error('Error inserting product into new table:', insertError);
           alert('Ошибка при создании нового объявления: ' + insertError.message);
           return;
         }
+
+        editingProductId = data[0].id; // Обновляем ID после вставки в новую таблицу
       }
 
       setProducts(products.map((p) => (p.id === editingProductId ? {
@@ -438,6 +441,8 @@ const HirerProfile = () => {
       status: 'Completed',
     };
 
+    console.log('Adding to history:', historyData);
+
     const { error: insertError } = await supabase.from('history').insert(historyData);
     if (insertError) {
       console.error('Error adding to history:', insertError);
@@ -495,6 +500,8 @@ const HirerProfile = () => {
       status: 'Rejected',
     };
 
+    console.log('Adding to history:', historyData);
+
     const { error: insertError } = await supabase.from('history').insert(historyData);
     if (insertError) {
       console.error('Error adding to history:', insertError);
@@ -541,7 +548,7 @@ const HirerProfile = () => {
       'Иллюстрация': 'illustration',
       'Другое': 'other',
     };
-    const table = 'other'; // По умолчанию восстанавливаем в "other"
+    const table = 'other';
 
     const currentDate = new Date();
     const productData = {
@@ -555,6 +562,9 @@ const HirerProfile = () => {
       price: '$19,000',
       status: 'Active',
     };
+
+    console.log('Restoring product to table:', table);
+    console.log('Product data:', productData);
 
     const { data, error: insertError } = await supabase.from(table).insert(productData).select();
     if (insertError) {

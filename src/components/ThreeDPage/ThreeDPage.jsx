@@ -1,59 +1,112 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import './3DPage.css';
 
+// Инициализация Supabase клиента
+const supabase = createClient(
+  'https://jvccejerkjfnkwtqumcd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
+);
+
 function ThreeDPage() {
-  const jobs = [
-    {
-      title: 'Агент по привлечению водителей',
-      salary: '175000 – 250000 ₸ за месяц, на руки',
-      company: 'ТОО inDrive',
-      location: 'Астана',
-      description: 'Работа с водителями, привлечение новых клиентов, работа в офисе и на выезде.',
-      deadline: '30 дней', // Срок выполнения работы
-      publishedDate: '15 октября 2025', // Дата публикации
-    },
-    {
-      title: 'Менеджер по работе с клиентами',
-      salary: '450000 – 2000000 ₸ за месяц, на руки',
-      company: 'ТОО TK Стан - Астана',
-      location: 'Астана, улица Ахмета Байтурсынова, 13',
-      description: 'Работа с клиентами, обработка заказов, ведение переговоров.',
-      deadline: '45 дней',
-      publishedDate: '10 октября 2025',
-    },
-    {
-      title: 'Сату менеджері',
-      salary: '450000 – 1000000 ₸ за месяц, до вычета налогов',
-      company: 'ТОО Ozat Online',
-      location: 'Астана',
-      description: 'Продажи услуг компании, работа с клиентами, ведение отчётности.',
-      deadline: '20 дней',
-      publishedDate: '5 октября 2025',
-    },
-  ];
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      setLoading(true);
+      setError(null);
+
+      // Загрузка вакансий из таблицы three_d
+      const { data: jobData, error: jobError } = await supabase
+        .from('three_d')
+        .select('id, user_id, title, description, published_at, start_date, end_date, price, status')
+        .eq('category', '3D');
+
+      if (jobError) {
+        console.error('Error fetching jobs:', jobError);
+        setError('Ошибка загрузки вакансий: ' + jobError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Для каждой вакансии получаем никнейм работодателя
+      const jobsWithCompany = await Promise.all(
+        jobData.map(async (job) => {
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('username')
+            .eq('id', job.user_id)
+            .single();
+
+          if (userError) {
+            console.error('Error fetching user data:', userError);
+            return { ...job, company: 'Неизвестный работодатель' };
+          }
+
+          // Расчёт дедлайна (разница между end_date и start_date в днях)
+          const startDate = new Date(job.start_date);
+          const endDate = new Date(job.end_date);
+          const deadlineDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+          // Форматирование даты публикации
+          const publishedDate = new Date(job.published_at).toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          });
+
+          return {
+            ...job,
+            company: userData.username || 'Неизвестный работодатель',
+            salary: `${job.price} ₸`,
+            publishedDate,
+            deadline: `${deadlineDays} дней`
+          };
+        })
+      );
+
+      setJobs(jobsWithCompany);
+      setLoading(false);
+    };
+
+    fetchJobs();
+  }, []);
+
+  if (loading) {
+    return <div className="loading">Загрузка...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
 
   return (
     <div className="job-listings-container">
-      {jobs.map((job, index) => (
-        <div key={index} className="job-card">
-          <h3 className="job-title">{job.title}</h3>
-          <p className="job-salary">{job.salary}</p>
-          <p className="job-company">
-            <span className="company-name">{job.company}</span>
-            <span className="verified">✔</span>
-          </p>
-          <p className="job-location">{job.location}</p>
-          <p className="job-deadline">
-            <span className="deadline-label">Срок выполнения:</span> {job.deadline}
-          </p>
-          <p className="job-published">
-            <span className="published-label">Дата публикации:</span> {job.publishedDate}
-          </p>
-          <p className="job-description-label">Описание работы:</p>
-          <p className="job-description">{job.description}</p>
-          <button className="apply-btn">Откликнуться</button>
-        </div>
-      ))}
+      {jobs.length === 0 ? (
+        <p>Вакансий в категории 3D пока нет.</p>
+      ) : (
+        jobs.map((job) => (
+          <div key={job.id} className="job-card">
+            <h3 className="job-title">{job.title}</h3>
+            <p className="job-salary">{job.salary}</p>
+            <p className="job-company">
+              <span className="company-name">{job.company}</span>
+              <span className="verified">✔</span>
+            </p>
+            <p className="job-deadline">
+              <span className="deadline-label">Срок выполнения:</span> {job.deadline}
+            </p>
+            <p className="job-published">
+              <span className="published-label">Дата публикации:</span> {job.publishedDate}
+            </p>
+            <p className="job-description-label">Описание работы:</p>
+            <p className="job-description">{job.description}</p>
+            <button className="apply-btn">Откликнуться</button>
+          </div>
+        ))
+      )}
     </div>
   );
 }

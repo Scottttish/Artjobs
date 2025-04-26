@@ -57,6 +57,14 @@ function ArtProfile() {
       }
 
       // Загрузка дополнительных данных из таблицы additionalinfo
+      let artSkills = {
+        drawingLevel: '',
+        preferredMedium: '',
+        experienceYears: 0,
+        portfolioLink: '',
+        artDescription: ''
+      };
+
       const { data: additionalData, error: additionalError } = await supabase
         .from('additionalinfo')
         .select('drawinglevel, preferredmedium, experienceyears, portfoliolink, artdescription')
@@ -64,20 +72,25 @@ function ArtProfile() {
         .single();
 
       if (additionalError) {
-        console.error('Error fetching additional info:', additionalError);
-        console.error('Error details:', additionalError.message, additionalError.details, additionalError.hint);
-        setError('Ошибка загрузки дополнительных данных: ' + additionalError.message);
-        setLoading(false);
-        return;
+        if (additionalError.code === 'PGRST116') {
+          // Если записи нет, оставляем artSkills пустым (как в начальном состоянии)
+          console.log('No additional info found for user, using empty values.');
+        } else {
+          console.error('Error fetching additional info:', additionalError);
+          console.error('Error details:', additionalError.message, additionalError.details, additionalError.hint);
+          setError('Ошибка загрузки дополнительных данных: ' + additionalError.message);
+          setLoading(false);
+          return;
+        }
+      } else {
+        artSkills = {
+          drawingLevel: additionalData.drawinglevel || '',
+          preferredMedium: additionalData.preferredmedium || '',
+          experienceYears: additionalData.experienceyears || 0,
+          portfolioLink: additionalData.portfoliolink || '',
+          artDescription: additionalData.artdescription || ''
+        };
       }
-
-      const artSkills = {
-        drawingLevel: additionalData.drawinglevel || '',
-        preferredMedium: additionalData.preferredmedium || '',
-        experienceYears: additionalData.experienceyears || 0,
-        portfolioLink: additionalData.portfoliolink || '',
-        artDescription: additionalData.artdescription || ''
-      };
 
       const userState = {
         nickname: userData.username || '',
@@ -262,7 +275,13 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
       return;
     }
 
-    // Обновление дополнительных данных в таблице additionalinfo
+    // Проверка, существует ли запись в additionalinfo
+    const { data: existingData, error: fetchError } = await supabase
+      .from('additionalinfo')
+      .select('user_id')
+      .eq('user_id', userId)
+      .single();
+
     const updatedAdditionalData = {
       drawinglevel: editedUser.artSkills.drawingLevel,
       preferredmedium: editedUser.artSkills.preferredMedium,
@@ -271,13 +290,24 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
       artdescription: editedUser.artSkills.artDescription
     };
 
-    const { error: additionalError } = await supabase
-      .from('additionalinfo')
-      .update(updatedAdditionalData)
-      .eq('user_id', userId);
+    let additionalError;
+    if (!existingData && !fetchError) {
+      // Если записи нет, создаем новую
+      const { error: insertError } = await supabase
+        .from('additionalinfo')
+        .insert({ user_id: userId, ...updatedAdditionalData });
+      additionalError = insertError;
+    } else {
+      // Если запись есть, обновляем существующую
+      const { error: updateError } = await supabase
+        .from('additionalinfo')
+        .update(updatedAdditionalData)
+        .eq('user_id', userId);
+      additionalError = updateError;
+    }
 
     if (additionalError) {
-      console.error('Error updating additional info:', additionalError);
+      console.error('Error updating/inserting additional info:', additionalError);
       console.error('Error details:', additionalError.message, additionalError.details, additionalError.hint);
       alert('Ошибка при сохранении дополнительных данных: ' + additionalError.message);
       return;
@@ -335,6 +365,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
               value={editedUser.artSkills.drawingLevel}
               onChange={handleInputChange}
             >
+              <option value="">Не выбрано</option>
               <option value="Новичок">Новичок</option>
               <option value="Любитель">Любитель</option>
               <option value="Профессионал">Профессионал</option>
@@ -352,6 +383,7 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
               value={editedUser.artSkills.preferredMedium}
               onChange={handleInputChange}
             >
+              <option value="">Не выбрано</option>
               <option value="Карандаш">Карандаш</option>
               <option value="Акварель">Акварель</option>
               <option value="Масло">Масло</option>

@@ -683,7 +683,7 @@ const HirerProfile = () => {
           </div>
           <div className="user-info-item">
             <span>Password: {userInfo.password}</span>
-            <button className "edit-button" onClick={openModal}>✏️</button>
+            <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
         </div>
 

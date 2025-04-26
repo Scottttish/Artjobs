@@ -8,7 +8,7 @@ function ThreeDSection() {
   const sectionRef = useRef(null);
   const isDragging = useRef(false);
   const previousMousePosition = useRef({ x: 0, y: 0 });
-  const rotationVelocity = useRef({ x: 0, y: 0 }); 
+  const rotationVelocity = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const canvasWidth = 600;
@@ -16,7 +16,7 @@ function ThreeDSection() {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, canvasWidth / canvasHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true });
-    
+
     renderer.setSize(canvasWidth, canvasHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     camera.position.z = 20;
@@ -29,9 +29,12 @@ function ThreeDSection() {
 
     const loader = new GLTFLoader();
     let model;
+    const modelPath = './assets/my-model.glb';
+    console.log('Trying to load model from:', modelPath);
     loader.load(
-      '/assets/my-model.glb',
+      modelPath,
       (gltf) => {
+        console.log('Model loaded successfully:', gltf);
         model = gltf.scene;
         scene.add(model);
 
@@ -56,12 +59,12 @@ function ThreeDSection() {
 
       if (model) {
         if (!isDragging.current) {
-          model.rotation.y += 0.01; 
+          model.rotation.y += 0.01;
 
           model.rotation.x += rotationVelocity.current.x;
           model.rotation.y += rotationVelocity.current.y;
 
-          rotationVelocity.current.x *= 0.95; 
+          rotationVelocity.current.x *= 0.95;
           rotationVelocity.current.y *= 0.95;
 
           model.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, model.rotation.x));
@@ -97,7 +100,7 @@ function ThreeDSection() {
       model.rotation.y += deltaRotationY;
       model.rotation.x += deltaRotationX;
 
-      rotationVelocity.current.x = deltaRotationX * 0.05; 
+      rotationVelocity.current.x = deltaRotationX * 0.05;
       rotationVelocity.current.y = deltaRotationY * 0.05;
 
       model.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, model.rotation.x));
@@ -116,7 +119,6 @@ function ThreeDSection() {
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
 
-    // Обработка изменения размера окна
     const handleResize = () => {
       renderer.setSize(canvasWidth, canvasHeight);
       camera.aspect = canvasWidth / canvasHeight;

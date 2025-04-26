@@ -3,157 +3,469 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  
-  body {
+}
+
+body {
     background-color: transparent;
-    color: #555555; 
-  }
-  
-  .app-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    min-height: 100vh;
-    background-color: rgba(255, 255, 255, 0.95); 
-    border-radius: 12px;
-  }
-  
-  .main-container {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  
-  .profile-header {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  
-  .profile-header h1 {
-    color: #000000; 
-    font-size: 1.8rem;
-    margin-bottom: 5px;
-  }
-  
-  .current-time {
-    color: #666666;
-    font-size: 0.9rem;
-    opacity: 0.9;
-  }
-  
-  .profile-details-container {
-    background: rgba(255, 255, 255, 0.98);
-    border-radius: 8px;
-    padding: 30px;
-    min-height: fit-content;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  }
-  
-  .section {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  
-  .section h3 {
-    color: #000000; 
-    margin-bottom: 20px;
-    font-size: 1.2rem;
-  }
-  
-  .section h4 {
-    color: #444444; 
-    margin: 15px 0 10px;
-    font-size: 1rem;
-  }
-  
-  .detail-row {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 15px;
-  }
-  
-  .label {
-    width: 200px;
-    color: #666666; 
-    font-size: 0.9rem;
-  }
-  
-  .value {
-    flex: 1;
-    color: #555555; 
-  }
-  
-  .value-multiline {
-    flex: 1;
     color: #555555;
-    white-space: pre-wrap;
-    max-width: 400px;
-    word-wrap: break-word;
-  }
-  
-  input, select, textarea {
+}
+
+/* Основной контейнер */
+.hirer-dashboard {
+    display: flex;
+    min-height: 100vh;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+/* Боковая панель */
+.hirer-sidebar {
+    width: 30%;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Основной контент */
+.hirer-main-content {
+    width: 70%;
+    padding: 20px;
+}
+
+/* Стили для загрузки изображения */
+.hirer-image-upload {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.hirer-upload-button {
+    width: 50px;
+    height: 50px;
+    background-color: #0078d4;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.hirer-upload-button:hover {
+    background-color: #005fa3;
+}
+
+/* Стили для информации о пользователе */
+.hirer-user-info {
+    margin-bottom: 20px;
+}
+
+.hirer-user-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.hirer-user-info-item span {
+    color: #333333;
+}
+
+.hirer-edit-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Стили для истории */
+.hirer-history {
+    margin-top: 20px;
+}
+
+.hirer-track-header {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.hirer-track-header input {
     flex: 1;
-    max-width: 300px;
     padding: 8px 12px;
-    background: #f8f8f8;
     border: 1px solid #d0d0d0;
-    color: #333333; 
     border-radius: 4px;
     font-size: 0.9rem;
-  }
-  
-  textarea {
-    max-width: 400px;
-    overflow: hidden;
-    resize: none;
-  }
-  
-  .email-input {
-    max-width: 400px;
-  }
-  
-  .actions {
+}
+
+.hirer-track-header button {
+    padding: 8px 12px;
+    background: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.hirer-track-header button:hover {
+    background: #005fa3;
+}
+
+.hirer-history-header {
     display: flex;
-    gap: 15px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.hirer-history-header h3 {
+    color: #000000;
+    font-size: 1.2rem;
+}
+
+.hirer-delete-history {
+    color: #d32f2f;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.hirer-delete-history:hover {
+    color: #b71c1c;
+}
+
+.hirer-history-content {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.hirer-history-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.hirer-history-icon {
+    font-size: 20px;
+}
+
+.hirer-history-details {
+    flex: 1;
+}
+
+.hirer-history-details p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #333333;
+}
+
+.hirer-history-details span {
+    font-size: 0.8rem;
+    color: #666666;
+}
+
+.hirer-status {
+    margin-left: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.hirer-status.completed {
+    background-color: #2e7d32;
+    color: white;
+}
+
+.hirer-status.rejected {
+    background-color: #d32f2f;
+    color: white;
+}
+
+.hirer-restore-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.hirer-no-history {
+    text-align: center;
+    color: #666666;
+    font-size: 0.9rem;
+}
+
+/* Фильтры */
+.hirer-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.hirer-filters select,
+.hirer-filters button {
+    padding: 8px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.hirer-filters button {
+    background: #0078d4;
+    color: white;
+    border: none;
+}
+
+.hirer-filters button:hover {
+    background: #005fa3;
+}
+
+.hirer-filters button.disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+.hirer-filters .rename {
+    background: #2e7d32;
+}
+
+.hirer-filters .rename:hover {
+    background: #1b5e20;
+}
+
+.hirer-filters .delete {
+    background: #d32f2f;
+}
+
+.hirer-filters .delete:hover {
+    background: #b71c1c;
+}
+
+/* Сетка продуктов */
+.hirer-product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.hirer-product-card {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.hirer-product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.hirer-product-title span {
+    font-size: 1rem;
+    color: #333333;
+}
+
+.hirer-product-checkbox {
+    width: 16px;
+    height: 16px;
+}
+
+.hirer-product-direction-section {
+    margin-bottom: 10px;
+}
+
+.hirer-product-direction-section span:first-child {
+    font-size: 0.9rem;
+    color: #666666;
+}
+
+.hirer-product-direction-section span:last-child {
+    font-size: 0.9rem;
+    color: #333333;
+}
+
+.hirer-product-description {
+    margin-bottom: 10px;
+}
+
+.hirer-product-description span:first-child {
+    font-size: 0.9rem;
+    color: #666666;
+}
+
+.hirer-description {
+    font-size: 0.9rem;
+    color: #333333;
+    display: block;
+}
+
+.hirer-product-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.hirer-product-left,
+.hirer-product-right {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.hirer-product-info span:first-child {
+    font-size: 0.9rem;
+    color: #666666;
+}
+
+.hirer-product-info span:last-child {
+    font-size: 0.9rem;
+    color: #333333;
+}
+
+.hirer-duration {
+    color: #0078d4;
+}
+
+.hirer-status.active {
+    background-color: #2e7d32;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.hirer-status.inactive {
+    background-color: #d32f2f;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.hirer-product-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.hirer-complete-button,
+.hirer-reject-button {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.hirer-complete-button {
+    background: #2e7d32;
+    color: white;
+}
+
+.hirer-complete-button:hover {
+    background: #1b5e20;
+}
+
+.hirer-reject-button {
+    background: #d32f2f;
+    color: white;
+}
+
+.hirer-reject-button:hover {
+    background: #b71c1c;
+}
+
+/* Модальное окно */
+.hirer-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+}
+
+.hirer-modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.hirer-modal-content h3 {
+    margin-bottom: 20px;
+    color: #000000;
+}
+
+.hirer-modal-field {
+    margin-bottom: 15px;
+}
+
+.hirer-modal-field label {
+    display: block;
+    margin-bottom: 5px;
+    color: #666666;
+    font-size: 0.9rem;
+}
+
+.hirer-modal-field input,
+.hirer-modal-field select,
+.hirer-modal-field textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.hirer-modal-field textarea {
+    resize: vertical;
+}
+
+.hirer-modal-buttons {
+    display: flex;
+    gap: 10px;
     justify-content: flex-end;
-    margin-top: 30px;
-  }
-  
-  .edit-btn, .save-btn, .cancel-btn {
+    margin-top: 20px;
+}
+
+.hirer-modal-buttons button {
     padding: 10px 20px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9rem;
-    transition: background-color 0.2s ease;
-  }
-  
-  .edit-btn {
-    background: #0078d4; 
+}
+
+.hirer-modal-buttons button:first-child {
+    background: #d32f2f;
     color: white;
-  }
-  
-  .edit-btn:hover {
-    background: #005fa3; 
-  }
-  
-  .save-btn {
-    background: #2e7d32; 
+}
+
+.hirer-modal-buttons button:first-child:hover {
+    background: #b71c1c;
+}
+
+.hirer-modal-buttons button:last-child {
+    background: #2e7d32;
     color: white;
-  }
-  
-  .save-btn:hover {
-    background: #1b5e20; 
-  }
-  
-  .cancel-btn {
-    background: #d32f2f; 
-    color: white;
-  }
-  
-  .cancel-btn:hover {
-    background: #b71c1c; 
-  }
+}
+
+.hirer-modal-buttons button:last-child:hover {
+    background: #1b5e20;
+}
+
+/* Стили для загрузки */
+.hirer-loading {
+    text-align: center;
+    padding: 20px;
+    color: #666666;
+}

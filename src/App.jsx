@@ -25,11 +25,9 @@ function ScrollToTop() {
   }, [pathname]);
 
   useEffect(() => {
-    // Отключаем восстановление прокрутки браузером
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
-
     window.scrollTo({ top: 0, behavior: 'instant' });
     console.log('ScrollToTop triggered on mount');
     console.log('Initial scroll position:', window.scrollY);
@@ -49,6 +47,7 @@ function ScrollToTop() {
 }
 
 function App() {
+  console.log('App component rendered');
   return (
     <Router basename="/Artjobs">
       <div className="App">

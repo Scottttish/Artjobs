@@ -104,17 +104,6 @@ function Header() {
     setShowDropdown(false);
   };
 
-  const handleSettings = () => {
-    if (userRole === 'artist') {
-      navigate('/artprofile/settings');
-    } else if (userRole === 'hirer') {
-      navigate('/hirerprofile/settings');
-    } else {
-      navigate('/settings');
-    }
-    setShowDropdown(false);
-  };
-
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
   };
@@ -147,7 +136,6 @@ function Header() {
               {showDropdown && (
                 <div className="dropdown-menu">
                   <button onClick={handleProfileClick}>Профиль</button>
-                  <button onClick={handleSettings}>Настройки</button>
                   <button onClick={handleLogout}>Выйти</button>
                 </div>
               )}

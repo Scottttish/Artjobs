@@ -36,6 +36,14 @@ const HirerProfile = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDirection, setSelectedDirection] = useState('All Products');
 
+  // Валидация формата даты (ожидается YYYY-MM-DD)
+  const isValidDateFormat = (dateString) => {
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateString)) return false;
+    const date = new Date(dateString);
+    return !isNaN(date.getTime());
+  };
+
   // Загрузка данных при монтировании компонента
   useEffect(() => {
     const fetchData = async () => {
@@ -177,7 +185,7 @@ const HirerProfile = () => {
 
     if (error) {
       console.error('Error updating user info:', error);
-      alert('Ошибка при сохранении данных пользователя.');
+      alert('Ошибка при сохранении данных пользователя: ' + error.message);
     } else {
       setUserInfo({ ...tempUserInfo });
       alert('Данные пользователя успешно сохранены!');
@@ -190,12 +198,27 @@ const HirerProfile = () => {
       setIsEditing(true);
       setEditingProductId(product.id);
       const [startDate, endDate] = product.durationTooltip.split(' - ');
+      // Преобразуем даты из формата DD.MM.YYYY в YYYY-MM-DD
+      const formatDate = (dateStr) => {
+        try {
+          const [day, month, year] = dateStr.split('.');
+          const formatted = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          if (!isValidDateFormat(formatted)) {
+            throw new Error('Invalid date format');
+          }
+          return formatted;
+        } catch (err) {
+          console.error('Error formatting date:', err);
+          alert('Ошибка: Неверный формат даты. Ожидается ДД.ММ.ГГГГ (например, 01.01.2023).');
+          return '';
+        }
+      };
       setTempProduct({
         title: product.title,
         direction: product.direction,
         description: product.description,
-        startDate: startDate.split('.').reverse().join('-'), // Преобразование в формат YYYY-MM-DD
-        endDate: endDate.split('.').reverse().join('-'),
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate),
         price: product.price,
         status: product.status,
       });
@@ -236,6 +259,12 @@ const HirerProfile = () => {
       return;
     }
 
+    // Валидация формата дат
+    if (!isValidDateFormat(startDate) || !isValidDateFormat(endDate)) {
+      alert('Ошибка: Даты должны быть в формате ГГГГ-ММ-ДД (например, 2023-01-01).');
+      return;
+    }
+
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       console.error('No session found');
@@ -246,7 +275,7 @@ const HirerProfile = () => {
     const userId = sessionData.session.user.id;
     const tableMap = {
       '3D': 'interior',
-      'Моушн': 'motion',
+      'Моушн': 'motion', // Исправлено с moation на motion
       'Иллюстрация': 'illustration',
       'Другое': 'other',
     };
@@ -279,7 +308,7 @@ const HirerProfile = () => {
 
         if (error) {
           console.error('Error updating product:', error);
-          alert('Ошибка при обновлении объявления.');
+          alert('Ошибка при обновлении объявления: ' + error.message);
           return;
         }
       } else {
@@ -287,14 +316,14 @@ const HirerProfile = () => {
         const { error: deleteError } = await supabase.from(oldTable).delete().eq('id', editingProductId);
         if (deleteError) {
           console.error('Error deleting product from old table:', deleteError);
-          alert('Ошибка при удалении старого объявления.');
+          alert('Ошибка при удалении старого объявления: ' + deleteError.message);
           return;
         }
 
         const { error: insertError } = await supabase.from(table).insert(productData);
         if (insertError) {
           console.error('Error inserting product into new table:', insertError);
-          alert('Ошибка при создании нового объявления.');
+          alert('Ошибка при создании нового объявления: ' + insertError.message);
           return;
         }
       }
@@ -367,7 +396,7 @@ const HirerProfile = () => {
 
       if (error) {
         console.error('Error deleting product:', error);
-        alert('Ошибка при удалении объявления.');
+        alert('Ошибка при удалении объявления: ' + error.message);
         return;
       }
     }
@@ -419,7 +448,7 @@ const HirerProfile = () => {
     const { error: deleteError } = await supabase.from(table).delete().eq('id', product.id);
     if (deleteError) {
       console.error('Error deleting product:', deleteError);
-      alert('Ошибка при удалении объявления.');
+      alert('Ошибка при удалении объявления: ' + deleteError.message);
       return;
     }
 
@@ -476,7 +505,7 @@ const HirerProfile = () => {
     const { error: deleteError } = await supabase.from(table).delete().eq('id', product.id);
     if (deleteError) {
       console.error('Error deleting product:', deleteError);
-      alert('Ошибка при удалении объявления.');
+      alert('Ошибка при удалении объявления: ' + deleteError.message);
       return;
     }
 
@@ -530,14 +559,14 @@ const HirerProfile = () => {
     const { data, error: insertError } = await supabase.from(table).insert(productData).select();
     if (insertError) {
       console.error('Error restoring product:', insertError);
-      alert('Ошибка при восстановлении объявления.');
+      alert('Ошибка при восстановлении объявления: ' + insertError.message);
       return;
     }
 
     const { error: deleteError } = await supabase.from('history').delete().eq('number', historyItem.number);
     if (deleteError) {
       console.error('Error deleting from history:', deleteError);
-      alert('Ошибка при удалении из истории.');
+      alert('Ошибка при удалении из истории: ' + deleteError.message);
       return;
     }
 
@@ -572,7 +601,7 @@ const HirerProfile = () => {
 
     if (error) {
       console.error('Error deleting history:', error);
-      alert('Ошибка при удалении истории.');
+      alert('Ошибка при удалении истории: ' + error.message);
       return;
     }
 

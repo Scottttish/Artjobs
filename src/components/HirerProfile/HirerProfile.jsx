@@ -880,7 +880,7 @@ const HirerProfile = () => {
                 required
               />
             </div>
-            <div className "modal-field">
+            <div className="modal-field">
               <label>Status</label>
               <select
                 name="status"

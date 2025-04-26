@@ -206,7 +206,6 @@ const HirerProfile = () => {
       const [startDate, endDate] = product.durationTooltip.split(' - ');
       const formatDate = (dateStr) => {
         try {
-          // Ожидаем формат "01 JAN 2023"
           const [day, monthStr, year] = dateStr.trim().split(' ');
           const monthNames = {
             JAN: '01', FEB: '02', MAR: '03', APR: '04', MAY: '05', JUN: '06',
@@ -458,7 +457,12 @@ const HirerProfile = () => {
 
     console.log('Adding to history:', historyData);
 
-    const { error: insertError } = await supabase.from('history').insert(historyData);
+    const { data: insertedHistory, error: insertError } = await supabase
+      .from('history')
+      .insert(historyData)
+      .select()
+      .single();
+
     if (insertError) {
       console.error('Error adding to history:', insertError);
       alert('Ошибка при добавлении в историю: ' + insertError.message);
@@ -467,7 +471,7 @@ const HirerProfile = () => {
 
     setHistoryItems([
       {
-        id: product.id,
+        id: insertedHistory.id, // Используем id из базы данных
         publication_id: product.id,
         table_name: table,
         title: product.title,
@@ -482,7 +486,6 @@ const HirerProfile = () => {
       ...historyItems,
     ]);
 
-    // Удаляем продукт из состояния products, чтобы он исчез из интерфейса
     setProducts(products.filter(p => p.id !== product.id));
   };
 
@@ -516,7 +519,12 @@ const HirerProfile = () => {
 
     console.log('Adding to history:', historyData);
 
-    const { error: insertError } = await supabase.from('history').insert(historyData);
+    const { data: insertedHistory, error: insertError } = await supabase
+      .from('history')
+      .insert(historyData)
+      .select()
+      .single();
+
     if (insertError) {
       console.error('Error adding to history:', insertError);
       alert('Ошибка при добавлении в историю: ' + insertError.message);
@@ -525,7 +533,7 @@ const HirerProfile = () => {
 
     setHistoryItems([
       {
-        id: product.id,
+        id: insertedHistory.id, // Используем id из базы данных
         publication_id: product.id,
         table_name: table,
         title: product.title,
@@ -540,7 +548,6 @@ const HirerProfile = () => {
       ...historyItems,
     ]);
 
-    // Удаляем продукт из состояния products, чтобы он исчез из интерфейса
     setProducts(products.filter(p => p.id !== product.id));
   };
 
@@ -552,16 +559,15 @@ const HirerProfile = () => {
       return;
     }
 
-    // Удаляем запись из истории
-    console.log(`Deleting from history, id: ${historyItem.id}`);
+    console.log('Attempting to delete from history, id:', historyItem.id);
     const { error: deleteError } = await supabase.from('history').delete().eq('id', historyItem.id);
     if (deleteError) {
       console.error('Error deleting from history:', deleteError);
       alert('Ошибка при удалении из истории: ' + deleteError.message);
       return;
     }
+    console.log('Successfully deleted from history');
 
-    // Находим продукт в базе данных
     const table = historyItem.table_name;
     const { data: productData, error: fetchError } = await supabase
       .from(table)
@@ -575,7 +581,17 @@ const HirerProfile = () => {
       return;
     }
 
-    // Добавляем продукт обратно в состояние products
+    const { error: updateError } = await supabase
+      .from(table)
+      .update({ status: 'Active' })
+      .eq('id', historyItem.publication_id);
+
+    if (updateError) {
+      console.error('Error updating product status:', updateError);
+      alert('Ошибка при обновлении статуса продукта: ' + updateError.message);
+      return;
+    }
+
     setProducts([...products, {
       id: productData.id,
       title: productData.title,
@@ -586,13 +602,12 @@ const HirerProfile = () => {
         month: 'short',
         year: 'numeric',
       }).toUpperCase(),
-      status: productData.status,
+      status: 'Active',
       price: productData.price,
       duration: calculateDuration(productData.start_date, productData.end_date),
       durationTooltip: `${new Date(productData.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} - ${new Date(productData.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`,
     }]);
 
-    // Удаляем запись из состояния historyItems
     setHistoryItems(historyItems.filter((item) => item.id !== historyItem.id));
   };
 
@@ -606,7 +621,6 @@ const HirerProfile = () => {
 
     const userId = sessionData.session.user.id;
 
-    // Получаем все записи истории для текущего пользователя
     const { data: historyData, error: fetchError } = await supabase
       .from('history')
       .select('publication_id, table_name')
@@ -618,7 +632,6 @@ const HirerProfile = () => {
       return;
     }
 
-    // Удаляем продукты из соответствующих таблиц
     for (const item of historyData) {
       const { publication_id, table_name } = item;
       console.log(`Deleting product from table: ${table_name}, id: ${publication_id}`);
@@ -634,7 +647,6 @@ const HirerProfile = () => {
       }
     }
 
-    // Удаляем записи из истории
     console.log(`Deleting history for user_id: ${userId}`);
     const { error: deleteHistoryError } = await supabase
       .from('history')
@@ -647,7 +659,6 @@ const HirerProfile = () => {
       return;
     }
 
-    // Обновляем состояние: удаляем продукты, которые были в истории
     const publicationIdsToDelete = historyData.map(item => item.publication_id);
     setProducts(products.filter(product => !publicationIdsToDelete.includes(product.id)));
     setHistoryItems([]);
@@ -661,7 +672,6 @@ const HirerProfile = () => {
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Фильтруем продукты, исключая те, что есть в истории
   const visibleProducts = products.filter(product =>
     !historyItems.some(historyItem => historyItem.publication_id === product.id)
   );

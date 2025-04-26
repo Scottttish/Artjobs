@@ -1,112 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import './HirerProfile.css';
 
+// Инициализация Supabase клиента
+const supabase = createClient(
+  'https://jvccejerkjfnkwtqumcd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
+);
+
 const HirerProfile = () => {
-  const [historyItems, setHistoryItems] = useState([
-    { number: '0J.20233JHN92004', date: '26 JAN 2023', status: 'Delivered', statusClass: 'delivered', title: 'Sample Delivery' },
-    { number: '0J.20233JHN92005', date: '26 JAN 2023', status: 'Transit', statusClass: 'transit', title: 'Sample Transit' },
-  ]);
-
-  const [products, setProducts] = useState([
-    {
-      id: 'nks3722',
-      title: 'Muslim Bride & Groom Finder',
-      direction: '3D',
-      date: '26 JAN 2023',
-      status: 'Active',
-      price: '$19,000',
-      duration: '640 days',
-      durationTooltip: '15.02.2021 - 16.11.2022',
-      description: 'A platform designed to connect individuals seeking marriage partners. Features advanced matching algorithms and user-friendly interfaces.',
-    },
-    {
-      id: 'nks3723',
-      title: 'Real Estate Website',
-      direction: 'Моушн',
-      date: '25 JAN 2023',
-      status: 'Active',
-      price: '$17,000',
-      duration: '500 days',
-      durationTooltip: '15.03.2021 - 30.07.2022',
-      description: 'A dynamic website for real estate listings. Includes motion graphics for enhanced user engagement and property visualization.',
-    },
-    {
-      id: 'nks3724',
-      title: 'Job Seeker & Job Finder',
-      direction: 'Иллюстрация',
-      date: '24 JAN 2023',
-      status: 'Active',
-      price: '$19,000',
-      duration: '600 days',
-      durationTooltip: '10.01.2021 - 05.09.2022',
-      description: 'A job portal with custom illustrations. Simplifies job searching and hiring with visually appealing designs.',
-    },
-    {
-      id: 'nks3725',
-      title: 'Medical CRM',
-      direction: 'Другое',
-      date: '23 JAN 2023',
-      status: 'Active',
-      price: '$19,000',
-      duration: '720 days',
-      durationTooltip: '01.01.2021 - 31.12.2022',
-      description: 'A CRM tailored for medical professionals. Streamlines patient management and administrative tasks.',
-    },
-    {
-      id: 'nks3726',
-      title: 'Grocery Shop CRM',
-      direction: '3D',
-      date: '22 JAN 2023',
-      status: 'Active',
-      price: '$19,000',
-      duration: '550 days',
-      durationTooltip: '20.02.2021 - 25.08.2022',
-      description: 'A CRM for grocery stores with 3D visualizations. Enhances inventory tracking and customer management.',
-    },
-    {
-      id: 'nks3727',
-      title: 'E-commerce Website with CRM',
-      direction: 'Моушн',
-      date: '21 JAN 2023',
-      status: 'Active',
-      price: '$19,000',
-      duration: '680 days',
-      durationTooltip: '05.02.2021 - 15.12.2022',
-      description: 'An e-commerce platform with integrated CRM. Features motion-based product showcases for better user experience.',
-    },
-    {
-      id: 'nks3728',
-      title: 'Fintech - Daily Money Management',
-      direction: 'Иллюстрация',
-      date: '20 JAN 2023',
-      status: 'Active',
-      price: '$19,000',
-      duration: '620 days',
-      durationTooltip: '12.02.2021 - 01.11.2022',
-      description: 'A fintech app with custom illustrations. Helps users manage daily finances with intuitive visuals.',
-    },
-    {
-      id: 'nks3729',
-      title: 'Job Portal Website',
-      direction: 'Другое',
-      date: '19 JAN 2023',
-      status: 'Active',
-      price: '$19,000',
-      duration: '590 days',
-      durationTooltip: '18.02.2021 - 10.10.2022',
-      description: 'A comprehensive job portal. Offers robust features for job seekers and employers.',
-    },
-  ]);
-
+  const [historyItems, setHistoryItems] = useState([]);
+  const [products, setProducts] = useState([]);
   const [userInfo, setUserInfo] = useState({
-    nickname: 'User123',
-    email: 'user@example.com',
-    password: '********',
+    nickname: '',
+    email: '',
+    password: '',
   });
-
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [tempUserInfo, setTempUserInfo] = useState({ ...userInfo });
-
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
@@ -122,6 +34,104 @@ const HirerProfile = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDirection, setSelectedDirection] = useState('All Products');
+
+  // Загрузка данных при монтировании компонента
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+
+      // Получение сессии пользователя
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        console.error('Session error:', sessionError);
+        setLoading(false);
+        return;
+      }
+
+      const userId = sessionData.session.user.id;
+
+      // Загрузка данных пользователя
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('username, email, password')
+        .eq('id', userId)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+      } else {
+        setUserInfo({
+          nickname: userData.username || 'User123',
+          email: userData.email || 'user@example.com',
+          password: userData.password || '********',
+        });
+        setTempUserInfo({
+          nickname: userData.username || 'User123',
+          email: userData.email || 'user@example.com',
+          password: userData.password || '********',
+        });
+      }
+
+      // Загрузка истории
+      const { data: historyData, error: historyError } = await supabase
+        .from('history')
+        .select('id, number, title, date, status')
+        .eq('user_id', userId);
+
+      if (historyError) {
+        console.error('Error fetching history:', historyError);
+      } else {
+        setHistoryItems(historyData.map(item => ({
+          number: item.number,
+          title: item.title,
+          date: new Date(item.date).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          }).toUpperCase(),
+          status: item.status,
+          statusClass: item.status.toLowerCase(),
+        })));
+      }
+
+      // Загрузка продуктов из всех таблиц
+      const tables = ['illustration', 'moation', 'other', 'interior'];
+      let allProducts = [];
+
+      for (const table of tables) {
+        const { data, error } = await supabase
+          .from(table)
+          .select('id, title, category, description, published_at, start_date, end_date, price, status')
+          .eq('user_id', userId);
+
+        if (error) {
+          console.error(`Error fetching from ${table}:`, error);
+        } else {
+          const mappedProducts = data.map(product => ({
+            id: product.id,
+            title: product.title,
+            direction: product.category,
+            description: product.description,
+            date: new Date(product.published_at).toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            }).toUpperCase(),
+            status: product.status,
+            price: product.price,
+            duration: calculateDuration(product.start_date, product.end_date),
+            durationTooltip: `${new Date(product.start_date).toLocaleDateString('en-GB')} - ${new Date(product.end_date).toLocaleDateString('en-GB')}`,
+          }));
+          allProducts = [...allProducts, ...mappedProducts];
+        }
+      }
+
+      setProducts(allProducts);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -140,8 +150,31 @@ const HirerProfile = () => {
     setTempUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const saveChanges = () => {
-    setUserInfo({ ...tempUserInfo });
+  const saveChanges = async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      console.error('No session found');
+      return;
+    }
+
+    const userId = sessionData.session.user.id;
+
+    const { error } = await supabase
+      .from('users')
+      .update({
+        username: tempUserInfo.nickname,
+        email: tempUserInfo.email,
+        password: tempUserInfo.password,
+      })
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Error updating user info:', error);
+      alert('Ошибка при сохранении данных пользователя.');
+    } else {
+      setUserInfo({ ...tempUserInfo });
+      alert('Данные пользователя успешно сохранены!');
+    }
     setModalOpen(false);
   };
 
@@ -154,8 +187,8 @@ const HirerProfile = () => {
         title: product.title,
         direction: product.direction,
         description: product.description,
-        startDate: startDate,
-        endDate: endDate,
+        startDate: startDate.split('.').reverse().join('-'), // Преобразование в формат YYYY-MM-DD
+        endDate: endDate.split('.').reverse().join('-'),
         price: product.price,
         status: product.status,
       });
@@ -189,35 +222,112 @@ const HirerProfile = () => {
     return `${diffDays} days`;
   };
 
-  const saveProduct = () => {
+  const saveProduct = async () => {
     const { title, direction, description, startDate, endDate, price, status } = tempProduct;
     if (!title || !direction || !description || !startDate || !endDate || !price || !status) {
-      alert('All fields are required!');
+      alert('Все поля обязательны для заполнения!');
       return;
     }
-    const currentDate = new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }).toUpperCase();
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      console.error('No session found');
+      return;
+    }
+
+    const userId = sessionData.session.user.id;
+    const tableMap = {
+      '3D': 'interior',
+      'Моушн': 'moation',
+      'Иллюстрация': 'illustration',
+      'Другое': 'other',
+    };
+    const table = tableMap[direction] || 'other';
+
+    const currentDate = new Date();
     const duration = calculateDuration(startDate, endDate);
     const productData = {
-      id: isEditing ? editingProductId : `nks${Math.floor(Math.random() * 10000)}`,
+      user_id: userId,
       title,
-      direction,
+      category: direction,
       description,
-      date: currentDate,
-      status,
+      published_at: currentDate.toISOString(),
+      start_date: new Date(startDate).toISOString(),
+      end_date: new Date(endDate).toISOString(),
       price,
-      duration,
-      durationTooltip: `${startDate} - ${endDate}`,
+      status,
     };
 
     if (isEditing) {
-      setProducts(products.map((p) => (p.id === editingProductId ? productData : p)));
+      // Определяем, из какой таблицы нужно обновить продукт
+      const oldProduct = products.find(p => p.id === editingProductId);
+      const oldTable = tableMap[oldProduct.direction] || 'other';
+
+      if (oldTable === table) {
+        // Обновляем в той же таблице
+        const { error } = await supabase
+          .from(table)
+          .update(productData)
+          .eq('id', editingProductId);
+
+        if (error) {
+          console.error('Error updating product:', error);
+          alert('Ошибка при обновлении объявления.');
+          return;
+        }
+      } else {
+        // Удаляем из старой таблицы и добавляем в новую
+        await supabase.from(oldTable).delete().eq('id', editingProductId);
+        const { error } = await supabase.from(table).insert(productData);
+
+        if (error) {
+          console.error('Error moving product:', error);
+          alert('Ошибка при перемещении объявления.');
+          return;
+        }
+      }
+
+      setProducts(products.map((p) => (p.id === editingProductId ? {
+        id: editingProductId,
+        title,
+        direction,
+        description,
+        date: currentDate.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }).toUpperCase(),
+        status,
+        price,
+        duration,
+        durationTooltip: `${new Date(startDate).toLocaleDateString('en-GB')} - ${new Date(endDate).toLocaleDateString('en-GB')}`,
+      } : p)));
     } else {
-      setProducts([...products, productData]);
+      const { data, error } = await supabase.from(table).insert(productData).select();
+
+      if (error) {
+        console.error('Error creating product:', error);
+        alert('Ошибка при создании объявления.');
+        return;
+      }
+
+      setProducts([...products, {
+        id: data[0].id,
+        title,
+        direction,
+        description,
+        date: currentDate.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }).toUpperCase(),
+        status,
+        price,
+        duration,
+        durationTooltip: `${new Date(startDate).toLocaleDateString('en-GB')} - ${new Date(endDate).toLocaleDateString('en-GB')}`,
+      }]);
     }
+
     setProductModalOpen(false);
     setSelectedProducts([]);
   };
@@ -230,7 +340,26 @@ const HirerProfile = () => {
     );
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    const tableMap = {
+      '3D': 'interior',
+      'Моушн': 'moation',
+      'Иллюстрация': 'illustration',
+      'Другое': 'other',
+    };
+
+    for (const productId of selectedProducts) {
+      const product = products.find(p => p.id === productId);
+      const table = tableMap[product.direction] || 'other';
+      const { error } = await supabase.from(table).delete().eq('id', productId);
+
+      if (error) {
+        console.error('Error deleting product:', error);
+        alert('Ошибка при удалении объявления.');
+        return;
+      }
+    }
+
     setProducts(products.filter((product) => !selectedProducts.includes(product.id)));
     setSelectedProducts([]);
   };
@@ -242,17 +371,54 @@ const HirerProfile = () => {
     }
   };
 
-  const handleComplete = (product) => {
-    const currentDate = new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }).toUpperCase();
+  const handleComplete = async (product) => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      console.error('No session found');
+      return;
+    }
+
+    const userId = sessionData.session.user.id;
+    const tableMap = {
+      '3D': 'interior',
+      'Моушн': 'moation',
+      'Иллюстрация': 'illustration',
+      'Другое': 'other',
+    };
+    const table = tableMap[product.direction] || 'other';
+
+    const currentDate = new Date();
+    const historyData = {
+      user_id: userId,
+      number: product.id,
+      title: product.title,
+      date: currentDate.toISOString(),
+      status: 'Completed',
+    };
+
+    const { error: insertError } = await supabase.from('history').insert(historyData);
+    if (insertError) {
+      console.error('Error adding to history:', insertError);
+      alert('Ошибка при добавлении в историю.');
+      return;
+    }
+
+    const { error: deleteError } = await supabase.from(table).delete().eq('id', product.id);
+    if (deleteError) {
+      console.error('Error deleting product:', deleteError);
+      alert('Ошибка при удалении объявления.');
+      return;
+    }
+
     setHistoryItems([
       {
         number: product.id,
         title: product.title,
-        date: currentDate,
+        date: currentDate.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }).toUpperCase(),
         status: 'Completed',
         statusClass: 'completed',
       },
@@ -261,17 +427,54 @@ const HirerProfile = () => {
     setProducts(products.filter((p) => p.id !== product.id));
   };
 
-  const handleReject = (product) => {
-    const currentDate = new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }).toUpperCase();
+  const handleReject = async (product) => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      console.error('No session found');
+      return;
+    }
+
+    const userId = sessionData.session.user.id;
+    const tableMap = {
+      '3D': 'interior',
+      'Моушн': 'moation',
+      'Иллюстрация': 'illustration',
+      'Другое': 'other',
+    };
+    const table = tableMap[product.direction] || 'other';
+
+    const currentDate = new Date();
+    const historyData = {
+      user_id: userId,
+      number: product.id,
+      title: product.title,
+      date: currentDate.toISOString(),
+      status: 'Rejected',
+    };
+
+    const { error: insertError } = await supabase.from('history').insert(historyData);
+    if (insertError) {
+      console.error('Error adding to history:', insertError);
+      alert('Ошибка при добавлении в историю.');
+      return;
+    }
+
+    const { error: deleteError } = await supabase.from(table).delete().eq('id', product.id);
+    if (deleteError) {
+      console.error('Error deleting product:', deleteError);
+      alert('Ошибка при удалении объявления.');
+      return;
+    }
+
     setHistoryItems([
       {
         number: product.id,
         title: product.title,
-        date: currentDate,
+        date: currentDate.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }).toUpperCase(),
         status: 'Rejected',
         statusClass: 'rejected',
       },
@@ -280,23 +483,83 @@ const HirerProfile = () => {
     setProducts(products.filter((p) => p.id !== product.id));
   };
 
-  const handleRestore = (historyItem) => {
-    const product = {
-      id: historyItem.number,
+  const handleRestore = async (historyItem) => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      console.error('No session found');
+      return;
+    }
+
+    const userId = sessionData.session.user.id;
+    const tableMap = {
+      '3D': 'interior',
+      'Моушн': 'moation',
+      'Иллюстрация': 'illustration',
+      'Другое': 'other',
+    };
+    const table = 'other'; // По умолчанию восстанавливаем в "other"
+
+    const currentDate = new Date();
+    const productData = {
+      user_id: userId,
+      title: historyItem.title,
+      category: 'Другое',
+      description: 'Restored product',
+      published_at: currentDate.toISOString(),
+      start_date: new Date('2023-01-01').toISOString(),
+      end_date: new Date('2024-07-01').toISOString(),
+      price: '$19,000',
+      status: 'Active',
+    };
+
+    const { data, error: insertError } = await supabase.from(table).insert(productData).select();
+    if (insertError) {
+      console.error('Error restoring product:', insertError);
+      alert('Ошибка при восстановлении объявления.');
+      return;
+    }
+
+    const { error: deleteError } = await supabase.from('history').delete().eq('number', historyItem.number);
+    if (deleteError) {
+      console.error('Error deleting from history:', deleteError);
+      alert('Ошибка при удалении из истории.');
+      return;
+    }
+
+    setProducts([...products, {
+      id: data[0].id,
       title: historyItem.title,
       direction: 'Другое',
-      date: historyItem.date,
+      description: 'Restored product',
+      date: currentDate.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }).toUpperCase(),
       status: 'Active',
       price: '$19,000',
       duration: '600 days',
       durationTooltip: '01.01.2023 - 01.07.2024',
-      description: 'Restored product',
-    };
-    setProducts([...products, product]);
+    }]);
     setHistoryItems(historyItems.filter((item) => item.number !== historyItem.number));
   };
 
-  const handleDeleteHistory = () => {
+  const handleDeleteHistory = async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      console.error('No session found');
+      return;
+    }
+
+    const userId = sessionData.session.user.id;
+    const { error } = await supabase.from('history').delete().eq('user_id', userId);
+
+    if (error) {
+      console.error('Error deleting history:', error);
+      alert('Ошибка при удалении истории.');
+      return;
+    }
+
     setHistoryItems([]);
   };
 
@@ -311,6 +574,10 @@ const HirerProfile = () => {
   const filteredProducts = selectedDirection === 'All Products'
     ? products
     : products.filter((product) => product.direction === selectedDirection);
+
+  if (loading) {
+    return <div className="loading">Загрузка...</div>;
+  }
 
   return (
     <div className="dashboard">
@@ -403,8 +670,8 @@ const HirerProfile = () => {
           <button onClick={() => openProductModal()}>Create New +</button>
           <button
             onClick={handleRename}
-            disabled={selectedProducts.length === 0}
-            className={selectedProducts.length === 0 ? 'disabled' : 'rename'}
+            disabled={selectedProducts.length !== 1}
+            className={selectedProducts.length !== 1 ? 'disabled' : 'rename'}
           >
             Rename
           </button>

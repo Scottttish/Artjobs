@@ -211,7 +211,7 @@ const HirerProfile = () => {
     }).toUpperCase();
     const duration = calculateDuration(startDate, endDate);
     const productData = {
-      id: isEditing ? editingProductId : `nks${Math.floor(Math.random() * 10000)}`,
+      id: isEditing ? editingProductId : `nks${Math.floorMath.random() * 10000)}`,
       title,
       direction,
       description,
@@ -422,7 +422,7 @@ const HirerProfile = () => {
       console.error('Error deleting history:', error);
       alert('Ошибка при очистке истории.');
     } else {
-      sethyun
+      setHistoryItems([]);
       alert('История успешно очищена!');
     }
     setLoading(false);

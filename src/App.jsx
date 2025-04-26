@@ -11,9 +11,10 @@ import MotionPage from './components/MotionPage/MotionPage';
 import IllustrationPage from './components/IllustrationPage/IllustrationPage';
 import InteriorPage from './components/InteriorPage/InteriorPage';
 import OtherPage from './components/OtherPage/OtherPage';
+import ArtProfile from './components/ArtProfile/ArtProfile'; // Добавляем компонент профиля художника
+import HirerProfile from './components/HirerProfile/HirerProfile'; // Добавляем компонент профиля нанимателя
 import './App.css';
 
-// Компонент для прокрутки к началу страницы
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -23,7 +24,6 @@ function ScrollToTop() {
   }, [pathname]);
 
   useEffect(() => {
-    // Отключаем восстановление прокрутки браузером
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
@@ -68,6 +68,8 @@ function App() {
           <Route path="/illustration" element={<IllustrationPage />} />
           <Route path="/interior" element={<InteriorPage />} />
           <Route path="/other" element={<OtherPage />} />
+          <Route path="/artprofile" element={<ArtProfile />} />
+          <Route path="/hirerprofile" element={<HirerProfile />} />
         </Routes>
         <Footer />
       </div>

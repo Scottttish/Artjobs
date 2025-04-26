@@ -6,7 +6,6 @@ import logo from '../../assets/logo.png';
 import icon from '../../assets/icon.png';
 import AuthModal from '../AuthModal/AuthModal';
 
-// Инициализация Supabase клиента
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
@@ -16,11 +15,10 @@ function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+  const [userRole, setUserRole] = useState(null); // Для хранения роли пользователя
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Проверка статуса авторизации и получение роли пользователя
   useEffect(() => {
     const checkSession = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -32,10 +30,7 @@ function Header() {
           .select('role')
           .eq('id', sessionData.session.user.id)
           .single();
-
-        if (error) {
-          console.error('Error fetching user role:', error);
-        } else {
+        if (!error && userData) {
           setUserRole(userData.role);
         }
       } else {
@@ -46,22 +41,18 @@ function Header() {
 
     checkSession();
 
-    // Подписка на изменения состояния авторизации
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setIsAuthenticated(!!session);
       if (session) {
-        const { data: userData, error } = await supabase
+        setIsAuthenticated(true);
+        const { data: userData } = await supabase
           .from('users')
           .select('role')
           .eq('id', session.user.id)
           .single();
-
-        if (error) {
-          console.error('Error fetching user role:', error);
-        } else {
-          setUserRole(userData.role);
-        }
+        setUserRole(userData?.role || null);
+        navigate('/'); // Перенаправляем на главную после входа
       } else {
+        setIsAuthenticated(false);
         setUserRole(null);
       }
     });
@@ -69,7 +60,7 @@ function Header() {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const scrollToSection = (sectionId) => {
     const section = document.getElementById(sectionId);
@@ -95,6 +86,7 @@ function Header() {
       setUserRole(null);
       setShowDropdown(false);
       alert('Вы успешно вышли из аккаунта!');
+      navigate('/'); // Перенаправляем на главную после выхода
     } catch (error) {
       console.error('Logout error:', error);
       alert('Ошибка при выходе из аккаунта.');
@@ -102,14 +94,11 @@ function Header() {
   };
 
   const handleSettings = () => {
-    // Перенаправление в зависимости от роли
+    // Перенаправляем в личный кабинет в зависимости от роли
     if (userRole === 'artist') {
-      navigate('/artprofile');
+      navigate('/artist-profile');
     } else if (userRole === 'hirer') {
-      navigate('/hirerprofile');
-    } else {
-      // Если роль не определена, можно перенаправить на страницу настроек или показать ошибку
-      navigate('/settings');
+      navigate('/hirer-profile');
     }
     setShowDropdown(false);
   };
@@ -161,7 +150,7 @@ function Header() {
                 alt="User Icon"
                 className="user-icon"
                 onClick={toggleDropdown}
-                style={{ cursor: 'pointer', width: '40px', height: '40px', borderRadius: '50%' }}
+                style={{ cursor: 'pointer', width: '40px', height: '40px' }}
               />
               {showDropdown && (
                 <div className="dropdown-menu">

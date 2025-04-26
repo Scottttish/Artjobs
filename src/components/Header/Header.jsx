@@ -15,17 +15,15 @@ function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [userRole, setUserRole] = useState(null); // Для хранения роли пользователя
+  const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Проверка статуса авторизации и получение роли
   useEffect(() => {
     const checkSession = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData.session) {
         setIsAuthenticated(true);
-        // Получаем данные пользователя из таблицы users
         const { data: userData, error } = await supabase
           .from('users')
           .select('role')
@@ -35,12 +33,6 @@ function Header() {
           console.error('Ошибка получения роли:', error);
         } else {
           setUserRole(userData.role);
-          // Перенаправляем на страницу профиля после входа
-          if (userData.role === 'artist') {
-            navigate('/artprofile');
-          } else if (userData.role === 'hirer') {
-            navigate('/hirerprofile');
-          }
         }
       } else {
         setIsAuthenticated(false);
@@ -95,7 +87,6 @@ function Header() {
   };
 
   const handleSettings = () => {
-    // Перенаправляем на страницу настроек в зависимости от роли
     if (userRole === 'artist') {
       navigate('/artprofile');
     } else if (userRole === 'hirer') {

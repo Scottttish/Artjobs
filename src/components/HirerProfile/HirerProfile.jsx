@@ -69,7 +69,7 @@ const HirerProfile = () => {
         });
       }
 
-      // Загрузка продуктов (предполагается таблица products)
+      // Загрузка продуктов
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*')
@@ -81,7 +81,7 @@ const HirerProfile = () => {
         setProducts(productsData || []);
       }
 
-      // Загрузка истории (предполагается таблица history)
+      // Загрузка истории
       const { data: historyData, error: historyError } = await supabase
         .from('history')
         .select('*')
@@ -103,7 +103,6 @@ const HirerProfile = () => {
     const file = event.target.files[0];
     if (file) {
       console.log('Uploading image:', file.name);
-      // Здесь можно добавить загрузку изображения в Supabase Storage
     }
   };
 
@@ -407,13 +406,23 @@ const HirerProfile = () => {
 
   const handleDeleteHistory = async () => {
     setLoading(true);
-    const { error } = await supabase.from('history').delete().eq('user_id', userInfo.id);
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      console.error('No session found');
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('history')
+      .delete()
+      .eq('user_id', sessionData.session.user.id);
 
     if (error) {
       console.error('Error deleting history:', error);
       alert('Ошибка при очистке истории.');
     } else {
-      setHistoryItems([]);
+      sethyun
       alert('История успешно очищена!');
     }
     setLoading(false);

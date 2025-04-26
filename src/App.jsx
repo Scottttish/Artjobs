@@ -11,6 +11,7 @@ import MotionPage from './components/MotionPage/MotionPage';
 import IllustrationPage from './components/IllustrationPage/IllustrationPage';
 import InteriorPage from './components/InteriorPage/InteriorPage';
 import OtherPage from './components/OtherPage/OtherPage';
+import NotFoundPage from './components/NotFoundPage/NotFoundPage';
 import './App.css';
 
 // Компонент для прокрутки к началу страницы
@@ -23,15 +24,20 @@ function ScrollToTop() {
   }, [pathname]);
 
   useEffect(() => {
+    // Отключаем восстановление прокрутки браузером
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
     window.scrollTo({ top: 0, behavior: 'instant' });
     console.log('ScrollToTop triggered on mount');
+    console.log('Initial scroll position:', window.scrollY);
 
     const handleScroll = () => {
       console.log('Scroll position changed to:', window.scrollY);
     };
     window.addEventListener('scroll', handleScroll);
 
-    // Логируем элемент в фокусе
     const focusedElement = document.activeElement;
     console.log('Focused element on mount:', focusedElement);
 
@@ -43,7 +49,7 @@ function ScrollToTop() {
 
 function App() {
   return (
-    <Router>
+    <Router basename="/Artjobs">
       <div className="App">
         <ScrollToTop />
         <Header />
@@ -63,6 +69,7 @@ function App() {
           <Route path="/illustration" element={<IllustrationPage />} />
           <Route path="/interior" element={<InteriorPage />} />
           <Route path="/other" element={<OtherPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         <Footer />
       </div>

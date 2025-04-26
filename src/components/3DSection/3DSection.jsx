@@ -29,7 +29,7 @@ function ThreeDSection() {
 
     const loader = new GLTFLoader();
     let model;
-    const modelPath = './assets/my-model.glb';
+    const modelPath = '/assets/my-model.glb'; // Абсолютный путь относительно корня приложения
     console.log('Trying to load model from:', modelPath);
     loader.load(
       modelPath,
@@ -51,6 +51,13 @@ function ThreeDSection() {
       undefined,
       (error) => {
         console.error('Ошибка загрузки модели:', error);
+        // Добавляем заглушку, чтобы компонент продолжал работать
+        model = new THREE.Mesh(
+          new THREE.BoxGeometry(5, 5, 5),
+          new THREE.MeshStandardMaterial({ color: 0xff0000 })
+        );
+        scene.add(model);
+        console.warn('Fallback to red cube due to model loading failure');
       }
     );
 

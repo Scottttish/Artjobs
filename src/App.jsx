@@ -11,8 +11,8 @@ import MotionPage from './components/MotionPage/MotionPage';
 import IllustrationPage from './components/IllustrationPage/IllustrationPage';
 import InteriorPage from './components/InteriorPage/InteriorPage';
 import OtherPage from './components/OtherPage/OtherPage';
-import ArtProfile from './components/ArtProfile/ArtProfile'; // Добавляем компонент профиля художника
-import HirerProfile from './components/HirerProfile/HirerProfile'; // Добавляем компонент профиля нанимателя
+import ArtProfile from './components/ArtProfile/ArtProfile';
+import HirerProfile from './components/HirerProfile/HirerProfile';
 import './App.css';
 
 function ScrollToTop() {
@@ -20,7 +20,6 @@ function ScrollToTop() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-    console.log('ScrollToTop triggered for pathname:', pathname);
   }, [pathname]);
 
   useEffect(() => {
@@ -29,16 +28,9 @@ function ScrollToTop() {
     }
 
     window.scrollTo({ top: 0, behavior: 'instant' });
-    console.log('ScrollToTop triggered on mount');
-    console.log('Initial scroll position:', window.scrollY);
 
-    const handleScroll = () => {
-      console.log('Scroll position changed to:', window.scrollY);
-    };
+    const handleScroll = () => {};
     window.addEventListener('scroll', handleScroll);
-
-    const focusedElement = document.activeElement;
-    console.log('Focused element on mount:', focusedElement);
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);

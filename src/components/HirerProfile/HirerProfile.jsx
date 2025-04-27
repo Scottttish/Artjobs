@@ -15,6 +15,8 @@ const HirerProfile = () => {
     nickname: '',
     email: '',
     password: '',
+    telegramUsername: '',
+    phone: '',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,9 +37,9 @@ const HirerProfile = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDirection, setSelectedDirection] = useState('All Products');
-  const [dateSortDirection, setDateSortDirection] = useState('asc'); // 'asc' or 'desc'
-  const [durationSortMode, setDurationSortMode] = useState('duration'); // 'duration' (asc) or 'status' (desc)
-  const [productSearchQuery, setProductSearchQuery] = useState(''); // New state for product search
+  const [dateSortDirection, setDateSortDirection] = useState('asc');
+  const [durationSortMode, setDurationSortMode] = useState('duration');
+  const [productSearchQuery, setProductSearchQuery] = useState('');
 
   // Валидация формата даты (ожидается YYYY-MM-DD)
   const isValidDateFormat = (dateString) => {
@@ -67,7 +69,7 @@ const HirerProfile = () => {
       // Загрузка данных пользователя
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('username, email, password')
+        .select('username, email, password, telegram_username, phone')
         .eq('id', userId)
         .single();
 
@@ -79,11 +81,15 @@ const HirerProfile = () => {
           nickname: userData.username || 'User123',
           email: userData.email || 'user@example.com',
           password: userData.password || '********',
+          telegramUsername: userData.telegram_username || '',
+          phone: userData.phone || '',
         });
         setTempUserInfo({
           nickname: userData.username || 'User123',
           email: userData.email || 'user@example.com',
           password: userData.password || '********',
+          telegramUsername: userData.telegram_username || '',
+          phone: userData.phone || '',
         });
       }
 
@@ -137,11 +143,11 @@ const HirerProfile = () => {
               month: 'short',
               year: 'numeric',
             }).toUpperCase(),
-            publishedAt: new Date(product.published_at), // Store raw date for sorting
+            publishedAt: new Date(product.published_at),
             status: product.status,
             price: product.price,
             duration: calculateDuration(product.start_date, product.end_date),
-            durationDays: Math.ceil(Math.abs(new Date(product.end_date) - new Date(product.start_date)) / (1000 * 60 * 60 * 24)), // For sorting
+            durationDays: Math.ceil(Math.abs(new Date(product.end_date) - new Date(product.start_date)) / (1000 * 60 * 60 * 24)),
             durationTooltip: `${new Date(product.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} - ${new Date(product.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`,
           }));
           allProducts = [...allProducts, ...mappedProducts];
@@ -185,6 +191,8 @@ const HirerProfile = () => {
       username: tempUserInfo.nickname,
       email: tempUserInfo.email,
       password: tempUserInfo.password,
+      telegram_username: tempUserInfo.telegramUsername,
+      phone: tempUserInfo.phone,
     };
 
     console.log('Updating user data:', updatedUserData);
@@ -701,10 +709,8 @@ const HirerProfile = () => {
 
     const sortedProducts = [...products].sort((a, b) => {
       if (newMode === 'duration') {
-        // Ascending by duration (days)
         return a.durationDays - b.durationDays;
       } else {
-        // Descending by status ("Active" > "Inactive")
         const statusOrder = { Active: 1, Inactive: 0 };
         return statusOrder[b.status] - statusOrder[a.status];
       }
@@ -754,15 +760,23 @@ const HirerProfile = () => {
 
         <div className="user-info">
           <div className="user-info-item">
-            <span>Nickname: {userInfo.nickname}</span>
+            <span>Имя: {userInfo.nickname}</span>
             <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
           <div className="user-info-item">
-            <span>Email: {userInfo.email}</span>
+            <span>Почта: {userInfo.email}</span>
             <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
           <div className="user-info-item">
-            <span>Password: {userInfo.password}</span>
+            <span>Пароль: {userInfo.password}</span>
+            <button className="edit-button" onClick={openModal}>✏️</button>
+          </div>
+          <div className="user-info-item">
+            <span>Telegram Username: {userInfo.telegramUsername || 'Не указано'}</span>
+            <button className="edit-button" onClick={openModal}>✏️</button>
+          </div>
+          <div className="user-info-item">
+            <span>Телефон: {userInfo.phone || 'Не указано'}</span>
             <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
         </div>
@@ -771,15 +785,15 @@ const HirerProfile = () => {
           <div className="track-header">
             <input
               type="text"
-              placeholder="Enter the receipt number"
+              placeholder="Введите названия объявления"
               value={searchQuery}
               onChange={handleSearchChange}
             />
-            <button>Track Q</button>
+            <button>Поиск</button>
           </div>
           <div className="history-header">
-            <h3>HISTORY</h3>
-            <span onClick={handleDeleteHistory} className="delete-history">Delete History</span>
+            <h3>ИСТОРИЯ</h3>
+            <span onClick={handleDeleteHistory} className="delete-history">Удалить</span>
           </div>
           <div className="history-content">
             {filteredHistoryItems.length > 0 ? (
@@ -814,6 +828,39 @@ const HirerProfile = () => {
             value={productSearchQuery}
             onChange={handleProductSearchChange}
           />
+        </div>
+        <div className="filters">
+          <select
+            value={selectedDirection}
+            onChange={(e) => setSelectedDirection(e.target.value)}
+          >
+            <option>All Products</option>
+            <option>3D</option>
+            <option>Интерьер</option>
+            <option>Моушн</option>
+            <option>Иллюстрация</option>
+            <option>Другое</option>
+          </select>
+          <button className="sort-button" onClick={handleDateSort}>
+            Дата публикации {dateSortDirection === 'asc' ? '↑' : '↓'}
+          </button>
+          <button className="sort-button" onClick={handleDurationSort}>
+            Срок {durationSortMode === 'duration' ? '↑' : '↓'}
+          </button>
+          <button
+            onClick={handleRename}
+            disabled={selectedProducts.length !== 1}
+            className={selectedProducts.length !== 1 ? 'disabled' : 'rename'}
+          >
+            Изменить
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={selectedProducts.length === 0}
+            className={selectedProducts.length === 0 ? 'disabled' : 'delete'}
+          >
+            Удалить
+          </button>
         </div>
         <div className="product-grid">
           {searchedProducts.map((product, index) => (
@@ -878,50 +925,14 @@ const HirerProfile = () => {
             </div>
           ))}
         </div>
-        <div className="filters">
-          <select
-            value={selectedDirection}
-            onChange={(e) => setSelectedDirection(e.target.value)}
-          >
-            <option>All Products</option>
-            <option>3D</option>
-            <option>Интерьер</option>
-            <option>Моушн</option>
-            <option>Иллюстрация</option>
-            <option>Другое</option>
-          </select>
-          <button className="sort-button" onClick={handleDateSort}>
-            Дата публикации {dateSortDirection === 'asc' ? '↑' : '↓'}
-          </button>
-          <button className="sort-button" onClick={handleDurationSort}>
-            Срок {durationSortMode === 'duration' ? '↑' : '↓'}
-          </button>
-        </div>
-        <div className="action-buttons">
-          <button onClick={() => openProductModal()}>Create New +</button>
-          <button
-            onClick={handleRename}
-            disabled={selectedProducts.length !== 1}
-            className={selectedProducts.length !== 1 ? 'disabled' : 'rename'}
-          >
-            Rename
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={selectedProducts.length === 0}
-            className={selectedProducts.length === 0 ? 'disabled' : 'delete'}
-          >
-            Delete
-          </button>
-        </div>
       </div>
 
       {modalOpen && (
         <div className="modal">
           <div className="modal-content">
-            <h3>Edit User Info</h3>
+            <h3>Редактировать данные пользователя</h3>
             <div className="modal-field">
-              <label>Nickname</label>
+              <label>Имя</label>
               <input
                 type="text"
                 name="nickname"
@@ -931,7 +942,7 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Email</label>
+              <label>Почта</label>
               <input
                 type="email"
                 name="email"
@@ -941,7 +952,7 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Password</label>
+              <label>Пароль</label>
               <input
                 type="password"
                 name="password"
@@ -950,9 +961,29 @@ const HirerProfile = () => {
                 required
               />
             </div>
+            <div className="modal-field">
+              <label>Telegram Username</label>
+              <input
+                type="text"
+                name="telegramUsername"
+                value={tempUserInfo.telegramUsername}
+                onChange={handleModalInputChange}
+                placeholder="@username"
+              />
+            </div>
+            <div className="modal-field">
+              <label>Телефон</label>
+              <input
+                type="tel"
+                name="phone"
+                value={tempUserInfo.phone}
+                onChange={handleModalInputChange}
+                placeholder="+79991234567"
+              />
+            </div>
             <div className="modal-buttons">
-              <button onClick={() => setModalOpen(false)}>Cancel</button>
-              <button onClick={saveChanges}>Save</button>
+              <button onClick={() => setModalOpen(false)}>Отмена</button>
+              <button onClick={saveChanges}>Сохранить</button>
             </div>
           </div>
         </div>
@@ -961,9 +992,9 @@ const HirerProfile = () => {
       {productModalOpen && (
         <div className="modal">
           <div className="modal-content">
-            <h3>{isEditing ? 'Edit Product' : 'Add New Product'}</h3>
+            <h3>{isEditing ? 'Редактировать продукт' : 'Добавить новый продукт'}</h3>
             <div className="modal-field">
-              <label>Title</label>
+              <label>Название</label>
               <input
                 type="text"
                 name="title"
@@ -973,14 +1004,14 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Direction</label>
+              <label>Направление</label>
               <select
                 name="direction"
                 value={tempProduct.direction}
                 onChange={handleProductInputChange}
                 required
               >
-                <option value="">Select Direction</option>
+                <option value="">Выберите направление</option>
                 <option value="3D">3D</option>
                 <option value="Интерьер">Интерьер</option>
                 <option value="Моушн">Моушн</option>
@@ -989,7 +1020,7 @@ const HirerProfile = () => {
               </select>
             </div>
             <div className="modal-field">
-              <label>Description</label>
+              <label>Описание</label>
               <textarea
                 name="description"
                 value={tempProduct.description}
@@ -999,7 +1030,7 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Start Date</label>
+              <label>Дата начала</label>
               <input
                 type="date"
                 name="startDate"
@@ -1009,7 +1040,7 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>End Date</label>
+              <label>Дата окончания</label>
               <input
                 type="date"
                 name="endDate"
@@ -1019,7 +1050,7 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Price</label>
+              <label>Стоимость</label>
               <input
                 type="text"
                 name="price"
@@ -1030,20 +1061,20 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Status</label>
+              <label>Статус</label>
               <select
                 name="status"
                 value={tempProduct.status}
                 onChange={handleProductInputChange}
                 required
               >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="Active">Активный</option>
+                <option value="Inactive">Неактивный</option>
               </select>
             </div>
             <div className="modal-buttons">
-              <button onClick={() => setProductModalOpen(false)}>Cancel</button>
-              <button onClick={saveProduct}>Save</button>
+              <button onClick={() => setProductModalOpen(false)}>Отмена</button>
+              <button onClick={saveProduct}>Сохранить</button>
             </div>
           </div>
         </div>

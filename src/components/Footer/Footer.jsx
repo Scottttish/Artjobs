@@ -87,16 +87,16 @@ function Footer() {
         <div className="Footer-contact">
           <div className="Footer-contact-item">
             <img src={locationIcon} alt="Location" className="Footer-icon" />
-            <p className="Footer-text">21 Revolution Street, Paris, France</p>
+            <p className="Footer-text">Астана, Казахстан</p>
           </div>
           <div className="Footer-contact-item">
             <img src={phoneIcon} alt="Phone" className="Footer-icon" />
-            <p className="Footer-text">+1 555 123456</p>
+            <p className="Footer-text">+8 800 555 35 35</p>
           </div>
           <div className="Footer-contact-item">
             <img src={emailIcon} alt="Email" className="Footer-icon" />
             <p className="Footer-text">
-              <a href="mailto:support@company.com" className="Footer-link">support@company.com</a>
+              <a href="mailto:support@company.com" className="Footer-link">scotthouston314@gmail.com</a>
             </p>
           </div>
           <button className="Footer-feedback-button" onClick={openModal}>

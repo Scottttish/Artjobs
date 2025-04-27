@@ -9,9 +9,9 @@
     justify-content: center;
     align-items: center;
     z-index: 1001;
-  }
-  
-  .auth-modal-box {
+}
+
+.auth-modal-box {
     background-color: white;
     width: 100%;
     max-width: 1200px;
@@ -23,9 +23,9 @@
     overflow-y: auto;
     display: flex;
     flex-direction: row;
-  }
-  
-  .auth-news-block {
+}
+
+.auth-news-block {
     width: calc(45% - 10px);
     margin-left: 10px;
     margin-top: 10px;
@@ -34,9 +34,9 @@
     background-size: cover;
     background-position: center;
     border-radius: 10px;
-  }
-  
-  .auth-block {
+}
+
+.auth-block {
     width: 55%;
     padding: 20px;
     box-sizing: border-box;
@@ -49,35 +49,35 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
-  
-  .auth-h2 {
+}
+
+.auth-h2 {
     font-family: 'Marcellus', serif;
     font-size: 30px;
     margin-bottom: 5px;
     color: #333;
-  }
-  
-  .auth-h2-login,
-  .auth-h2-register {
+}
+
+.auth-h2-login,
+.auth-h2-register {
     text-align: center;
     width: 100%;
-  }
-  
-  .auth-p {
+}
+
+.auth-p {
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
     margin-bottom: 15px;
     color: #333;
-  }
-  
-  .auth-p-login,
-  .auth-p-register {
+}
+
+.auth-p-login,
+.auth-p-register {
     text-align: center;
     width: 100%;
-  }
-  
-  .auth-google-button {
+}
+
+.auth-google-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -92,56 +92,56 @@
     border-radius: 5px;
     cursor: pointer;
     margin: 0 auto;
-  }
-  
-  .google-icon {
+}
+
+.google-icon {
     width: 20px;
     height: 20px;
-  }
-  
-  .user-role {
+}
+
+.user-role {
     margin-top: 10px;
     display: flex;
     flex-direction: column;
     gap: 3px;
-    width: 449px;
+    width: 449px; /* Устанавливаем ширину 449px, чтобы соответствовать другим элементам */
     margin-left: auto;
     margin-right: auto;
-  }
-  
-  .user-role label {
+}
+
+.user-role label {
     font-family: 'Montserrat', sans-serif;
     font-size: 16px;
     color: #333;
     text-align: left;
     margin-left: 0;
-  }
-  
-  .user-role select.auth-select {
+}
+
+.user-role select.auth-select {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    width: 100%;
+    width: 100%; /* Растягиваем на всю ширину родителя (449px) */
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
     margin-top: 3px;
     color: #333;
     margin-left: 0;
-  }
-  
-  .auth-form {
+    box-sizing: border-box; /* Учитываем padding и border в ширине */
+}
+
+.auth-form {
     display: flex;
     flex-direction: column;
     margin-top: 10px;
     gap: 3px;
     margin-bottom: 5px;
-    width: 100%;
-    max-width: 449px;
+    width: 449px; /* Устанавливаем фиксированную ширину 449px */
     margin-left: auto;
     margin-right: auto;
-  }
-  
-  .auth-form label {
+}
+
+.auth-form label {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -152,50 +152,50 @@
     color: #333;
     width: 100%;
     margin-top: 5px;
-  }
-  
-  .auth-form input[type="text"],
-  .auth-form input[type="email"],
-  .auth-form input[type="password"] {
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"] {
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    width: 100%;
-    box-sizing: border-box;
+    width: 100%; /* Растягиваем на всю ширину родителя (449px) */
+    box-sizing: border-box; /* Учитываем padding и border в ширине */
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
     color: #333;
-  }
-  
-  .auth-form input.valid {
+}
+
+.auth-form input.valid {
     border: 2px solid green !important;
-  }
-  
-  .auth-form input.invalid {
+}
+
+.auth-form input.invalid {
     border: 2px solid red !important;
-  }
-  
-  .auth-form input.neutral {
+}
+
+.auth-form input.neutral {
     border: 1px solid #ccc;
-  }
-  
-  .password-levels {
-    width: 100%;
+}
+
+.password-levels {
+    width: 100%; /* Прогресс-бар растягивается на всю ширину .auth-form (449px) */
     height: 8px;
     background-color: #ccc;
     border-radius: 5px;
     margin-top: 5px;
-  }
-  
-  .progress-bar {
+}
+
+.progress-bar {
     height: 100%;
     border-radius: 5px;
     transition: width 0.5s ease, background-color 0.5s ease;
-  }
-  
-  .auth-submit-button {
+}
+
+.auth-submit-button {
     background-color: #333;
-    width: 100%;
+    width: 100%; /* Кнопка растягивается на всю ширину .auth-form (449px) */
     color: white;
     padding: 10px;
     font-family: 'Montserrat', sans-serif;
@@ -204,56 +204,56 @@
     border-radius: 5px;
     cursor: pointer;
     margin-top: 0px;
-  }
-  
-  .auth-submit-button:hover {
+}
+
+.auth-submit-button:hover {
     background-color: #555;
-  }
-  
-  .auth-checkbox-label {
+}
+
+.auth-checkbox-label {
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
-  }
-  
-  .checkbox-container {
+}
+
+.checkbox-container {
     display: flex;
     align-items: center;
-  }
-  
-  .auth-checkbox-label input[type="checkbox"] {
+}
+
+.auth-checkbox-label input[type="checkbox"] {
     width: 16px;
     height: 16px;
-  }
-  
-  .checkbox-text {
+}
+
+.checkbox-text {
     font-family: 'Montserrat', sans-serif;
     font-size: 13px;
     margin: 0;
     transform: translateY(-24px);
     margin-left: 25px;
     color: #333;
-  }
-  
-  .login-link {
+}
+
+.login-link {
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
     text-align: center;
     margin-top: 5px;
     color: #333;
-  }
-  
-  .login-link a {
+}
+
+.login-link a {
     color: #333;
     text-decoration: underline;
-  }
-  
-  .login-link a:hover {
+}
+
+.login-link a:hover {
     color: #666;
-  }
-  
-  .auth-close-button {
+}
+
+.auth-close-button {
     position: absolute;
     top: 12px;
     right: 18px;
@@ -262,4 +262,4 @@
     border: none;
     cursor: pointer;
     color: #333;
-  }
+}

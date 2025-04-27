@@ -18,7 +18,6 @@ function MotionPage() {
       setLoading(true);
       setError(null);
 
-      // Загрузка вакансий из таблицы motion
       const { data: jobData, error: jobError } = await supabase
         .from('motion')
         .select('id, user_id, title, description, published_at, start_date, end_date, price, status, category')
@@ -33,7 +32,6 @@ function MotionPage() {
 
       console.log('Fetched jobs from motion:', jobData);
 
-      // Если данных нет, проверяем, какие категории существуют
       if (jobData.length === 0) {
         const { data: allCategories, error: categoryError } = await supabase
           .from('motion')
@@ -45,7 +43,6 @@ function MotionPage() {
         }
       }
 
-      // Для каждой вакансии получаем никнейм работодателя
       const jobsWithCompany = await Promise.all(
         jobData.map(async (job) => {
           const { data: userData, error: userError } = await supabase
@@ -59,18 +56,15 @@ function MotionPage() {
             return { ...job, company: 'Неизвестный работодатель' };
           }
 
-          // Расчёт дедлайна (разница между end_date и start_date в днях)
           const startDate = new Date(job.start_date);
           const endDate = new Date(job.end_date);
           
-          // Проверка на валидность дат
           let deadlineDays = 'Не указано';
           if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
             deadlineDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
             deadlineDays = `${deadlineDays} дней`;
           }
 
-          // Форматирование даты публикации
           const publishedDateObj = new Date(job.published_at);
           const publishedDate = !isNaN(publishedDateObj.getTime())
             ? publishedDateObj.toLocaleDateString('ru-RU', {
@@ -98,38 +92,73 @@ function MotionPage() {
   }, []);
 
   if (loading) {
-    return <div className="loading">Загрузка...</div>;
+    return (
+      <div className="app-container">
+        <main>
+          <div className="job-listings-container">
+            <div className="loading">Загрузка...</div>
+          </div>
+        </main>
+        <footer className="footer">
+          <p>21 Revolution Street, Paris, France</p>
+          <p>+1 555 123456</p>
+          <p>support@company.com</p>
+        </footer>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="error">{error}</div>;
+    return (
+      <div className="app-container">
+        <main>
+          <div className="job-listings-container">
+            <div className="error">{error}</div>
+          </div>
+        </main>
+        <footer className="footer">
+          <p>21 Revolution Street, Paris, France</p>
+          <p>+1 555 123456</p>
+          <p>support@company.com</p>
+        </footer>
+      </div>
+    );
   }
 
   return (
-    <div className="job-listings-container">
-      {jobs.length === 0 ? (
-        <p>Вакансий в категории Моушн пока нет.</p>
-      ) : (
-        jobs.map((job) => (
-          <div key={job.id} className="job-card">
-            <h3 className="job-title">{job.title}</h3>
-            <p className="job-salary">{job.salary}</p>
-            <p className="job-company">
-              <span className="company-name">{job.company}</span>
-              <span className="verified">✔</span>
-            </p>
-            <p className="job-deadline">
-              <span className="deadline-label">Срок выполнения:</span> {job.deadline}
-            </p>
-            <p className="job-published">
-              <span className="published-label">Дата публикации:</span> {job.publishedDate}
-            </p>
-            <p className="job-description-label">Описание работы:</p>
-            <p className="job-description">{job.description}</p>
-            <button className="apply-btn">Откликнуться</button>
-          </div>
-        ))
-      )}
+    <div className="app-container">
+      <main>
+        <div className="job-listings-container">
+          {jobs.length === 0 ? (
+            <p className="no-jobs">Вакансий в категории Моушн пока нет.</p>
+          ) : (
+            jobs.map((job) => (
+              <div key={job.id} className="job-card">
+                <h3 className="job-title">{job.title}</h3>
+                <p className="job-salary">{job.salary}</p>
+                <p className="job-company">
+                  <span className="company-name">{job.company}</span>
+                  <span className="verified">✔</span>
+                </p>
+                <p className="job-deadline">
+                  <span className="deadline-label">Срок выполнения:</span> {job.deadline}
+                </p>
+                <p className="job-published">
+                  <span className="published-label">Дата публикации:</span> {job.publishedDate}
+                </p>
+                <p className="job-description-label">Описание работы:</p>
+                <p className="job-description">{job.description}</p>
+                <button className="apply-btn">Откликнуться</button>
+              </div>
+            ))
+          )}
+        </div>
+      </main>
+      <footer className="footer">
+        <p>21 Revolution Street, Paris, France</p>
+        <p>+1 555 123456</p>
+        <p>support@company.com</p>
+      </footer>
     </div>
   );
 }

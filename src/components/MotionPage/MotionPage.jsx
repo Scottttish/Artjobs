@@ -99,11 +99,6 @@ function MotionPage() {
             <div className="loading">Загрузка...</div>
           </div>
         </main>
-        <footer className="footer">
-          <p>21 Revolution Street, Paris, France</p>
-          <p>+1 555 123456</p>
-          <p>support@company.com</p>
-        </footer>
       </div>
     );
   }
@@ -116,11 +111,6 @@ function MotionPage() {
             <div className="error">{error}</div>
           </div>
         </main>
-        <footer className="footer">
-          <p>21 Revolution Street, Paris, France</p>
-          <p>+1 555 123456</p>
-          <p>support@company.com</p>
-        </footer>
       </div>
     );
   }
@@ -154,11 +144,6 @@ function MotionPage() {
           )}
         </div>
       </main>
-      <footer className="footer">
-        <p>21 Revolution Street, Paris, France</p>
-        <p>+1 555 123456</p>
-        <p>support@company.com</p>
-      </footer>
     </div>
   );
 }

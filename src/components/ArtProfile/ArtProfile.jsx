@@ -180,11 +180,27 @@ function ArtProfile() {
   };
 
   if (loading) {
-    return <div className="loading">Загрузка...</div>;
+    return (
+      <div className="app-container">
+        <main>
+          <div className="job-listings-container">
+            <div className="loading">Загрузка...</div>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="error">{error}</div>;
+    return (
+      <div className="app-container">
+        <main>
+          <div className="job-listings-container">
+            <div className="error">{error}</div>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (

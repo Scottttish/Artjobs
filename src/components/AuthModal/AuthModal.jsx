@@ -221,15 +221,6 @@ function AuthModal({ onClose }) {
 
           {error && <p className="auth-error" style={{ color: 'red' }}>{error}</p>}
 
-          <button className="auth-google-button">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/480px-Google_%22G%22_logo.svg.png"
-              alt="Google"
-              className="google-icon"
-            />
-            Войти с помощью Google
-          </button>
-
           {!isLogin && (
             <div className="user-role">
               <label htmlFor="role-select">Роль</label>

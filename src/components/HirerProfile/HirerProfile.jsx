@@ -16,7 +16,6 @@ const HirerProfile = () => {
     email: '',
     password: '',
     telegramUsername: '',
-    phone: '',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -58,7 +57,6 @@ const HirerProfile = () => {
       // Получение сессии пользователя
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData.session) {
-        console.error('Session error:', sessionError);
         setError('Пожалуйста, войдите в систему.');
         setLoading(false);
         return;
@@ -69,12 +67,11 @@ const HirerProfile = () => {
       // Загрузка данных пользователя
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('username, email, password, telegram_username, phone')
+        .select('username, email, password, telegram_username')
         .eq('id', userId)
         .single();
 
       if (userError) {
-        console.error('Error fetching user data:', userError);
         setError('Ошибка загрузки данных пользователя: ' + userError.message);
       } else {
         setUserInfo({
@@ -82,14 +79,12 @@ const HirerProfile = () => {
           email: userData.email || 'user@example.com',
           password: userData.password || '********',
           telegramUsername: userData.telegram_username || '',
-          phone: userData.phone || '',
         });
         setTempUserInfo({
           nickname: userData.username || 'User123',
           email: userData.email || 'user@example.com',
           password: userData.password || '********',
           telegramUsername: userData.telegram_username || '',
-          phone: userData.phone || '',
         });
       }
 
@@ -100,7 +95,6 @@ const HirerProfile = () => {
         .eq('user_id', userId);
 
       if (historyError) {
-        console.error('Error fetching history:', historyError);
         setError('Ошибка загрузки истории: ' + historyError.message);
       } else {
         setHistoryItems(historyData.map(item => ({
@@ -123,14 +117,12 @@ const HirerProfile = () => {
       let allProducts = [];
 
       for (const table of tables) {
-        console.log(`Fetching products from table: ${table}`);
         const { data, error } = await supabase
           .from(table)
           .select('id, title, category, description, published_at, start_date, end_date, price, status')
           .eq('user_id', userId);
 
         if (error) {
-          console.error(`Error fetching from ${table}:`, error);
           setError(`Ошибка загрузки данных из таблицы ${table}: ${error.message}`);
         } else {
           const mappedProducts = data.map(product => ({
@@ -174,7 +166,6 @@ const HirerProfile = () => {
   const saveChanges = async () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      console.error('No session found');
       alert('Пожалуйста, войдите в систему.');
       return;
     }
@@ -185,10 +176,7 @@ const HirerProfile = () => {
       email: tempUserInfo.email,
       password: tempUserInfo.password,
       telegram_username: tempUserInfo.telegramUsername,
-      phone: tempUserInfo.phone,
     };
-
-    console.log('Updating user data:', updatedUserData);
 
     const { error } = await supabase
       .from('users')
@@ -196,7 +184,6 @@ const HirerProfile = () => {
       .eq('id', userId);
 
     if (error) {
-      console.error('Error updating user info:', error);
       alert('Ошибка при сохранении данных пользователя: ' + error.message);
     } else {
       setUserInfo({ ...tempUserInfo });
@@ -225,7 +212,6 @@ const HirerProfile = () => {
           }
           return formatted;
         } catch (err) {
-          console.error('Error formatting date:', err);
           alert('Ошибка: Неверный формат даты. Ожидается "01 JAN 2023".');
           return '';
         }
@@ -283,7 +269,6 @@ const HirerProfile = () => {
 
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      console.error('No session found');
       alert('Пожалуйста, войдите в систему.');
       return;
     }
@@ -311,9 +296,6 @@ const HirerProfile = () => {
       status,
     };
 
-    console.log('Saving product to table:', table);
-    console.log('Product data:', productData);
-
     if (isEditing) {
       const oldProduct = products.find(p => p.id === editingProductId);
       const oldTable = tableMap[oldProduct.direction] || 'other';
@@ -325,21 +307,18 @@ const HirerProfile = () => {
           .eq('id', editingProductId);
 
         if (error) {
-          console.error('Error updating product:', error);
           alert('Ошибка при обновлении объявления: ' + error.message);
           return;
         }
       } else {
         const { error: deleteError } = await supabase.from(oldTable).delete().eq('id', editingProductId);
         if (deleteError) {
-          console.error('Error deleting product from old table:', deleteError);
           alert('Ошибка при удалении старого объявления: ' + deleteError.message);
           return;
         }
 
         const { data, error: insertError } = await supabase.from(table).insert(productData).select();
         if (insertError) {
-          console.error('Error inserting product into new table:', insertError);
           alert('Ошибка при создании нового объявления: ' + insertError.message);
           return;
         }
@@ -368,7 +347,6 @@ const HirerProfile = () => {
       const { data, error } = await supabase.from(table).insert(productData).select();
 
       if (error) {
-        console.error('Error creating product:', error);
         alert('Ошибка при создании объявления: ' + error.message);
         return;
       }
@@ -416,11 +394,9 @@ const HirerProfile = () => {
     for (const productId of selectedProducts) {
       const product = products.find(p => p.id === productId);
       const table = tableMap[product.direction] || 'other';
-      console.log(`Deleting product from table: ${table}, id: ${productId}`);
       const { error } = await supabase.from(table).delete().eq('id', productId);
 
       if (error) {
-        console.error('Error deleting product:', error);
         alert('Ошибка при удалении объявления: ' + error.message);
         return;
       }
@@ -440,7 +416,6 @@ const HirerProfile = () => {
   const handleComplete = async (product) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      console.error('No session found');
       alert('Пожалуйста, войдите в систему.');
       return;
     }
@@ -465,8 +440,6 @@ const HirerProfile = () => {
       status: 'Completed',
     };
 
-    console.log('Adding to history:', historyData);
-
     const { data: insertedHistory, error: insertError } = await supabase
       .from('history')
       .insert(historyData)
@@ -474,7 +447,6 @@ const HirerProfile = () => {
       .single();
 
     if (insertError) {
-      console.error('Error adding to history:', insertError);
       alert('Ошибка при добавлении в историю: ' + insertError.message);
       return;
     }
@@ -502,7 +474,6 @@ const HirerProfile = () => {
   const handleReject = async (product) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      console.error('No session found');
       alert('Пожалуйста, войдите в систему.');
       return;
     }
@@ -527,8 +498,6 @@ const HirerProfile = () => {
       status: 'Rejected',
     };
 
-    console.log('Adding to history:', historyData);
-
     const { data: insertedHistory, error: insertError } = await supabase
       .from('history')
       .insert(historyData)
@@ -536,7 +505,6 @@ const HirerProfile = () => {
       .single();
 
     if (insertError) {
-      console.error('Error adding to history:', insertError);
       alert('Ошибка при добавлении в историю: ' + insertError.message);
       return;
     }
@@ -564,19 +532,15 @@ const HirerProfile = () => {
   const handleRestore = async (historyItem) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      console.error('No session found');
       alert('Пожалуйста, войдите в систему.');
       return;
     }
 
-    console.log('Attempting to delete from history, id:', historyItem.id);
     const { error: deleteError } = await supabase.from('history').delete().eq('id', historyItem.id);
     if (deleteError) {
-      console.error('Error deleting from history:', deleteError);
       alert('Ошибка при удалении из истории: ' + deleteError.message);
       return;
     }
-    console.log('Successfully deleted from history');
 
     const table = historyItem.table_name;
     const { data: productData, error: fetchError } = await supabase
@@ -586,7 +550,6 @@ const HirerProfile = () => {
       .single();
 
     if (fetchError || !productData) {
-      console.error('Error fetching product:', fetchError);
       alert('Ошибка при восстановлении продукта: ' + (fetchError?.message || 'Продукт не найден'));
       return;
     }
@@ -597,7 +560,6 @@ const HirerProfile = () => {
       .eq('id', historyItem.publication_id);
 
     if (updateError) {
-      console.error('Error updating product status:', updateError);
       alert('Ошибка при обновлении статуса продукта: ' + updateError.message);
       return;
     }
@@ -626,7 +588,6 @@ const HirerProfile = () => {
   const handleDeleteHistory = async () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      console.error('No session found');
       alert('Пожалуйста, войдите в систему.');
       return;
     }
@@ -639,34 +600,29 @@ const HirerProfile = () => {
       .eq('user_id', userId);
 
     if (fetchError) {
-      console.error('Error fetching history:', fetchError);
       alert('Ошибка при получении истории: ' + fetchError.message);
       return;
     }
 
     for (const item of historyData) {
       const { publication_id, table_name } = item;
-      console.log(`Deleting product from table: ${table_name}, id: ${publication_id}`);
       const { error: deleteProductError } = await supabase
         .from(table_name)
         .delete()
         .eq('id', publication_id);
 
       if (deleteProductError) {
-        console.error(`Error deleting product from ${table_name}:`, deleteProductError);
         alert(`Ошибка при удалении продукта из таблицы ${table_name}: ${deleteProductError.message}`);
         return;
       }
     }
 
-    console.log(`Deleting history for user_id: ${userId}`);
     const { error: deleteHistoryError } = await supabase
       .from('history')
       .delete()
       .eq('user_id', userId);
 
     if (deleteHistoryError) {
-      console.error('Error deleting history:', deleteHistoryError);
       alert('Ошибка при удалении истории: ' + deleteHistoryError.message);
       return;
     }
@@ -750,10 +706,6 @@ const HirerProfile = () => {
           </div>
           <div className="user-info-item">
             <span>Telegram Username: {userInfo.telegramUsername || 'Не указано'}</span>
-            <button className="edit-button" onClick={openModal}>✏️</button>
-          </div>
-          <div className="user-info-item">
-            <span>Телефон: {userInfo.phone || 'Не указано'}</span>
             <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
         </div>
@@ -949,16 +901,6 @@ const HirerProfile = () => {
                 value={tempUserInfo.telegramUsername}
                 onChange={handleModalInputChange}
                 placeholder="@username"
-              />
-            </div>
-            <div className="modal-field">
-              <label>Телефон</label>
-              <input
-                type="tel"
-                name="phone"
-                value={tempUserInfo.phone}
-                onChange={handleModalInputChange}
-                placeholder="+79991234567"
               />
             </div>
             <div className="modal-buttons">

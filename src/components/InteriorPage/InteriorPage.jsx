@@ -45,18 +45,27 @@ function InteriorPage() {
         }
       }
 
-      // Для каждой вакансии получаем никнейм работодателя
+      // Для каждой вакансии получаем никнейм работодателя и telegram_username
       const jobsWithCompany = await Promise.all(
         jobData.map(async (job) => {
           const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('username')
+            .select('username, telegram_username') // Добавляем telegram_username
             .eq('id', job.user_id)
             .single();
 
           if (userError) {
             console.error('Error fetching user data for user_id', job.user_id, ':', userError);
-            return { ...job, company: 'Неизвестный работодатель' };
+            return { ...job, company: 'Неизвестный работодатель', telegramLink: null };
+          }
+
+          // Формируем ссылку на Telegram
+          let telegramLink = null;
+          if (userData.telegram_username) {
+            const username = userData.telegram_username.startsWith('@')
+              ? userData.telegram_username.slice(1) // Убираем @, если есть
+              : userData.telegram_username;
+            telegramLink = `https://t.me/${username}`;
           }
 
           // Расчёт дедлайна (разница между end_date и start_date в днях)
@@ -85,7 +94,8 @@ function InteriorPage() {
             company: userData.username || 'Неизвестный работодатель',
             salary: job.price ? `${job.price} ₸` : 'Не указано',
             publishedDate,
-            deadline: deadlineDays
+            deadline: deadlineDays,
+            telegramLink // Добавляем ссылку на Telegram
           };
         })
       );
@@ -96,6 +106,15 @@ function InteriorPage() {
 
     fetchJobs();
   }, []);
+
+  // Функция для открытия ссылки в новом окне
+  const handleApplyClick = (telegramLink) => {
+    if (telegramLink) {
+      window.open(telegramLink, '_blank'); // Открываем ссылку в новом окне
+    } else {
+      console.error('Telegram link is not available for this job');
+    }
+  };
 
   if (loading) {
     return (
@@ -144,7 +163,12 @@ function InteriorPage() {
                 </p>
                 <p className="job-description-label">Описание работы:</p>
                 <p className="job-description">{job.description}</p>
-                <button className="apply-btn">Откликнуться</button>
+                <button
+                  className="apply-btn"
+                  onClick={() => handleApplyClick(job.telegramLink)} // Добавляем обработчик клика
+                >
+                  Откликнуться
+                </button>
               </div>
             ))
           )}

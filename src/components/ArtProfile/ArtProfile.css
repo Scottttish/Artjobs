@@ -3,98 +3,102 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  
-  body {
+}
+
+body {
     background-color: transparent;
     color: #555555; /* Softer gray for general text */
-  }
-  
-  .app-container {
+}
+
+.app-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    padding-top: 60px; /* Добавляем отступ сверху для хедера */
     min-height: 100vh;
     background-color: rgba(255, 255, 255, 0.95); /* White with slight transparency */
     border-radius: 12px;
-  }
-  
-  .main-container {
+}
+
+.main-container {
     max-width: 1120px;
     margin: 0 auto;
     padding: 20px;
-  }
-  
-  .profile-header {
+}
+
+.profile-header {
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid #e0e0e0; /* Lighter border for the new theme */
-  }
-  
-  .profile-header h1 {
+}
+
+.profile-header h1 {
     color: #000000; /* Black for main header */
     font-size: 1.8rem;
     margin-bottom: 5px;
-  }
-  
-  .current-time {
+}
+
+.current-time {
     color: #666666; /* Slightly darker gray for time */
     font-size: 0.9rem;
     opacity: 0.9;
-  }
-  
-  .profile-details-container {
+}
+
+.profile-details-container {
     background: rgba(255, 255, 255, 0.98); /* Slightly more opaque white for the container */
     border-radius: 8px;
     padding: 30px;
     min-height: fit-content;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
-  }
-  
-  .section {
+    width: 100%; /* Делаем контейнер шире, чтобы он занимал всю доступную ширину */
+    max-width: 1100px; /* Ограничиваем максимальную ширину, чтобы соответствовать .main-container */
+    margin: 0 auto; /* Центрируем контейнер */
+}
+
+.section {
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid #e0e0e0;
-  }
-  
-  .section h3 {
+}
+
+.section h3 {
     color: #000000; /* Black for section titles */
     margin-bottom: 20px;
     font-size: 1.2rem;
-  }
-  
-  .section h4 {
+}
+
+.section h4 {
     color: #444444; /* Darker gray for subheaders */
     margin: 15px 0 10px;
     font-size: 1rem;
-  }
-  
-  .detail-row {
+}
+
+.detail-row {
     display: flex;
     align-items: flex-start;
     margin-bottom: 15px;
-  }
-  
-  .label {
+}
+
+.label {
     width: 200px;
     color: #666666; /* Darker gray for labels */
     font-size: 0.9rem;
-  }
-  
-  .value {
+}
+
+.value {
     flex: 1;
     color: #555555; /* Softer gray for values */
-  }
-  
-  .value-multiline {
+}
+
+.value-multiline {
     flex: 1;
     color: #555555;
     white-space: pre-wrap;
     max-width: 400px;
     word-wrap: break-word;
-  }
-  
-  input, select, textarea {
+}
+
+input, select, textarea {
     flex: 1;
     max-width: 300px;
     padding: 8px 12px;
@@ -103,57 +107,57 @@
     color: #333333; /* Darker text for input values */
     border-radius: 4px;
     font-size: 0.9rem;
-  }
-  
-  textarea {
+}
+
+textarea {
     max-width: 400px;
     overflow: hidden;
     resize: none;
-  }
-  
-  .email-input {
+}
+
+.email-input {
     max-width: 400px;
-  }
-  
-  .actions {
+}
+
+.actions {
     display: flex;
     gap: 15px;
     justify-content: flex-end;
     margin-top: 30px;
-  }
-  
-  .edit-btn, .save-btn, .cancel-btn {
+}
+
+.edit-btn, .save-btn, .cancel-btn {
     padding: 10px 20px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9rem;
     transition: background-color 0.2s ease; /* Smooth hover effect */
-  }
-  
-  .edit-btn {
+}
+
+.edit-btn {
     background: #0078d4; /* Softer blue for edit button */
     color: white;
-  }
-  
-  .edit-btn:hover {
+}
+
+.edit-btn:hover {
     background: #005fa3; /* Slightly darker blue on hover */
-  }
-  
-  .save-btn {
+}
+
+.save-btn {
     background: #2e7d32; /* Softer green for save button */
     color: white;
-  }
-  
-  .save-btn:hover {
+}
+
+.save-btn:hover {
     background: #1b5e20; /* Slightly darker green on hover */
-  }
-  
-  .cancel-btn {
+}
+
+.cancel-btn {
     background: #d32f2f; /* Softer red for cancel button */
     color: white;
-  }
-  
-  .cancel-btn:hover {
+}
+
+.cancel-btn:hover {
     background: #b71c1c; /* Slightly darker red on hover */
-  }
+}

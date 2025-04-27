@@ -98,41 +98,60 @@ function ThreeDPage() {
   }, []);
 
   if (loading) {
-    return <div className="loading">Загрузка...</div>;
+    return (
+      <div className="app-container">
+        <main>
+          <div className="job-listings-container">
+            <div className="loading">Загрузка...</div>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="error">{error}</div>;
+    return (
+      <div className="app-container">
+        <main>
+          <div className="job-listings-container">
+            <div className="error">{error}</div>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
-    <div className="job-listings-container">
-      {jobs.length === 0 ? (
-        <p>Вакансий в категории 3D пока нет.</p>
-      ) : (
-        jobs.map((job) => (
-          <div key={job.id} className="job-card">
-            <h3 className="job-title">{job.title}</h3>
-            <p className="job-salary">{job.salary}</p>
-            <p className="job-company">
-              <span className="company-name">{job.company}</span>
-              <span className="verified">✔</span>
-            </p>
-            <p className="job-deadline">
-              <span className="deadline-label">Срок выполнения:</span> {job.deadline}
-            </p>
-            <p className="job-published">
-              <span className="published-label">Дата публикации:</span> {job.publishedDate}
-            </p>
-            <p className="job-description-label">Описание работы:</p>
-            <p className="job-description">{job.description}</p>
-            <button className="apply-btn">Откликнуться</button>
-          </div>
-        ))
-      )}
+    <div className="app-container">
+      <main>
+        <div className="job-listings-container">
+          {jobs.length === 0 ? (
+            <p className="no-jobs">Вакансий в категории 3D пока нет.</p>
+          ) : (
+            jobs.map((job) => (
+              <div key={job.id} className="job-card">
+                <h3 className="job-title">{job.title}</h3>
+                <p className="job-salary">{job.salary}</p>
+                <p className="job-company">
+                  <span className="company-name">{job.company}</span>
+                  <span className="verified">✔</span>
+                </p>
+                <p className="job-deadline">
+                  <span className="deadline-label">Срок выполнения:</span> {job.deadline}
+                </p>
+                <p className="job-published">
+                  <span className="published-label">Дата публикации:</span> {job.publishedDate}
+                </p>
+                <p className="job-description-label">Описание работы:</p>
+                <p className="job-description">{job.description}</p>
+                <button className="apply-btn">Откликнуться</button>
+              </div>
+            ))
+          )}
+        </div>
+      </main>
     </div>
   );
 }
 
 export default ThreeDPage;
-

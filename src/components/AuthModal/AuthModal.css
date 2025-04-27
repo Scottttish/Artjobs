@@ -17,8 +17,8 @@
   background-color: white;
   padding: 20px;
   border-radius: 10px;
-  width: 500px;
-  max-width: 90%;
+  width: 489px; /* 449px (ширина полей) + 20px padding слева + 20px padding справа */
+  max-width: 90%; /* Адаптивность для узких экранов */
   max-height: 90vh;
   overflow-y: auto;
   box-sizing: border-box;
@@ -53,11 +53,11 @@
 .modal-field input,
 .modal-field select,
 .modal-field textarea {
-  width: 449px; /* Match the width of auth-submit-button */
+  width: 449px; /* Соответствует ширине auth-submit-button */
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  box-sizing: border-box; /* Ensure padding and border are included in width */
+  box-sizing: border-box;
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   color: #333;
@@ -79,7 +79,7 @@
 
 /* Modal buttons */
 .modal-buttons button {
-  width: 449px; /* Match the width of auth-submit-button */
+  width: 449px; /* Соответствует ширине auth-submit-button */
   padding: 10px;
   border: none;
   border-radius: 5px;
@@ -112,6 +112,5 @@
 
 /* Ensure consistency for other elements (if needed) */
 .dashboard, .sidebar, .main-content, .history, .product-grid {
-  /* Add other styles as needed */
   font-family: 'Montserrat', sans-serif;
 }

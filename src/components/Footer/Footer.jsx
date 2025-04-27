@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './Footer.css';
+import { sendToTelegram } from './TelegramMessages';
 
 import locationIcon from '../../assets/location-icon.png';
 import phoneIcon from '../../assets/phone-icon.png';
@@ -62,15 +63,22 @@ function Footer() {
     setMessage(e.target.value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateEmail(email)) {
       setIsEmailValid(false);
       return;
     }
-    // Placeholder for form submission logic (e.g., API call)
-    alert('Feedback submitted! (Placeholder)');
-    closeModal();
+
+    const name = e.target.name.value;
+    try {
+      await sendToTelegram(name, email, message);
+      alert('Feedback sent to Telegram group!');
+      closeModal();
+    } catch (error) {
+      alert('Error sending feedback to Telegram. Please try again.');
+      console.error('Telegram API error:', error);
+    }
   };
 
   return (

@@ -38,7 +38,7 @@ const HirerProfile = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDirection, setSelectedDirection] = useState('All Products');
   const [dateSortDirection, setDateSortDirection] = useState('asc');
-  const [durationSortDirection, setDurationSortDirection] = useState('asc'); // Changed to track duration sorting direction
+  const [durationSortDirection, setDurationSortDirection] = useState('asc');
   const [productSearchQuery, setProductSearchQuery] = useState('');
 
   // Валидация формата даты (ожидается YYYY-MM-DD)
@@ -823,6 +823,9 @@ const HirerProfile = () => {
           </button>
           <button className="sort-button" onClick={handleDurationSort}>
             Срок {durationSortDirection === 'asc' ? '↑' : '↓'}
+          </button>
+          <button onClick={() => openProductModal()} className="create-new">
+            Создать новый +
           </button>
           <button
             onClick={handleRename}

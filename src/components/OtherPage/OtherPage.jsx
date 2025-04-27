@@ -5,7 +5,7 @@ import '../ThreeDPage/3DPage.css';
 // Инициализация Supabase клиента
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
 );
 
 function OtherPage() {
@@ -98,58 +98,38 @@ function OtherPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="app-container">
-        <main>
-          <div className="job-listings-container">
-            <div className="loading">Загрузка...</div>
-          </div>
-        </main>
-      </div>
-    );
+    return <div className="loading">Загрузка...</div>;
   }
 
   if (error) {
-    return (
-      <div className="app-container">
-        <main>
-          <div className="job-listings-container">
-            <div className="error">{error}</div>
-          </div>
-        </main>
-      </div>
-    );
+    return <div className="error">{error}</div>;
   }
 
   return (
-    <div className="app-container">
-      <main>
-        <div className="job-listings-container">
-          {jobs.length === 0 ? (
-            <p className="no-jobs">Вакансий в категории Другое пока нет.</p>
-          ) : (
-            jobs.map((job) => (
-              <div key={job.id} className="job-card">
-                <h3 className="job-title">{job.title}</h3>
-                <p className="job-salary">{job.salary}</p>
-                <p className="job-company">
-                  <span className="company-name">{job.company}</span>
-                  <span className="verified">✔</span>
-                </p>
-                <p className="job-deadline">
-                  <span className="deadline-label">Срок выполнения:</span> {job.deadline}
-                </p>
-                <p className="job-published">
-                  <span className="published-label">Дата публикации:</span> {job.publishedDate}
-                </p>
-                <p className="job-description-label">Описание работы:</p>
-                <p className="job-description">{job.description}</p>
-                <button className="apply-btn">Откликнуться</button>
-              </div>
-            ))
-          )}
-        </div>
-      </main>
+    <div className="job-listings-container">
+      {jobs.length === 0 ? (
+        <p>Вакансий в категории Другое пока нет.</p>
+      ) : (
+        jobs.map((job) => (
+          <div key={job.id} className="job-card">
+            <h3 className="job-title">{job.title}</h3>
+            <p className="job-salary">{job.salary}</p>
+            <p className="job-company">
+              <span className="company-name">{job.company}</span>
+              <span className="verified">✔</span>
+            </p>
+            <p className="job-deadline">
+              <span className="deadline-label">Срок выполнения:</span> {job.deadline}
+            </p>
+            <p className="job-published">
+              <span className="published-label">Дата публикации:</span> {job.publishedDate}
+            </p>
+            <p className="job-description-label">Описание работы:</p>
+            <p className="job-description">{job.description}</p>
+            <button className="apply-btn">Откликнуться</button>
+          </div>
+        ))
+      )}
     </div>
   );
 }

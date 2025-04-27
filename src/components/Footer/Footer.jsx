@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './Footer.css';
-import { sendToTelegram } from './TelegramMessages';
+import { sendToTelegram } from '../TelegramMessages/TelegramMessages';
 
 import locationIcon from '../../assets/location-icon.png';
 import phoneIcon from '../../assets/phone-icon.png';

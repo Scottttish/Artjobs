@@ -18,6 +18,7 @@ function MotionPage() {
       setLoading(true);
       setError(null);
 
+      // Загрузка вакансий из таблицы motion
       const { data: jobData, error: jobError } = await supabase
         .from('motion')
         .select('id, user_id, title, description, published_at, start_date, end_date, price, status, category')
@@ -32,6 +33,7 @@ function MotionPage() {
 
       console.log('Fetched jobs from motion:', jobData);
 
+      // Если данных нет, проверяем, какие категории существуют
       if (jobData.length === 0) {
         const { data: allCategories, error: categoryError } = await supabase
           .from('motion')
@@ -43,6 +45,7 @@ function MotionPage() {
         }
       }
 
+      // Для каждой вакансии получаем никнейм работодателя
       const jobsWithCompany = await Promise.all(
         jobData.map(async (job) => {
           const { data: userData, error: userError } = await supabase
@@ -56,15 +59,18 @@ function MotionPage() {
             return { ...job, company: 'Неизвестный работодатель' };
           }
 
+          // Расчёт дедлайна (разница между end_date и start_date в днях)
           const startDate = new Date(job.start_date);
           const endDate = new Date(job.end_date);
           
+          // Проверка на валидность дат
           let deadlineDays = 'Не указано';
           if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
             deadlineDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
             deadlineDays = `${deadlineDays} дней`;
           }
 
+          // Форматирование даты публикации
           const publishedDateObj = new Date(job.published_at);
           const publishedDate = !isNaN(publishedDateObj.getTime())
             ? publishedDateObj.toLocaleDateString('ru-RU', {
@@ -102,7 +108,7 @@ function MotionPage() {
   return (
     <div className="job-listings-container">
       {jobs.length === 0 ? (
-        <p className="no-jobs">Вакансий в категории Моушн пока нет.</p>
+        <p>Вакансий в категории Моушн пока нет.</p>
       ) : (
         jobs.map((job) => (
           <div key={job.id} className="job-card">

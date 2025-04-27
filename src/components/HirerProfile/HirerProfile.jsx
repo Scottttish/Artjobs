@@ -35,6 +35,9 @@ const HirerProfile = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDirection, setSelectedDirection] = useState('All Products');
+  const [dateSortDirection, setDateSortDirection] = useState('asc'); // 'asc' or 'desc'
+  const [durationSortMode, setDurationSortMode] = useState('duration'); // 'duration' (asc) or 'status' (desc)
+  const [productSearchQuery, setProductSearchQuery] = useState(''); // New state for product search
 
   // Валидация формата даты (ожидается YYYY-MM-DD)
   const isValidDateFormat = (dateString) => {
@@ -134,9 +137,11 @@ const HirerProfile = () => {
               month: 'short',
               year: 'numeric',
             }).toUpperCase(),
+            publishedAt: new Date(product.published_at), // Store raw date for sorting
             status: product.status,
             price: product.price,
             duration: calculateDuration(product.start_date, product.end_date),
+            durationDays: Math.ceil(Math.abs(new Date(product.end_date) - new Date(product.start_date)) / (1000 * 60 * 60 * 24)), // For sorting
             durationTooltip: `${new Date(product.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} - ${new Date(product.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`,
           }));
           allProducts = [...allProducts, ...mappedProducts];
@@ -351,9 +356,11 @@ const HirerProfile = () => {
           month: 'short',
           year: 'numeric',
         }).toUpperCase(),
+        publishedAt: currentDate,
         status,
         price,
         duration: calculateDuration(startDate, endDate),
+        durationDays: Math.ceil(Math.abs(new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)),
         durationTooltip: `${new Date(startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} - ${new Date(endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`,
       } : p)));
     } else {
@@ -375,9 +382,11 @@ const HirerProfile = () => {
           month: 'short',
           year: 'numeric',
         }).toUpperCase(),
+        publishedAt: currentDate,
         status,
         price,
         duration: calculateDuration(startDate, endDate),
+        durationDays: Math.ceil(Math.abs(new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)),
         durationTooltip: `${new Date(startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} - ${new Date(endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`,
       }]);
     }
@@ -471,7 +480,7 @@ const HirerProfile = () => {
 
     setHistoryItems([
       {
-        id: insertedHistory.id, // Используем id из базы данных
+        id: insertedHistory.id,
         publication_id: product.id,
         table_name: table,
         title: product.title,
@@ -533,7 +542,7 @@ const HirerProfile = () => {
 
     setHistoryItems([
       {
-        id: insertedHistory.id, // Используем id из базы данных
+        id: insertedHistory.id,
         publication_id: product.id,
         table_name: table,
         title: product.title,
@@ -602,9 +611,11 @@ const HirerProfile = () => {
         month: 'short',
         year: 'numeric',
       }).toUpperCase(),
+      publishedAt: new Date(productData.published_at),
       status: 'Active',
       price: productData.price,
       duration: calculateDuration(productData.start_date, productData.end_date),
+      durationDays: Math.ceil(Math.abs(new Date(productData.end_date) - new Date(productData.start_date)) / (1000 * 60 * 60 * 24)),
       durationTooltip: `${new Date(productData.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} - ${new Date(productData.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`,
     }]);
 
@@ -668,6 +679,39 @@ const HirerProfile = () => {
     setSearchQuery(e.target.value);
   };
 
+  const handleProductSearchChange = (e) => {
+    setProductSearchQuery(e.target.value);
+  };
+
+  const handleDateSort = () => {
+    const newDirection = dateSortDirection === 'asc' ? 'desc' : 'asc';
+    setDateSortDirection(newDirection);
+
+    const sortedProducts = [...products].sort((a, b) => {
+      const dateA = new Date(a.publishedAt);
+      const dateB = new Date(b.publishedAt);
+      return newDirection === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+    setProducts(sortedProducts);
+  };
+
+  const handleDurationSort = () => {
+    const newMode = durationSortMode === 'duration' ? 'status' : 'duration';
+    setDurationSortMode(newMode);
+
+    const sortedProducts = [...products].sort((a, b) => {
+      if (newMode === 'duration') {
+        // Ascending by duration (days)
+        return a.durationDays - b.durationDays;
+      } else {
+        // Descending by status ("Active" > "Inactive")
+        const statusOrder = { Active: 1, Inactive: 0 };
+        return statusOrder[b.status] - statusOrder[a.status];
+      }
+    });
+    setProducts(sortedProducts);
+  };
+
   const filteredHistoryItems = historyItems.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -679,6 +723,10 @@ const HirerProfile = () => {
   const filteredProducts = selectedDirection === 'All Products'
     ? visibleProducts
     : visibleProducts.filter((product) => product.direction === selectedDirection);
+
+  const searchedProducts = filteredProducts.filter((product) =>
+    product.title.toLowerCase().includes(productSearchQuery.toLowerCase())
+  );
 
   if (loading) {
     return <div className="loading">Загрузка...</div>;
@@ -759,42 +807,16 @@ const HirerProfile = () => {
       </div>
 
       <div className="main-content">
-        <div className="filters">
-          <select
-            value={selectedDirection}
-            onChange={(e) => setSelectedDirection(e.target.value)}
-          >
-            <option>All Products</option>
-            <option>3D</option>
-            <option>Интерьер</option>
-            <option>Моушн</option>
-            <option>Иллюстрация</option>
-            <option>Другое</option>
-          </select>
-          <select>
-            <option>Filter</option>
-          </select>
-          <select>
-            <option>Sort by: Created time</option>
-          </select>
-          <button onClick={() => openProductModal()}>Create New +</button>
-          <button
-            onClick={handleRename}
-            disabled={selectedProducts.length !== 1}
-            className={selectedProducts.length !== 1 ? 'disabled' : 'rename'}
-          >
-            Rename
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={selectedProducts.length === 0}
-            className={selectedProducts.length === 0 ? 'disabled' : 'delete'}
-          >
-            Delete
-          </button>
+        <div className="product-search">
+          <input
+            type="text"
+            placeholder="Поиск по названию продукта..."
+            value={productSearchQuery}
+            onChange={handleProductSearchChange}
+          />
         </div>
         <div className="product-grid">
-          {filteredProducts.map((product, index) => (
+          {searchedProducts.map((product, index) => (
             <div key={index} className="product-card">
               <div className="product-header">
                 <div className="product-title">
@@ -855,6 +877,42 @@ const HirerProfile = () => {
               </div>
             </div>
           ))}
+        </div>
+        <div className="filters">
+          <select
+            value={selectedDirection}
+            onChange={(e) => setSelectedDirection(e.target.value)}
+          >
+            <option>All Products</option>
+            <option>3D</option>
+            <option>Интерьер</option>
+            <option>Моушн</option>
+            <option>Иллюстрация</option>
+            <option>Другое</option>
+          </select>
+          <button className="sort-button" onClick={handleDateSort}>
+            Дата публикации {dateSortDirection === 'asc' ? '↑' : '↓'}
+          </button>
+          <button className="sort-button" onClick={handleDurationSort}>
+            Срок {durationSortMode === 'duration' ? '↑' : '↓'}
+          </button>
+        </div>
+        <div className="action-buttons">
+          <button onClick={() => openProductModal()}>Create New +</button>
+          <button
+            onClick={handleRename}
+            disabled={selectedProducts.length !== 1}
+            className={selectedProducts.length !== 1 ? 'disabled' : 'rename'}
+          >
+            Rename
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={selectedProducts.length === 0}
+            className={selectedProducts.length === 0 ? 'disabled' : 'delete'}
+          >
+            Delete
+          </button>
         </div>
       </div>
 

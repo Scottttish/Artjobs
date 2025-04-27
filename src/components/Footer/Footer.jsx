@@ -91,7 +91,7 @@ function Footer() {
           </div>
           <div className="Footer-contact-item">
             <img src={phoneIcon} alt="Phone" className="Footer-icon" />
-            <p className="Footer-text">+8 800 555 35 35</p>
+            <p className="Footer-text">+7 700 555 35 35</p>
           </div>
           <div className="Footer-contact-item">
             <img src={emailIcon} alt="Email" className="Footer-icon" />

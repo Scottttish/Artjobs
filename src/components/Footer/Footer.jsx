@@ -11,6 +11,8 @@ import notionIcon from '../../assets/notion-icon.png';
 function Footer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [email, setEmail] = useState('');
+  const [isEmailValid, setIsEmailValid] = useState(null);
   const textareaRef = useRef(null);
   const modalRef = useRef(null);
 
@@ -19,6 +21,8 @@ function Footer() {
   const closeModal = () => {
     setIsModalOpen(false);
     setMessage('');
+    setEmail('');
+    setIsEmailValid(null);
   };
 
   // Handle clicks outside modal to close
@@ -42,12 +46,28 @@ function Footer() {
     }
   }, [message]);
 
+  // Email validation
+  const validateEmail = (value) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    setIsEmailValid(value === '' ? null : validateEmail(value));
+  };
+
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!validateEmail(email)) {
+      setIsEmailValid(false);
+      return;
+    }
     // Placeholder for form submission logic (e.g., API call)
     alert('Feedback submitted! (Placeholder)');
     closeModal();
@@ -98,7 +118,7 @@ function Footer() {
         <div className="Footer-modal-overlay">
           <div className="Footer-modal" ref={modalRef}>
             <button className="Footer-modal-close" onClick={closeModal}>
-              &times;
+              ×
             </button>
             <h2 className="Footer-modal-title">Обратная связь</h2>
             <form className="Footer-modal-form" onSubmit={handleSubmit}>
@@ -119,6 +139,9 @@ function Footer() {
                   id="email"
                   name="email"
                   placeholder="Ваша почта"
+                  value={email}
+                  onChange={handleEmailChange}
+                  className={isEmailValid === null ? '' : isEmailValid ? 'valid' : 'invalid'}
                   required
                 />
               </div>

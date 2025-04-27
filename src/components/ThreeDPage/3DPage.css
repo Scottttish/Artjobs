@@ -31,13 +31,25 @@ main {
   padding: 20px;
   padding-top: 80px; 
   background-color: #ffffff;
-  min-height: calc(100vh - 160px); /* Учитываем высоту хедера и футера */
+  min-height: calc(100vh - 160px);
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center; /* Центрируем содержимое по вертикали */
+  align-items: center; /* Центрируем содержимое по горизонтали */
 }
 
-/* Остальные стили остаются без изменений */
+.loading {
+  font-size: 1.2rem;
+  color: #333333;
+  text-align: center;
+}
+
+.no-jobs {
+  font-size: 1.2rem;
+  color: #333333;
+  text-align: center;
+}
+
 .job-card {
   background: #ffffff;
   border: 1px solid #e0e0e0;
@@ -46,6 +58,7 @@ main {
   margin-bottom: 15px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.2s ease;
+  width: 100%; /* Убедимся, что карточки занимают всю ширину контейнера */
 }
 
 .job-card:hover {

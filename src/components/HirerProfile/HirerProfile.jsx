@@ -38,7 +38,7 @@ const HirerProfile = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDirection, setSelectedDirection] = useState('All Products');
   const [dateSortDirection, setDateSortDirection] = useState('asc');
-  const [durationSortMode, setDurationSortMode] = useState('duration');
+  const [durationSortDirection, setDurationSortDirection] = useState('asc'); // Changed to track duration sorting direction
   const [productSearchQuery, setProductSearchQuery] = useState('');
 
   // Валидация формата даты (ожидается YYYY-MM-DD)
@@ -160,13 +160,6 @@ const HirerProfile = () => {
 
     fetchData();
   }, []);
-
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      console.log('Uploading image:', file.name);
-    }
-  };
 
   const openModal = () => {
     setTempUserInfo({ ...userInfo });
@@ -704,16 +697,13 @@ const HirerProfile = () => {
   };
 
   const handleDurationSort = () => {
-    const newMode = durationSortMode === 'duration' ? 'status' : 'duration';
-    setDurationSortMode(newMode);
+    const newDirection = durationSortDirection === 'asc' ? 'desc' : 'asc';
+    setDurationSortDirection(newDirection);
 
     const sortedProducts = [...products].sort((a, b) => {
-      if (newMode === 'duration') {
-        return a.durationDays - b.durationDays;
-      } else {
-        const statusOrder = { Active: 1, Inactive: 0 };
-        return statusOrder[b.status] - statusOrder[a.status];
-      }
+      return newDirection === 'asc'
+        ? a.durationDays - b.durationDays
+        : b.durationDays - a.durationDays;
     });
     setProducts(sortedProducts);
   };
@@ -745,19 +735,6 @@ const HirerProfile = () => {
   return (
     <div className="dashboard">
       <div className="sidebar">
-        <div className="image-upload">
-          <label htmlFor="imageUpload" className="upload-button">
-            +
-          </label>
-          <input
-            id="imageUpload"
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handleImageUpload}
-          />
-        </div>
-
         <div className="user-info">
           <div className="user-info-item">
             <span>Имя: {userInfo.nickname}</span>
@@ -845,7 +822,7 @@ const HirerProfile = () => {
             Дата публикации {dateSortDirection === 'asc' ? '↑' : '↓'}
           </button>
           <button className="sort-button" onClick={handleDurationSort}>
-            Срок {durationSortMode === 'duration' ? '↑' : '↓'}
+            Срок {durationSortDirection === 'asc' ? '↑' : '↓'}
           </button>
           <button
             onClick={handleRename}

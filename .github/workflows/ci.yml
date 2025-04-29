@@ -12,6 +12,7 @@ on:
 jobs:
   Docker:
     runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'  # Пропускать, если пуш от бота
 
     steps:
       - name: Checkout code
@@ -72,24 +73,9 @@ jobs:
       - name: Increase version
         run: npm version patch
 
-      - name: Debug Tokens
-        run: |
-          if [ -z "${{ secrets.GH_TOKEN }}" ]; then
-            echo "GH_TOKEN is empty or not set!"
-            exit 1
-          else
-            echo "GH_TOKEN is set (length: ${#GH_TOKEN})"
-          fi
-          if [ -z "${{ secrets.PUSH_TOKEN }}" ]; then
-            echo "PUSH_TOKEN is empty or not set!"
-            exit 1
-          else
-            echo "PUSH_TOKEN is set (length: ${#PUSH_TOKEN})"
-          fi
-
       - name: Push new version
         env:
-          GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"

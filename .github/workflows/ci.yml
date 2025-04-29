@@ -34,7 +34,9 @@ jobs:
 
       - name: Save version
         id: version
-        run: echo "tag=$(node -p -e \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+        run: |
+          VERSION=$(node -p -e 'require("./package.json").version')
+          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
@@ -75,8 +77,8 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add package.json package-lock.json
-          git commit -m "ci: bump version to $(node -p -e \"require('./package.json').version\")"
+          git commit -m "ci: bump version to $(node -p -e 'require("./package.json").version')"
           git pull --rebase https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git main
           git push https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git main
-          git tag v$(node -p -e "require('./package.json').version")
+          git tag v$(node -p -e 'require("./package.json").version')
           git push https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git --tags

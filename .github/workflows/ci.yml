@@ -52,7 +52,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          driver: docker-container 
+          driver: docker-container
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -65,6 +65,9 @@ jobs:
             scotttish/artjobs:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Clean working directory
+        run: git reset --hard && git clean -fd
 
       - name: Increase version
         run: npm version patch

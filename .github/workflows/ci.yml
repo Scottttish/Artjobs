@@ -35,6 +35,28 @@ jobs:
       - name: Debug build directory
         run: ls -la build/
 
+      - name: Debug uncommitted changes
+        run: |
+          echo "Git status:"
+          git status
+          echo "Untracked files:"
+          git status --porcelain
+
+      - name: Clean up build artifacts
+        run: |
+          # Ensure build directory is removed or ignored to avoid untracked changes
+          rm -rf build
+          # Optionally, reset any modified files (e.g., package-lock.json)
+          git checkout -- package-lock.json || true
+
+      - name: Check for clean working directory
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Error: Working directory is not clean. Please commit or stash changes."
+            git status
+            exit 1
+          fi
+
       - name: Save version
         id: version
         run: echo "tag=$(node -e 'console.log(require("./package.json").version)')" >> $GITHUB_ENV
@@ -67,13 +89,6 @@ jobs:
             scotttish/artjobs:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Check for clean working directory
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Error: Working directory is not clean. Please commit or stash changes."
-            exit 1
-          fi
 
       - name: Commit and push updated version
         env:

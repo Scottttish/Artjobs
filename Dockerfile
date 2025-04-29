@@ -1,4 +1,3 @@
-# Этап 1: Сборка React-приложения
 FROM node:18 AS build
 WORKDIR /app
 

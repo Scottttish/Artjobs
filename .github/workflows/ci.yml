@@ -32,22 +32,12 @@ jobs:
       - name: Build project
         run: CI=false npm run build
 
-      - name: Debug build directory
-        run: ls -la build/
-
-      - name: Debug uncommitted changes
+      - name: Clean up node_modules changes
         run: |
-          echo "Git status:"
-          git status
-          echo "Untracked files:"
-          git status --porcelain
-
-      - name: Clean up build artifacts
-        run: |
-          # Ensure build directory is removed or ignored to avoid untracked changes
-          rm -rf build
-          # Optionally, reset any modified files (e.g., package-lock.json)
-          git checkout -- package-lock.json || true
+          # Reset any modified files in node_modules
+          git checkout -- node_modules || true
+          # Remove untracked files in node_modules (e.g., .cache)
+          git clean -fd node_modules
 
       - name: Check for clean working directory
         run: |
@@ -59,7 +49,7 @@ jobs:
 
       - name: Save version
         id: version
-        run: echo "tag=$(node -e 'console.log(require("./package.json").version)')" >> $GITHUB_ENV
+        run: echo "tag=$(node -e 'console.log(require(\"./package.json\").version)')" >> $GITHUB_ENV
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
@@ -96,33 +86,19 @@ jobs:
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          
-          # Bump version
           npm version patch --no-git-tag-version
-          
-          # Stage all changes
           git add .
-          
-          # Commit changes
           git commit -m "ci: bump version to $(node -p -e 'require(\"./package.json\").version')"
-          
-          # Fetch the latest changes from the remote repository
           git fetch origin main
-          
-          # Attempt to rebase
-          if ! git pull --rebase origin main; then
-            echo "Rebase failed, stashing changes and retrying..."
+          git pull --rebase origin main || {
+            echo "Rebase failed, stashing and retrying..."
             git rebase --abort
             git stash
             git pull --rebase origin main
             git stash pop
             git add .
             git commit -m "ci: resolve conflicts and bump version to $(node -p -e 'require(\"./package.json\").version')"
-          fi
-          
-          # Push changes
+          }
           git push origin main
-          
-          # Tag the new version
           git tag v$(node -p -e 'require("./package.json").version")
           git push origin --tags

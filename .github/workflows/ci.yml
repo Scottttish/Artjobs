@@ -34,7 +34,7 @@ jobs:
 
       - name: Save version
         id: version
-        run: echo "tag=$(node -e 'console.log(require("./package.json").version)')" >> $GITHUB_ENV
+        run: echo "tag=$(node -e 'console.log(require(\"./package.json\").version)')" >> $GITHUB_ENV
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
@@ -75,8 +75,16 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add package.json package-lock.json
-          git commit -m "ci: bump version to $(node -p -e 'require("./package.json").version')"
+          git commit -m "ci: bump version to $(node -p -e 'require(\"./package.json\").version')"
+          
+          # Очистка рабочего каталога от незакоммиченных изменений
+          git reset --hard
+          git clean -fd
+
+          # Теперь можно безопасно сделать pull
           git pull --rebase https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git main
+
+          # Отправка изменений
           git push https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git main
           git tag v$(node -p -e 'require("./package.json").version')
           git push https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git --tags

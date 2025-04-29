@@ -1,18 +1,21 @@
-FROM node:18-alpine as build
-
+# Этап 1: Сборка React-приложения
+FROM node:18 AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN npm ci --legacy-peer-deps
 
-COPY . .
+COPY src ./src
+COPY public ./public
 RUN npm run build
 
-FROM nginx:alpine
+FROM node:18-alpine
+WORKDIR /app
 
-COPY --from=build /app/build /usr/share/nginx/html
+RUN npm install -g serve
 
+COPY --from=build /app/build ./build
 
-EXPOSE 80
+EXPOSE 3000
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["serve", "-s", "build", "-l", "3000"]

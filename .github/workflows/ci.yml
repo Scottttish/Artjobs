@@ -12,7 +12,7 @@ on:
 jobs:
   Docker:
     runs-on: ubuntu-latest
-    if: github.actor != 'github-actions[bot]'
+    if: github.actor != 'github-actions[bot]'  # Пропускать, если пуш от бота
 
     steps:
       - name: Checkout code
@@ -34,7 +34,7 @@ jobs:
 
       - name: Save version
         id: version
-        run: echo "tag=$(node -p -e \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+        run: echo "tag=$(node -e 'console.log(require("./package.json").version)')" >> $GITHUB_ENV
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
@@ -60,7 +60,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            scotttish/artjobs:${{ steps.version.outputs.tag }}
+            scotttish/artjobs:${{ env.tag }}
             scotttish/artjobs:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -75,16 +75,8 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add package.json package-lock.json
-          git commit -m "ci: bump version to $(node -p -e \"require('./package.json').version\")"
-          
-          # Commit or stash unstaged changes
-          git add .
-          git commit -m "ci: save changes before pull" || echo "No changes to commit"
-          
-          # Pull the latest changes
+          git commit -m "ci: bump version to $(node -p -e 'require("./package.json").version')"
           git pull --rebase https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git main
-
-          # Push changes
           git push https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git main
-          git tag v$(node -p -e "require('./package.json').version")
+          git tag v$(node -p -e 'require("./package.json").version')
           git push https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git --tags

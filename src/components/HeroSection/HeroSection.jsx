@@ -66,7 +66,7 @@ function HeroSection() {
   };
 
   return (
-    <section id="home" className="HeroSection">
+    <section id="home" className="HeroSection" aria-label="Hero Section">
       <div className="HeroSection-slider">
         <Slider {...heroSettings}>
           {slides.map((slide, index) => (

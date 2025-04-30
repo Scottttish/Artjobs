@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/Artjobs/static/css/main.5e267be3.css",
-    "main.js": "/Artjobs/static/js/main.22b10dd2.js",
-    "static/js/952.179b258d.chunk.js": "/Artjobs/static/js/952.179b258d.chunk.js",
+    "main.js": "/Artjobs/static/js/main.7e06d346.js",
+    "static/js/198.5e723148.chunk.js": "/Artjobs/static/js/198.5e723148.chunk.js",
     "static/media/news-image4.jpg": "/Artjobs/static/media/news-image4.847a87fac8349a555c7d.jpg",
     "static/media/main.jpg": "/Artjobs/static/media/main.30df9d3ea4c957abbea4.jpg",
     "static/media/image3.jpg": "/Artjobs/static/media/image3.a474f313e9f1b17cf227.jpg",
@@ -29,11 +29,11 @@
     "static/media/slick.woff": "/Artjobs/static/media/slick.295183786cd8a1389865.woff",
     "index.html": "/Artjobs/index.html",
     "main.5e267be3.css.map": "/Artjobs/static/css/main.5e267be3.css.map",
-    "main.22b10dd2.js.map": "/Artjobs/static/js/main.22b10dd2.js.map",
-    "952.179b258d.chunk.js.map": "/Artjobs/static/js/952.179b258d.chunk.js.map"
+    "main.7e06d346.js.map": "/Artjobs/static/js/main.7e06d346.js.map",
+    "198.5e723148.chunk.js.map": "/Artjobs/static/js/198.5e723148.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.5e267be3.css",
-    "static/js/main.22b10dd2.js"
+    "static/js/main.7e06d346.js"
   ]
 }

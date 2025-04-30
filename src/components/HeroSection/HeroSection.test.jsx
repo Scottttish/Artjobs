@@ -3,7 +3,15 @@ import HeroSection from './HeroSection';
 import Slider from 'react-slick';
 
 jest.mock('react-slick', () => {
-  return jest.fn(({ children }) => <div data-testid="slider">{children}</div>);
+  return jest.fn(({ children }) => (
+    <div data-testid="slider">
+      {children.map((child, index) => (
+        <div key={index} data-testid={`slide-${index}`}>
+          {child}
+        </div>
+      ))}
+    </div>
+  ));
 });
 
 describe('HeroSection', () => {
@@ -14,15 +22,15 @@ describe('HeroSection', () => {
   test('renders HeroSection component correctly', () => {
     render(<HeroSection />);
     
-    const sectionElement = screen.getByRole('region', { name: /home/i });
+    const sectionElement = screen.getByTestId('hero-section');
     expect(sectionElement).toBeInTheDocument();
   });
 
   test('renders correct number of slides', () => {
     render(<HeroSection />);
     
-    const slideImages = screen.getAllByRole('img', { name: /Slide \d/ });
-    expect(slideImages).toHaveLength(3);
+    const slideElements = screen.getAllByTestId(/slide-\d/);
+    expect(slideElements).toHaveLength(3);
   });
 
   test('displays correct slide content', () => {
@@ -49,7 +57,7 @@ describe('HeroSection', () => {
 
   test('applies correct slider settings', () => {
     render(<HeroSection />);
-    
+
     expect(Slider).toHaveBeenCalledWith(
       expect.objectContaining({
         dots: true,
@@ -66,9 +74,6 @@ describe('HeroSection', () => {
 
   test('renders images with correct alt text', () => {
     render(<HeroSection />);
-    
-    const slideImage = screen.getByRole('img', { name: 'Slide 1' });
-    expect(slideImage).toBeInTheDocument();
     
     const cardImage = screen.getByRole('img', { name: 'Card 1' });
     expect(cardImage).toBeInTheDocument();

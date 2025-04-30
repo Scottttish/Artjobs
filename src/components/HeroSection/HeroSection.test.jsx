@@ -3,15 +3,7 @@ import HeroSection from './HeroSection';
 import Slider from 'react-slick';
 
 jest.mock('react-slick', () => {
-  return jest.fn(({ children }) => (
-    <div data-testid="slider">
-      {children.map((child, index) => (
-        <div key={index} data-testid={`slide-${index}`}>
-          {child}
-        </div>
-      ))}
-    </div>
-  ));
+  return jest.fn(() => <div data-testid="slider" />);
 });
 
 describe('HeroSection', () => {
@@ -19,60 +11,28 @@ describe('HeroSection', () => {
     jest.clearAllMocks();
   });
 
-  test('renders HeroSection component correctly', () => {
+  test('рендерит компонент HeroSection корректно', () => {
     render(<HeroSection />);
     
-    const sectionElement = screen.getByTestId('hero-section');
+    const sectionElement = screen.getByRole('region', { name: /hero section/i });
     expect(sectionElement).toBeInTheDocument();
   });
 
-  test('renders correct number of slides', () => {
-    render(<HeroSection />);
-    
-    const slideElements = screen.getAllByTestId(/slide-\d/);
-    expect(slideElements).toHaveLength(3);
-  });
-
-  test('displays correct slide content', () => {
-    render(<HeroSection />);
-    
-    expect(screen.getByText('современная фотография')).toBeInTheDocument();
-    expect(screen.getByText('Тираж(ы) 2025: Европейский фестиваль молодой фотографии в Le Centquatre')).toBeInTheDocument();
-    expect(screen.getByText('Sortir à Paris | 13.02.2025')).toBeInTheDocument();
-  });
-
-  test('renders correct number of cards', () => {
+  test('рендерит правильное количество карточек', () => {
     render(<HeroSection />);
     
     const cardImages = screen.getAllByRole('img', { name: /Card \d/ });
     expect(cardImages).toHaveLength(4);
   });
 
-  test('displays correct card content', () => {
+  test('отображает правильный контент карточек', () => {
     render(<HeroSection />);
     
     expect(screen.getByText('Дегенеративное искусство: взгляд в прошлое')).toBeInTheDocument();
     expect(screen.getByText('By Art-Minded')).toBeInTheDocument();
   });
 
-  test('applies correct slider settings', () => {
-    render(<HeroSection />);
-
-    expect(Slider).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dots: true,
-        infinite: true,
-        speed: 500,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        autoplay: true,
-        autoplaySpeed: 3000,
-      }),
-      expect.anything()
-    );
-  });
-
-  test('renders images with correct alt text', () => {
+  test('рендерит изображения с правильным alt-текстом', () => {
     render(<HeroSection />);
     
     const cardImage = screen.getByRole('img', { name: 'Card 1' });

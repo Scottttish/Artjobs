@@ -3,13 +3,13 @@ import userEvent from '@testing-library/user-event';
 import IllustrationPage from './IllustrationPage';
 import { createClient } from '@supabase/supabase-js';
 
+// Мокаем Supabase
 jest.mock('@supabase/supabase-js', () => ({
   createClient: jest.fn(() => ({
     from: jest.fn(() => ({
       select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          single: jest.fn(),
-        })),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn(),
       })),
       insert: jest.fn(() => ({
         select: jest.fn(),
@@ -30,8 +30,8 @@ describe('IllustrationPage', () => {
     window.open.mockRestore();
   });
 
-  test('renders loading state initially', async () => {
-    mockSupabase.from().select().eq.mockReturnValueOnce({
+  test('рендерит состояние загрузки изначально', async () => {
+    mockSupabase.from().select().eq.mockReturnValue({
       data: [],
       error: null,
     });
@@ -43,25 +43,25 @@ describe('IllustrationPage', () => {
     });
   });
 
-  test('displays error state when Supabase fetch fails', async () => {
-    mockSupabase.from().select().eq.mockReturnValueOnce({
+  test('отображает состояние ошибки при сбое Supabase', async () => {
+    mockSupabase.from().select().eq.mockReturnValue({
       data: null,
-      error: { message: 'Database error' },
+      error: { message: 'Ошибка базы данных' },
     });
 
     render(<IllustrationPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Ошибка загрузки вакансий: Database error')).toBeInTheDocument();
+      expect(screen.getByText('Ошибка загрузки вакансий: Ошибка базы данных')).toBeInTheDocument();
     });
   });
 
-  test('displays no jobs message when no jobs are found', async () => {
-    mockSupabase.from().select().eq.mockReturnValueOnce({
+  test('отображает сообщение об отсутствии вакансий', async () => {
+    mockSupabase.from().select().eq.mockReturnValue({
       data: [],
       error: null,
     });
-    mockSupabase.from().select.mockReturnValueOnce({
+    mockSupabase.from().select.mockReturnValue({
       data: [],
       error: null,
     });
@@ -73,7 +73,7 @@ describe('IllustrationPage', () => {
     });
   });
 
-  test('renders job cards with correct data', async () => {
+  test('рендерит карточки вакансий с правильными данными', async () => {
     const mockJobs = [
       {
         id: 1,
@@ -93,11 +93,11 @@ describe('IllustrationPage', () => {
       telegram_username: '@TestUserTG',
     };
 
-    mockSupabase.from().select().eq.mockReturnValueOnce({
+    mockSupabase.from().select().eq.mockReturnValue({
       data: mockJobs,
       error: null,
     });
-    mockSupabase.from().select().eq().single.mockReturnValueOnce({
+    mockSupabase.from().select().eq().single.mockReturnValue({
       data: mockUser,
       error: null,
     });
@@ -114,7 +114,7 @@ describe('IllustrationPage', () => {
     });
   });
 
-  test('handles apply button click with valid Telegram link', async () => {
+  test('обрабатывает клик по кнопке "Откликнуться" с валидной Telegram-ссылкой', async () => {
     const mockJobs = [
       {
         id: 1,
@@ -134,11 +134,11 @@ describe('IllustrationPage', () => {
       telegram_username: '@TestUserTG',
     };
 
-    mockSupabase.from().select().eq.mockReturnValueOnce({
+    mockSupabase.from().select().eq.mockReturnValue({
       data: mockJobs,
       error: null,
     });
-    mockSupabase.from().select().eq().single.mockReturnValueOnce({
+    mockSupabase.from().select().eq().single.mockReturnValue({
       data: mockUser,
       error: null,
     });
@@ -152,7 +152,7 @@ describe('IllustrationPage', () => {
     });
   });
 
-  test('handles apply button click with missing Telegram link', async () => {
+  test('обрабатывает клик по кнопке "Откликнуться" без Telegram-ссылки', async () => {
     const mockJobs = [
       {
         id: 1,
@@ -172,16 +172,15 @@ describe('IllustrationPage', () => {
       telegram_username: null,
     };
 
-    mockSupabase.from().select().eq.mockReturnValueOnce({
+    mockSupabase.from().select().eq.mockReturnValue({
       data: mockJobs,
       error: null,
     });
-    mockSupabase.from().select().eq().single.mockReturnValueOnce({
+    mockSupabase.from().select().eq().single.mockReturnValue({
       data: mockUser,
       error: null,
     });
 
-    // Мокаем console.error
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     render(<IllustrationPage />);
@@ -196,7 +195,7 @@ describe('IllustrationPage', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  test('handles invalid dates gracefully', async () => {
+  test('корректно обрабатывает невалидные даты', async () => {
     const mockJobs = [
       {
         id: 1,
@@ -216,11 +215,11 @@ describe('IllustrationPage', () => {
       telegram_username: '@TestUserTG',
     };
 
-    mockSupabase.from().select().eq.mockReturnValueOnce({
+    mockSupabase.from().select().eq.mockReturnValue({
       data: mockJobs,
       error: null,
     });
-    mockSupabase.from().select().eq().single.mockReturnValueOnce({
+    mockSupabase.from().select().eq().single.mockReturnValue({
       data: mockUser,
       error: null,
     });

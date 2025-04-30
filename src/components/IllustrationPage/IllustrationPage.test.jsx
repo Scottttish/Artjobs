@@ -11,6 +11,9 @@ jest.mock('@supabase/supabase-js', () => ({
           single: jest.fn(),
         })),
       })),
+      insert: jest.fn(() => ({
+        select: jest.fn(),
+      })),
     })),
   })),
 }));
@@ -27,13 +30,21 @@ describe('IllustrationPage', () => {
     window.open.mockRestore();
   });
 
-  test('renders loading state initially', () => {
+  test('renders loading state initially', async () => {
+    mockSupabase.from().select().eq.mockReturnValueOnce({
+      data: [],
+      error: null,
+    });
     render(<IllustrationPage />);
     expect(screen.getByText('Загрузка...')).toBeInTheDocument();
+    
+    await waitFor(() => {
+      expect(screen.queryByText('Загрузка...')).not.toBeInTheDocument();
+    });
   });
 
   test('displays error state when Supabase fetch fails', async () => {
-    mockSupabase.from().select().eq.mockReturnValue({
+    mockSupabase.from().select().eq.mockReturnValueOnce({
       data: null,
       error: { message: 'Database error' },
     });
@@ -46,11 +57,11 @@ describe('IllustrationPage', () => {
   });
 
   test('displays no jobs message when no jobs are found', async () => {
-    mockSupabase.from().select().eq.mockReturnValue({
+    mockSupabase.from().select().eq.mockReturnValueOnce({
       data: [],
       error: null,
     });
-    mockSupabase.from().select.mockReturnValue({
+    mockSupabase.from().select.mockReturnValueOnce({
       data: [],
       error: null,
     });
@@ -86,7 +97,7 @@ describe('IllustrationPage', () => {
       data: mockJobs,
       error: null,
     });
-    mockSupabase.from().select().eq().single.mockReturnValue({
+    mockSupabase.from().select().eq().single.mockReturnValueOnce({
       data: mockUser,
       error: null,
     });
@@ -127,7 +138,7 @@ describe('IllustrationPage', () => {
       data: mockJobs,
       error: null,
     });
-    mockSupabase.from().select().eq().single.mockReturnValue({
+    mockSupabase.from().select().eq().single.mockReturnValueOnce({
       data: mockUser,
       error: null,
     });
@@ -165,11 +176,12 @@ describe('IllustrationPage', () => {
       data: mockJobs,
       error: null,
     });
-    mockSupabase.from().select().eq().single.mockReturnValue({
+    mockSupabase.from().select().eq().single.mockReturnValueOnce({
       data: mockUser,
       error: null,
     });
 
+    // Мокаем console.error
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     render(<IllustrationPage />);
@@ -208,7 +220,7 @@ describe('IllustrationPage', () => {
       data: mockJobs,
       error: null,
     });
-    mockSupabase.from().select().eq().single.mockReturnValue({
+    mockSupabase.from().select().eq().single.mockReturnValueOnce({
       data: mockUser,
       error: null,
     });

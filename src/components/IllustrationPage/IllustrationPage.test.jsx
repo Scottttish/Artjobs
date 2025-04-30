@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import IllustrationPage from 'src/components/IllustrationPage/IllustrationPage.jsx';  
+import IllustrationPage from '/IllustrationPage';  
 import '@testing-library/jest-dom';
 
 jest.mock('react-slick', () => ({ children }) => <div data-testid="slider">{children}</div>);

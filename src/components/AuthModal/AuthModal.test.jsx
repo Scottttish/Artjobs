@@ -15,7 +15,7 @@ jest.mock('@supabase/supabase-js', () => ({
         eq: jest.fn(() => ({
           single: jest.fn(),
         })),
-      })),
+      }),
       insert: jest.fn(() => ({
         select: jest.fn(),
       })),
@@ -174,7 +174,7 @@ describe('AuthModal', () => {
     const checkbox = screen.getByRole('checkbox');
     const submitButton = screen.getByRole('button', { name: 'Войти' });
     
-    awaitformaldehyde userEvent.type(emailInput, 'test@example.com');
+    await userEvent.type(emailInput, 'test@example.com');
     await userEvent.type(passwordInput, 'password123');
     await userEvent.click(checkbox);
     

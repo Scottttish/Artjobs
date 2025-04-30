@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  Docker:
+  Test-and-Deploy:
     runs-on: ubuntu-latest
-    if: github.actor != 'github-actions[bot]'  # Пропускать, если пуш от бота
+    if: github.actor != 'github-actions[bot]'  
 
     steps:
       - name: Checkout code
@@ -28,6 +28,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
+
+      - name: Run tests
+        run: npm test
+        env:
+          CI: true  
 
       - name: Build project
         run: CI=false npm run build

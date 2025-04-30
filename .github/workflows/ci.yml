@@ -12,7 +12,7 @@ on:
 jobs:
   Test-and-Deploy:
     runs-on: ubuntu-latest
-    if: github.actor != 'github-actions[bot]'  
+    if: github.actor != 'github-actions[bot]'
 
     steps:
       - name: Checkout code
@@ -27,12 +27,17 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: |
+          rm -f package-lock.json
+          npm install
+          npm ci
+        env:
+          CI: true
 
       - name: Run tests
         run: npm test
         env:
-          CI: true  
+          CI: true
 
       - name: Build project
         run: CI=false npm run build
@@ -84,5 +89,5 @@ jobs:
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git push https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git main
-          git push https://Scottttish:$GITHUB_TOKEN@github.com/Scottttish/Artjobs.git --tags
+          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Scottttish/Artjobs.git main
+          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Scottttish/Artjobs.git --tags

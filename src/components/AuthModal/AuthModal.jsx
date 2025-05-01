@@ -3,8 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import './AuthModal.css';
 import mainImage from '../../assets/main.jpg';
 
-{/* Пожалуйста поставьте 100 баллов */}
-
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const supabase = createClient(
@@ -55,6 +53,16 @@ function AuthModal({ onClose }) {
     return strength;
   };
 
+  const getProgressBarColor = (strength) => {
+    switch (strength) {
+      case 1: return 'red';
+      case 2: return 'orange';
+      case 3: return 'yellow';
+      case 4: return 'green';
+      default: return 'transparent';
+    }
+  };
+
   const checkUserExistsInUsersTable = async (email) => {
     try {
       const { data, error } = await supabase
@@ -63,104 +71,67 @@ function AuthModal({ onClose }) {
         .eq('email', email)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking user in users table:', error);
-        throw error;
-      }
-
-      return !!data; // Возвращает true, если пользователь найден, false, если нет
-    } catch (err) {
-      console.error('Error checking user existence:', err);
+      if (error && error.code !== 'PGRST116') throw error;
+      return !!data;
+    } catch {
       return false;
     }
   };
 
   const handleRegister = async () => {
     try {
-      await delay(1000); // Задержка для предотвращения rate limit
-
-      // Проверка, существует ли пользователь в таблице users
-      const userExistsInUsersTable = await checkUserExistsInUsersTable(email);
-      if (userExistsInUsersTable) {
+      await delay(1000);
+      const userExists = await checkUserExistsInUsersTable(email);
+      if (userExists) {
         setError('Этот email уже зарегистрирован. Попробуйте войти.');
         return;
       }
 
-      // Регистрация через Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
 
       if (authError) {
-        console.error('Auth error:', authError);
         if (authError.message.includes('User already registered')) {
-          setError('Этот email уже зарегистрирован в системе. Попробуйте войти или используйте другой email.');
-          setIsLogin(true); // Переключаем на форму входа
-        } else if (authError.status === 429) {
-          setError('Слишком много запросов. Пожалуйста, подождите несколько секунд и попробуйте снова.');
+          setError('Email уже зарегистрирован. Попробуйте войти.');
+          setIsLogin(true);
         } else {
-          setError(authError.message || 'Ошибка регистрации');
+          setError(authError.message);
         }
-        throw authError;
+        return;
       }
 
-      if (!authData.user) {
-        console.error('No user data returned from signUp:', authData);
-        setError('Не удалось получить данные пользователя');
-        throw new Error('No user data');
-      }
-
-      // Проверка сессии
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-        setError('Ошибка получения сессии: ' + (sessionError.message || 'Неизвестная ошибка'));
-        throw sessionError;
+      if (!sessionData.session || sessionError) {
+        setError('Сессия не найдена');
+        return;
       }
 
-      if (!sessionData.session) {
-        console.error('No active session found:', sessionData);
-        setError('Сессия пользователя не найдена. Пожалуйста, попробуйте снова.');
-        throw new Error('No active session');
-      }
-
-      // Сохранение данных в таблицу users, включая пароль
       const { error: dbError } = await supabase
         .from('users')
         .insert([{ id: authData.user.id, email, username, role: selectedRole, password }]);
 
       if (dbError) {
-        console.error('Database error:', dbError);
-        setError('Ошибка при сохранении данных пользователя: ' + (dbError.message || 'Неизвестная ошибка'));
-        throw dbError;
+        setError('Ошибка при сохранении пользователя');
+        return;
       }
 
       alert('Регистрация успешна!');
       onClose();
     } catch (err) {
-      console.error('Registration error:', err);
-      // Ошибка уже установлена в соответствующих блоках
+      console.error(err);
     }
   };
 
   const handleLogin = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        console.error('Login error:', error);
-        throw error;
+        setError('Неверный email или пароль');
+        return;
       }
-
       alert('Вход успешен!');
       onClose();
-    } catch (err) {
-      setError('Неверный email или пароль');
-      console.error('Login error:', err);
+    } catch {
+      setError('Ошибка входа');
     }
   };
 
@@ -186,7 +157,7 @@ function AuthModal({ onClose }) {
           return;
         }
         if (password.length < 6) {
-          setError('Пароль должен содержать не менее 6 символов');
+          setError('Пароль слишком короткий');
           return;
         }
         if (passwordStrength !== 4) {
@@ -209,13 +180,15 @@ function AuthModal({ onClose }) {
   return (
     <div className="auth-modal-overlay">
       <div className="auth-modal-box">
-        <div className="auth-news-block"></div>
+        <div className="auth-news-block">
+          <img src={mainImage} alt="Main" />
+        </div>
         <div className="auth-block">
           <button className="auth-close-button" onClick={onClose}>×</button>
-          <h2 className={auth-h2 ${isLogin ? 'auth-h2-login' : 'auth-h2-register'}}>
+          <h2 className={`auth-h2 ${isLogin ? 'auth-h2-login' : 'auth-h2-register'}`}>
             {isLogin ? 'Вход в Аккаунт' : 'Создайте Свой Аккаунт'}
           </h2>
-          <p className={auth-p ${isLogin ? 'auth-p-login' : 'auth-p-register'}}>
+          <p className={`auth-p ${isLogin ? 'auth-p-login' : 'auth-p-register'}`}>
             {isLogin ? 'Введите почту и пароль для входа' : 'Добро пожаловать. Пожалуйста, введите ваши данные'}
           </p>
 
@@ -231,9 +204,7 @@ function AuthModal({ onClose }) {
                 className="auth-select"
                 required
               >
-                <option value="" disabled hidden>
-                  Выберите роль
-                </option>
+                <option value="" disabled hidden>Выберите роль</option>
                 <option value="artist">Художник</option>
                 <option value="hirer">Работодатель</option>
               </select>
@@ -262,7 +233,7 @@ function AuthModal({ onClose }) {
                 placeholder="Введите свою почту"
                 value={email}
                 onChange={handleEmailChange}
-                className={auth-email ${isEmailValid === null ? '' : isEmailValid ? 'valid' : 'invalid'}}
+                className={`auth-email ${isEmailValid === null ? '' : isEmailValid ? 'valid' : 'invalid'}`}
                 required
               />
             </label>
@@ -285,49 +256,35 @@ function AuthModal({ onClose }) {
                   <div
                     className="progress-bar"
                     style={{
-                      width: ${(passwordStrength / 4) * 100}%,
+                      width: `${(passwordStrength / 4) * 100}%`,
                       backgroundColor: getProgressBarColor(passwordStrength),
                     }}
                   />
                 </div>
 
                 <label>
-                  Повторить пароль
+                  Повторите пароль
                   <input
                     type="password"
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={handleConfirmPasswordChange}
-                    className={confirmPassword === '' ? 'neutral' : passwordMatch ? 'valid' : 'invalid'}
+                    className="auth-password"
                     required
                   />
                 </label>
               </>
             )}
 
-            <label className="auth-checkbox-label">
-              <div className="checkbox-container">
-                <input type="checkbox" required />
-              </div>
-              <p className="checkbox-text">Я согласен с условиями и конфиденциальностью.</p>
-            </label>
-
             <button type="submit" className="auth-submit-button" disabled={isSubmitting}>
               {isLogin ? 'Войти' : 'Зарегистрироваться'}
             </button>
 
-            <p className="login-link">
-              {isLogin ? 'У вас нет аккаунта? ' : 'У вас уже есть аккаунт? '}
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsLogin(!isLogin);
-                  setError(null);
-                }}
-              >
-                {isLogin ? 'Зарегистрируйтесь' : 'Войти'}
-              </a>
+            <p className="auth-switch">
+              {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}{' '}
+              <span onClick={() => setIsLogin(!isLogin)} className="auth-toggle">
+                {isLogin ? 'Зарегистрироваться' : 'Войти'}
+              </span>
             </p>
           </form>
         </div>
@@ -335,20 +292,5 @@ function AuthModal({ onClose }) {
     </div>
   );
 }
-
-const getProgressBarColor = (strength) => {
-  switch (strength) {
-    case 1:
-      return 'red';
-    case 2:
-      return 'orange';
-    case 3:
-      return 'yellowgreen';
-    case 4:
-      return 'green';
-    default:
-      return 'lightgray';
-  }
-};
 
 export default AuthModal;

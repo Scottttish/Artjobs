@@ -216,9 +216,10 @@ function AuthModal({ onClose }) {
             {isLogin ? 'Вход в Аккаунт' : 'Создайте Свой Аккаунт'}
           </h2>
 
-          <p className={auth-p ${isLogin ? 'auth-p-login' : 'auth-p-register'}}>
+          <p className={`auth-p ${isLogin ? 'auth-p-login' : 'auth-p-register'}`}>
             {isLogin ? 'Введите почту и пароль для входа' : 'Добро пожаловать. Пожалуйста, введите ваши данные'}
           </p>
+
 
           {error && <p className="auth-error" style={{ color: 'red' }}>{error}</p>}
 

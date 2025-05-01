@@ -17,7 +17,7 @@ export const supabase = {
       eq: () => ({
         single: async () => ({
           data: {
-            full_name: 'Aaa@12',
+            full_name: 'ФФФФ',
             email: 'arr@gmail.com'
           },
           error: null

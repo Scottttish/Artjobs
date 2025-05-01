@@ -1,7 +1,14 @@
+
 export const supabase = {
   auth: {
     getSession: async () => ({
-      data: { session: { user: { id: 'test-user-id' } } },
+      data: {
+        session: {
+          user: {
+            id: 'mock-user-id'
+          }
+        }
+      },
       error: null
     })
   },
@@ -10,8 +17,8 @@ export const supabase = {
       eq: () => ({
         single: async () => ({
           data: {
-            full_name: 'Айжан',
-            email: 'aizhan@example.com'
+            full_name: 'Aaa@12',
+            email: 'arr@gmail.com'
           },
           error: null
         })

@@ -212,14 +212,12 @@ function AuthModal({ onClose }) {
         <div className="auth-news-block"></div>
         <div className="auth-block">
           <button className="auth-close-button" onClick={onClose}>×</button>
-          <h2 className={`auth-h2 ${isLogin ? 'auth-h2-login' : 'auth-h2-register'}`}>
+          <h2 className={auth-h2 ${isLogin ? 'auth-h2-login' : 'auth-h2-register'}}>
             {isLogin ? 'Вход в Аккаунт' : 'Создайте Свой Аккаунт'}
           </h2>
-
-          <p className={`auth-p ${isLogin ? 'auth-p-login' : 'auth-p-register'}`}>
+          <p className={auth-p ${isLogin ? 'auth-p-login' : 'auth-p-register'}}>
             {isLogin ? 'Введите почту и пароль для входа' : 'Добро пожаловать. Пожалуйста, введите ваши данные'}
           </p>
-
 
           {error && <p className="auth-error" style={{ color: 'red' }}>{error}</p>}
 
@@ -261,9 +259,10 @@ function AuthModal({ onClose }) {
               Почта
               <input
                 type="email"
+                placeholder="Введите свою почту"
                 value={email}
                 onChange={handleEmailChange}
-                className={`auth-email ${isEmailValid === null ? '' : isEmailValid ? 'valid' : 'invalid'}`}
+                className={auth-email ${isEmailValid === null ? '' : isEmailValid ? 'valid' : 'invalid'}}
                 required
               />
             </label>

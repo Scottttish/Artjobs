@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import supabase from '../../supabaseClient'; // Импорт из supabaseClient.js
+import supabase from '../../supabaseClient'; // Импорт из src/supabaseClient.js
 import './Header.css';
 import logo from '../../assets/logo.png';
 import icon from '../../assets/icon.png';

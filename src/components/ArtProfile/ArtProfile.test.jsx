@@ -40,8 +40,8 @@ describe('ArtProfile', () => {
     render(<ArtProfile />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Добро пожаловать, Айжан/i)).toBeInTheDocument();
-      expect(screen.getByText(/Email: aizhan@example.com/i)).toBeInTheDocument();
+      expect(screen.getByText(/Добро пожаловать, ФФФФ/i)).toBeInTheDocument();
+      expect(screen.getByText(/Email: arr@gmail.com/i)).toBeInTheDocument();
     });
   });
 });

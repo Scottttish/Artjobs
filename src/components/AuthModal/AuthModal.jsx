@@ -261,10 +261,9 @@ function AuthModal({ onClose }) {
               Почта
               <input
                 type="email"
-                placeholder="Введите свою почту"
                 value={email}
                 onChange={handleEmailChange}
-                className={auth-email ${isEmailValid === null ? '' : isEmailValid ? 'valid' : 'invalid'}}
+                className={`auth-email ${isEmailValid === null ? '' : isEmailValid ? 'valid' : 'invalid'}`}
                 required
               />
             </label>

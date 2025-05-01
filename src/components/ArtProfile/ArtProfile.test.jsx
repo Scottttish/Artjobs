@@ -24,8 +24,8 @@ jest.mock('../../supabaseClient', () => ({
           single: () =>
             Promise.resolve({
               data: {
-                full_name: 'Айжан',
-                email: 'aizhan@example.com'
+                full_name: 'ФФФФ',
+                email: 'arr@gmail.com'
               },
               error: null
             })

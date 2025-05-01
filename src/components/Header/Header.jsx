@@ -1,15 +1,10 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
+import supabase from '../../supabaseClient'; // Импорт из supabaseClient.js
 import './Header.css';
 import logo from '../../assets/logo.png';
 import icon from '../../assets/icon.png';
 import AuthModal from '../AuthModal/AuthModal';
-
-const supabase = createClient(
-  'https://jvccejerkjfnkwtqumcd.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
-);
 
 function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -24,7 +19,6 @@ function Header() {
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData.session) {
         setIsAuthenticated(true);
-        // Получаем данные пользователя из таблицы users
         const { data: userData, error } = await supabase
           .from('users')
           .select('role')
@@ -33,7 +27,6 @@ function Header() {
 
         if (userData && !error) {
           setUserRole(userData.role);
-          // Убрано автоматическое перенаправление
         }
       }
     };
@@ -86,7 +79,6 @@ function Header() {
   };
 
   const handleSettings = () => {
-    // Перенаправление на профиль только при нажатии на "Настройки"
     if (userRole === 'artist') {
       navigate('/artprofile');
     } else if (userRole === 'hirer') {

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import './ArtProfile.css';
 
-// Инициализация Supabase клиента
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
@@ -24,13 +23,12 @@ function ArtProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Загрузка данных пользователя при монтировании компонента
   useEffect(() => {
     const fetchUserData = async () => {
       setLoading(true);
       setError(null);
 
-      // Получение сессии пользователя
+      
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData.session) {
         console.error('Session error:', sessionError);
@@ -41,7 +39,8 @@ function ArtProfile() {
 
       const userId = sessionData.session.user.id;
 
-      // Загрузка данных пользователя из таблицы users
+
+      
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('username, email')
@@ -56,7 +55,6 @@ function ArtProfile() {
         return;
       }
 
-      // Загрузка дополнительных данных из таблицы additionalinfo
       let artSkills = {
         drawingLevel: '',
         preferredMedium: '',
@@ -99,7 +97,6 @@ function ArtProfile() {
       setUser(userState);
       setLoading(false);
 
-      // Подписка на изменения в таблице users
       const userSubscription = supabase
         .channel('users-changes')
         .on(
@@ -120,7 +117,6 @@ function ArtProfile() {
         )
         .subscribe();
 
-      // Подписка на изменения в таблице additionalinfo
       const additionalInfoSubscription = supabase
         .channel('additionalinfo-changes')
         .on(
@@ -146,7 +142,6 @@ function ArtProfile() {
         )
         .subscribe();
 
-      // Очистка подписок при размонтировании компонента
       return () => {
         supabase.removeChannel(userSubscription);
         supabase.removeChannel(additionalInfoSubscription);
@@ -271,7 +266,6 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
 
     const userId = sessionData.session.user.id;
 
-    // Обновление основной информации пользователя в таблице users
     const updatedUserData = {
       username: editedUser.nickname,
       email: editedUser.email
@@ -289,7 +283,6 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
       return;
     }
 
-    // Проверка, существует ли запись в additionalinfo
     const { data: existingData, error: fetchError } = await supabase
       .from('additionalinfo')
       .select('user_id')
@@ -305,13 +298,11 @@ const ProfileDetails = ({ user = {}, onSave = (data) => console.log('Saved:', da
 
     let additionalError;
     if (!existingData || existingData.length === 0) {
-      // Если записи нет, создаем новую
       const { error: insertError } = await supabase
         .from('additionalinfo')
         .insert({ user_id: userId, ...updatedAdditionalData });
       additionalError = insertError;
     } else {
-      // Если запись есть, обновляем существующую
       const { error: updateError } = await supabase
         .from('additionalinfo')
         .update(updatedAdditionalData)

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import './HirerProfile.css';
 
-// Инициализация Supabase клиента
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
@@ -40,7 +39,6 @@ const HirerProfile = () => {
   const [durationSortDirection, setDurationSortDirection] = useState('asc');
   const [productSearchQuery, setProductSearchQuery] = useState('');
 
-  // Валидация формата даты (ожидается YYYY-MM-DD)
   const isValidDateFormat = (dateString) => {
     const regex = /^\d{4}-\d{2}-\d{2}$/;
     if (!regex.test(dateString)) return false;
@@ -48,13 +46,11 @@ const HirerProfile = () => {
     return !isNaN(date.getTime());
   };
 
-  // Загрузка данных при монтировании компонента
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
-      // Получение сессии пользователя
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData.session) {
         setError('Пожалуйста, войдите в систему.');
@@ -64,7 +60,6 @@ const HirerProfile = () => {
 
       const userId = sessionData.session.user.id;
 
-      // Загрузка данных пользователя
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('username, email, password, telegram_username')
@@ -88,7 +83,6 @@ const HirerProfile = () => {
         });
       }
 
-      // Загрузка истории
       const { data: historyData, error: historyError } = await supabase
         .from('history')
         .select('id, publication_id, table_name, title, date, status')
@@ -112,7 +106,6 @@ const HirerProfile = () => {
         })));
       }
 
-      // Загрузка продуктов из всех таблиц
       const tables = ['illustration', 'motion', 'other', 'three_d', 'interior'];
       let allProducts = [];
 

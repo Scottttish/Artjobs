@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import '../ThreeDPage/3DPage.css';
 
-// Инициализация Supabase клиента
 const supabase = createClient(
   'https://jvccejerkjfnkwtqumcd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw'
@@ -18,7 +17,6 @@ function IllustrationPage() {
       setLoading(true);
       setError(null);
 
-      // Загрузка вакансий из таблицы illustration
       const { data: jobData, error: jobError } = await supabase
         .from('illustration')
         .select('id, user_id, title, description, published_at, start_date, end_date, price, status, category')
@@ -33,7 +31,6 @@ function IllustrationPage() {
 
       console.log('Fetched jobs from illustration:', jobData);
 
-      // Если данных нет, проверяем, какие категории существуют
       if (jobData.length === 0) {
         const { data: allCategories, error: categoryError } = await supabase
           .from('illustration')
@@ -45,12 +42,11 @@ function IllustrationPage() {
         }
       }
 
-      // Для каждой вакансии получаем никнейм работодателя и telegram_username
       const jobsWithCompany = await Promise.all(
         jobData.map(async (job) => {
           const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('username, telegram_username') // Добавляем telegram_username
+            .select('username, telegram_username') 
             .eq('id', job.user_id)
             .single();
 
@@ -59,27 +55,23 @@ function IllustrationPage() {
             return { ...job, company: 'Неизвестный работодатель', telegramLink: null };
           }
 
-          // Формируем ссылку на Telegram
           let telegramLink = null;
           if (userData.telegram_username) {
             const username = userData.telegram_username.startsWith('@')
-              ? userData.telegram_username.slice(1) // Убираем @, если есть
+              ? userData.telegram_username.slice(1) 
               : userData.telegram_username;
             telegramLink = `https://t.me/${username}`;
           }
 
-          // Расчёт дедлайна (разница между end_date и start_date в днях)
           const startDate = new Date(job.start_date);
           const endDate = new Date(job.end_date);
           
-          // Проверка на валидность дат
           let deadlineDays = 'Не указано';
           if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
             deadlineDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
             deadlineDays = `${deadlineDays} дней`;
           }
 
-          // Форматирование даты публикации
           const publishedDateObj = new Date(job.published_at);
           const publishedDate = !isNaN(publishedDateObj.getTime())
             ? publishedDateObj.toLocaleDateString('ru-RU', {
@@ -95,7 +87,7 @@ function IllustrationPage() {
             salary: job.price ? `${job.price} ₸` : 'Не указано',
             publishedDate,
             deadline: deadlineDays,
-            telegramLink // Добавляем ссылку на Telegram
+            telegramLink 
           };
         })
       );
@@ -107,10 +99,9 @@ function IllustrationPage() {
     fetchJobs();
   }, []);
 
-  // Функция для открытия ссылки в новом окне
   const handleApplyClick = (telegramLink) => {
     if (telegramLink) {
-      window.open(telegramLink, '_blank'); // Открываем ссылку в новом окне
+      window.open(telegramLink, '_blank'); 
     } else {
       console.error('Telegram link is not available for this job');
     }
@@ -165,7 +156,7 @@ function IllustrationPage() {
                 <p className="job-description">{job.description}</p>
                 <button
                   className="apply-btn"
-                  onClick={() => handleApplyClick(job.telegramLink)} // Добавляем обработчик клика
+                  onClick={() => handleApplyClick(job.telegramLink)}
                 >
                   Откликнуться
                 </button>

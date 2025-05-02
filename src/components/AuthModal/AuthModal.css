@@ -38,7 +38,7 @@
 
 .auth-block {
     width: 55%;
-    min-width: 489px; /* Гарантируем, что ширина достаточно большая для 449px + padding */
+    min-width: 489px; 
     padding: 20px;
     box-sizing: border-box;
     position: relative;
@@ -93,7 +93,7 @@
     border-radius: 5px;
     cursor: pointer;
     margin: 0 auto;
-    box-sizing: border-box; /* Учитываем padding и border */
+    box-sizing: border-box;
 }
 
 .google-icon {
@@ -106,7 +106,7 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
-    width: 449px; /* Устанавливаем ширину 449px */
+    width: 449px; 
     margin-left: auto;
     margin-right: auto;
 }
@@ -123,14 +123,14 @@
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    width: 100%; /* Растягиваем на всю ширину родителя (449px) */
-    max-width: 100%; /* Гарантируем, что не превысит ширину родителя */
+    width: 100%;
+    max-width: 100%; 
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
     margin-top: 3px;
     color: #333;
     margin-left: 0;
-    box-sizing: border-box; /* Учитываем padding и border */
+    box-sizing: border-box; 
 }
 
 .auth-form {
@@ -139,7 +139,7 @@
     margin-top: 10px;
     gap: 3px;
     margin-bottom: 5px;
-    width: 449px; /* Устанавливаем фиксированную ширину 449px */
+    width: 449px; 
     margin-left: auto;
     margin-right: auto;
 }
@@ -163,9 +163,9 @@
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    width: 100%; /* Растягиваем на всю ширину родителя (449px) */
-    max-width: 100%; /* Гарантируем, что не превысит ширину родителя */
-    box-sizing: border-box; /* Учитываем padding и border */
+    width: 100%; 
+    max-width: 100%;
+    box-sizing: border-box; 
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
     color: #333;
@@ -184,7 +184,7 @@
 }
 
 .password-levels {
-    width: 100%; /* Прогресс-бар растягивается на всю ширину .auth-form (449px) */
+    width: 100%; 
     height: 8px;
     background-color: #ccc;
     border-radius: 5px;
@@ -199,7 +199,7 @@
 
 .auth-submit-button {
     background-color: #333;
-    width: 100%; /* Кнопка растягивается на всю ширину .auth-form (449px) */
+    width: 100%; 
     color: white;
     padding: 10px;
     font-family: 'Montserrat', sans-serif;
@@ -208,7 +208,7 @@
     border-radius: 5px;
     cursor: pointer;
     margin-top: 0px;
-    box-sizing: border-box; /* Учитываем padding и border */
+    box-sizing: border-box; 
 }
 
 .auth-submit-button:hover {

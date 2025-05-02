@@ -77,7 +77,7 @@
 }
 
 .user-icon {
-  border-radius: 50%; /* Для круглой иконки */
+  border-radius: 50%; 
   transition: opacity 0.3s;
 }
 

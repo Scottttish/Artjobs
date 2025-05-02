@@ -29,7 +29,7 @@ function ThreeDSection() {
 
     const loader = new GLTFLoader();
     let model;
-    const modelPath = process.env.PUBLIC_URL + '/assets/my-model.glb'; // Corrected path
+    const modelPath = process.env.PUBLIC_URL + '/assets/my-model.glb'; 
     console.log('Trying to load model from:', modelPath);
     loader.load(
       modelPath,

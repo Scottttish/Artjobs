@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import './AdminPanel.css';
+
+const supabaseUrl = 'https://jvccejerkjfnkwtqumcd.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2Y2NlamVya2pmbmt3dHF1bWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTMzMjAsImV4cCI6MjA2MTA4OTMyMH0.xgqIMs3r007pJIeV5P8y8kG4hRcFqrgXvkkdavRtVIw';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 function AdminPanel() {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -14,6 +18,7 @@ function AdminPanel() {
       setLoading(true);
       setError(null);
 
+      // Check if user is admin
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData.session) {
         setError('Пожалуйста, войдите в систему.');
@@ -34,6 +39,7 @@ function AdminPanel() {
         return;
       }
 
+      // Fetch all users
       const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select('id, username, email, role, telegram_username, is_admin');
@@ -44,6 +50,7 @@ function AdminPanel() {
         return;
       }
 
+      // Fetch projects from all tables
       const tables = ['interior', 'motion', 'three_d', 'illustration', 'other'];
       let allProjects = [];
       for (const table of tables) {
@@ -62,6 +69,7 @@ function AdminPanel() {
       setProjects(allProjects || []);
       setLoading(false);
 
+      // Set up real-time subscriptions
       const userSubscription = supabase
         .channel('users-changes')
         .on(

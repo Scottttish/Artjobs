@@ -21,6 +21,7 @@ function AdminPanel() {
       setError(null);
 
       try {
+        // Check if user is admin
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !sessionData.session) {
           throw new Error('Пожалуйста, войдите в систему.');
@@ -37,11 +38,13 @@ function AdminPanel() {
           throw new Error('Доступ запрещён. Только для администраторов.');
         }
 
+        // Fetch all users
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, username, email, role, telegram_username, is_admin');
         if (usersError) throw new Error('Ошибка загрузки данных пользователей: ' + usersError.message);
 
+        // Fetch projects from all tables
         let allProjects = [];
         for (const table of tables) {
           const { data: projectData, error: projectError } = await supabase
@@ -62,6 +65,7 @@ function AdminPanel() {
 
     fetchData();
 
+    // Set up real-time subscriptions
     const userSubscription = supabase
       .channel('users-changes')
       .on(
@@ -240,22 +244,64 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
         setUsers(prev => prev.map(user => (user.id === editedItem.id ? { ...editedItem, is_admin: editedItem.is_admin === 'true' } : user)));
       } else if (editMode === 'project') {
         console.log('Saving project:', editedItem);
-        const { error } = await supabase
-          .from(editedItem.table)
-          .update({
-            title: editedItem.title,
-            category: editedItem.category,
-            description: editedItem.description || null,
-            price: Number(editedItem.price),
-            status: editedItem.status
-          })
-          .eq('id', editedItem.id);
-        if (error) throw error;
-        setProjects(prev =>
-          prev.map(project =>
-            project.id === editedItem.id && project.table === editedItem.table ? editedItem : project
-          )
-        );
+        const newTable = editedItem.category; // Новая таблица = выбранная категория
+        const oldTable = editedItem.table; // Текущая таблица
+
+        if (newTable === oldTable) {
+          // Если категория не изменилась, просто обновляем проект
+          const { error } = await supabase
+            .from(oldTable)
+            .update({
+              title: editedItem.title,
+              category: editedItem.category,
+              description: editedItem.description || null,
+              published_at: editedItem.published_at || null,
+              start_date: editedItem.start_date || null,
+              end_date: editedItem.end_date || null,
+              price: Number(editedItem.price),
+              status: editedItem.status
+            })
+            .eq('id', editedItem.id);
+          if (error) throw error;
+          setProjects(prev =>
+            prev.map(project =>
+              project.id === editedItem.id && project.table === oldTable ? { ...editedItem, table: oldTable } : project
+            )
+          );
+        } else {
+          // Если категория изменилась, удаляем из старой таблицы и создаём в новой
+          // Шаг 1: Удаляем из старой таблицы
+          const { error: deleteError } = await supabase
+            .from(oldTable)
+            .delete()
+            .eq('id', editedItem.id);
+          if (deleteError) throw deleteError;
+
+          // Шаг 2: Создаём в новой таблице
+          const { data: newProject, error: insertError } = await supabase
+            .from(newTable)
+            .insert({
+              user_id: editedItem.user_id,
+              title: editedItem.title,
+              category: editedItem.category,
+              description: editedItem.description || null,
+              published_at: editedItem.published_at || null,
+              start_date: editedItem.start_date || null,
+              end_date: editedItem.end_date || null,
+              price: Number(editedItem.price),
+              status: editedItem.status
+            })
+            .select()
+            .single();
+          if (insertError) throw insertError;
+
+          // Шаг 3: Обновляем состояние projects
+          setProjects(prev =>
+            prev
+              .filter(project => !(project.id === editedItem.id && project.table === oldTable)) // Удаляем старый проект
+              .concat({ ...newProject, table: newTable }) // Добавляем новый проект
+          );
+        }
       }
       setEditMode(null);
       setEditedItem(null);

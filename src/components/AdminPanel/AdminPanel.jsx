@@ -14,14 +14,13 @@ function AdminPanel() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const tables = ['interior', 'motion', 'three_d', 'illustration', 'other']; // Moved tables here
+    const tables = ['interior', 'motion', 'three_d', 'illustration', 'other'];
 
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // Check if user is admin
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !sessionData.session) {
           throw new Error('Пожалуйста, войдите в систему.');
@@ -38,13 +37,11 @@ function AdminPanel() {
           throw new Error('Доступ запрещён. Только для администраторов.');
         }
 
-        // Fetch all users
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, username, email, role, telegram_username, is_admin');
         if (usersError) throw new Error('Ошибка загрузки данных пользователей: ' + usersError.message);
 
-        // Fetch projects from all tables
         let allProjects = [];
         for (const table of tables) {
           const { data: projectData, error: projectError } = await supabase
@@ -65,13 +62,13 @@ function AdminPanel() {
 
     fetchData();
 
-    // Set up real-time subscriptions
     const userSubscription = supabase
       .channel('users-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'users' },
         (payload) => {
+          console.log('User change:', payload);
           if (payload.eventType === 'INSERT') {
             setUsers(prev => [...prev, payload.new]);
           } else if (payload.eventType === 'UPDATE') {
@@ -90,6 +87,7 @@ function AdminPanel() {
           'postgres_changes',
           { event: '*', schema: 'public', table },
           (payload) => {
+            console.log(`${table} change:`, payload);
             if (payload.eventType === 'INSERT') {
               setProjects(prev => [...prev, { ...payload.new, table }]);
             } else if (payload.eventType === 'UPDATE') {
@@ -225,6 +223,7 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
     setIsSaving(true);
     try {
       if (editMode === 'user') {
+        console.log('Saving user:', editedItem);
         const { error } = await supabase
           .from('users')
           .update({
@@ -232,12 +231,13 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
             email: editedItem.email,
             role: editedItem.role,
             telegram_username: editedItem.telegram_username || null,
-            is_admin: editedItem.is_admin === 'true' // Convert string to boolean
+            is_admin: editedItem.is_admin === 'true' 
           })
           .eq('id', editedItem.id);
         if (error) throw error;
         setUsers(prev => prev.map(user => (user.id === editedItem.id ? { ...editedItem, is_admin: editedItem.is_admin === 'true' } : user)));
       } else if (editMode === 'project') {
+        console.log('Saving project:', editedItem);
         const { error } = await supabase
           .from(editedItem.table)
           .update({
@@ -271,6 +271,7 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
     }
     setIsDeleting(true);
     try {
+      console.log('Deleting:', { item, type });
       if (type === 'user') {
         const { error } = await supabase.from('users').delete().eq('id', item.id);
         if (error) throw error;

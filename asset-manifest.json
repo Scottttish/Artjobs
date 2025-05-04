@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/Artjobs/static/css/main.9e6c4b58.css",
-    "main.js": "/Artjobs/static/js/main.0e728d8f.js",
+    "main.js": "/Artjobs/static/js/main.90dd94e0.js",
     "static/js/198.5e723148.chunk.js": "/Artjobs/static/js/198.5e723148.chunk.js",
     "static/media/news-image4.jpg": "/Artjobs/static/media/news-image4.847a87fac8349a555c7d.jpg",
     "static/media/main.jpg": "/Artjobs/static/media/main.30df9d3ea4c957abbea4.jpg",
@@ -29,11 +29,11 @@
     "static/media/slick.woff": "/Artjobs/static/media/slick.295183786cd8a1389865.woff",
     "index.html": "/Artjobs/index.html",
     "main.9e6c4b58.css.map": "/Artjobs/static/css/main.9e6c4b58.css.map",
-    "main.0e728d8f.js.map": "/Artjobs/static/js/main.0e728d8f.js.map",
+    "main.90dd94e0.js.map": "/Artjobs/static/js/main.90dd94e0.js.map",
     "198.5e723148.chunk.js.map": "/Artjobs/static/js/198.5e723148.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.9e6c4b58.css",
-    "static/js/main.0e728d8f.js"
+    "static/js/main.90dd94e0.js"
   ]
 }

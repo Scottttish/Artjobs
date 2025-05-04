@@ -327,11 +327,11 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
 
       if (isEditing) {
         console.log('Updating user:', userData);
-        const { error } = await supabase
+        const { error: updateError } = await supabase
           .from('users')
           .update(userData)
           .eq('id', editingId);
-        if (error) throw error;
+        if (updateError) throw updateError;
         setUsers(prev => prev.map(user => (user.id === editingId ? { ...userData, id: editingId } : user)));
       }
 
@@ -347,7 +347,9 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
       setIsEditing(false);
       setEditingId(null);
     } catch (error) {
+      // eslint-disable-next-line no-undef
       console.error('Save user error:', error);
+      // eslint-disable-next-line no-undef
       setModalError(`Ошибка при сохранении: ${error.message}`);
     } finally {
       setIsSaving(false);
@@ -399,16 +401,16 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
       if (isEditing) {
         console.log('Updating project:', projectData);
         if (table === projectTable) {
-          const { error } = await supabase
+          const { error: updateError } = await supabase
             .from(projectTable)
             .update(projectData)
             .eq('id', editingId);
-          if (error) throw error;
+          if (updateError) throw updateError;
         } else {
           const { error: deleteError } = await supabase.from(table).delete().eq('id', editingId);
-          if (deleteError) throw error;
+          if (deleteError) throw deleteError;
           const { data, error: insertError } = await supabase.from(projectTable).insert(projectData).select();
-          if (insertError) throw error;
+          if (insertError) throw insertError;
           setEditingId(data[0].id);
         }
         setProjects(prev =>
@@ -435,7 +437,9 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
       setIsEditing(false);
       setEditingId(null);
     } catch (error) {
+      // eslint-disable-next-line no-undef
       console.error('Save project error:', error);
+      // eslint-disable-next-line no-undef
       setModalError(`Ошибка при сохранении: ${error.message}`);
     } finally {
       setIsSaving(false);
@@ -450,12 +454,12 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
     try {
       console.log('Deleting:', { item, type });
       if (type === 'user') {
-        const { error } = await supabase.from('users').delete().eq('id', item.id);
-        if (error) throw error;
+        const { error: deleteError } = await supabase.from('users').delete().eq('id', item.id);
+        if (deleteError) throw deleteError;
         setUsers(prev => prev.filter(user => user.id !== item.id));
       } else if (type === 'project') {
-        const { error } = await supabase.from(item.table).delete().eq('id', item.id);
-        if (error) throw error;
+        const { error: deleteError } = await supabase.from(item.table).delete().eq('id', item.id);
+        if (deleteError) throw deleteError;
         setProjects(prev => prev.filter(project => !(project.id === item.id && project.table === item.table)));
       }
     } catch (error) {

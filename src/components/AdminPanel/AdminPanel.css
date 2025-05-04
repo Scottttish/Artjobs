@@ -14,12 +14,12 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  padding-top: 80px;
+  padding-top: 80px; /* Увеличено, чтобы учесть высоту навигации */
   min-height: 100vh;
   background-color: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   position: relative;
-  z-index: 1;
+  z-index: 1; /* Предотвращает перекрытие навигацией */
   display: flex;
   flex-direction: column;
 }
@@ -57,7 +57,7 @@ body {
   background: rgba(255, 255, 255, 0.98);
   border-radius: 8px;
   padding: 30px;
-  min-height: 400px;
+  min-height: 400px; /* Увеличено для предотвращения сжатия */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   width: 100%;
   max-width: 1100px;
@@ -79,59 +79,94 @@ body {
 
 .detail-row {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: center; /* Изменено с flex-start для лучшего выравнивания */
   gap: 10px;
   margin-bottom: 15px;
-  padding: 10px 0;
-  min-height: 40px;
-  border-bottom: 1px solid #eee;
+  min-height: 40px; /* Предотвращает сжатие строк */
+  flex-wrap: wrap; /* Позволяет перенос элементов на маленьких экранах */
 }
 
-.detail-field {
-  display: flex;
-  flex-direction: column;
-  min-width: 200px;
-  margin-right: 10px;
-}
-
-.detail-field label {
-  font-size: 0.9rem;
+.label {
+  width: 200px;
   color: #666666;
-  margin-bottom: 5px;
+  font-size: 0.9rem;
 }
 
-input, select, textarea {
+.value, .value-multiline {
+  flex: 1;
+  color: #555555;
+  min-width: 200px; /* Предотвращает сжатие текста */
+}
+
+.value-multiline {
+  white-space: pre-wrap;
+  max-width: 400px;
+  word-wrap: break-word;
+}
+
+input, select {
+  flex: 1;
+  max-width: 300px;
   padding: 8px 12px;
   background: #f8f8f8;
   border: 1px solid #d0d0d0;
   color: #333333;
   border-radius: 4px;
   font-size: 0.9rem;
-  width: 100%;
-  max-width: 300px;
-}
-
-input:disabled {
-  background: #e0e0e0;
-  cursor: not-allowed;
 }
 
 textarea {
+  flex: 1;
   max-width: 400px;
-  min-height: 100px;
+  padding: 8px 12px;
+  background: #f8f8f8;
+  border: 1px solid #d0d0d0;
+  color: #333333;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  overflow: hidden;
   resize: none;
 }
 
-.delete-btn {
+.edit-btn, .save-btn, .cancel-btn, .delete-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.edit-btn {
+  background: #0078d4;
+  color: white;
+}
+
+.edit-btn:hover {
+  background: #005fa3;
+}
+
+.save-btn {
+  background: #2e7d32;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #1b5e20;
+}
+
+.cancel-btn {
+  background: #d32f2f;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #b71c1c;
+}
+
+.delete-btn {
   background: #dc3545;
   color: white;
-  transition: background-color 0.2s ease;
 }
 
 .delete-btn:hover {

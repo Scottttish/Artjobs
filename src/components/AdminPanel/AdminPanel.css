@@ -84,7 +84,9 @@ body {
   color: #555555;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   flex: 1;
   max-width: 300px;
   padding: 8px 12px;
@@ -101,7 +103,10 @@ textarea {
   resize: none;
 }
 
-.edit-btn, .save-btn, .cancel-btn, .delete-btn {
+.edit-btn,
+.save-btn,
+.cancel-btn,
+.delete-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 4px;

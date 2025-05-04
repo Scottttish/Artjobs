@@ -14,28 +14,37 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  padding-top: 60px;
+  padding-top: 80px; /* Увеличено, чтобы учесть высоту навигации */
   min-height: 100vh;
   background-color: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
+  position: relative;
+  z-index: 1; /* Предотвращает перекрытие навигацией */
+  display: flex;
+  flex-direction: column;
 }
 
 .main-container {
   width: 1120px;
   margin: 0 auto;
   padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-header {
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .admin-header h1 {
   color: #000000;
   font-size: 1.8rem;
-  margin-bottom: 5px;
 }
 
 .current-time {
@@ -48,11 +57,12 @@ body {
   background: rgba(255, 255, 255, 0.98);
   border-radius: 8px;
   padding: 30px;
-  min-height: fit-content;
+  min-height: 400px; /* Увеличено для предотвращения сжатия */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
+  flex-grow: 1;
 }
 
 .section {
@@ -69,8 +79,11 @@ body {
 
 .detail-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center; /* Изменено с flex-start для лучшего выравнивания */
+  gap: 10px;
   margin-bottom: 15px;
+  min-height: 40px; /* Предотвращает сжатие строк */
+  flex-wrap: wrap; /* Позволяет перенос элементов на маленьких экранах */
 }
 
 .label {
@@ -79,14 +92,19 @@ body {
   font-size: 0.9rem;
 }
 
-.value {
+.value, .value-multiline {
   flex: 1;
   color: #555555;
+  min-width: 200px; /* Предотвращает сжатие текста */
 }
 
-input,
-select,
-textarea {
+.value-multiline {
+  white-space: pre-wrap;
+  max-width: 400px;
+  word-wrap: break-word;
+}
+
+input, select {
   flex: 1;
   max-width: 300px;
   padding: 8px 12px;
@@ -98,15 +116,19 @@ textarea {
 }
 
 textarea {
+  flex: 1;
   max-width: 400px;
+  padding: 8px 12px;
+  background: #f8f8f8;
+  border: 1px solid #d0d0d0;
+  color: #333333;
+  border-radius: 4px;
+  font-size: 0.9rem;
   overflow: hidden;
   resize: none;
 }
 
-.edit-btn,
-.save-btn,
-.cancel-btn,
-.delete-btn {
+.edit-btn, .save-btn, .cancel-btn, .delete-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 4px;
@@ -156,6 +178,7 @@ textarea {
   color: #666666;
   font-weight: 500;
   text-align: center;
+  padding: 20px;
 }
 
 .error {

@@ -13,6 +13,7 @@ import InteriorPage from './components/InteriorPage/InteriorPage';
 import OtherPage from './components/OtherPage/OtherPage';
 import ArtProfile from './components/ArtProfile/ArtProfile';
 import HirerProfile from './components/HirerProfile/HirerProfile';
+import AdminPanel from './components/AdminPanel/AdminPanel';
 import './App.css';
 
 function ScrollToTop() {
@@ -61,7 +62,8 @@ function App() {
           <Route path="/interior" element={<InteriorPage />} />
           <Route path="/other" element={<OtherPage />} />
           <Route path="/artprofile" element={<ArtProfile />} />
-          <Route path="/hirerprofile" element={<HirerProfile />} />
+          <Route path="/hirerprofile" element={<HirerProfile />} />   
+          <Route path="/adminpanel" element={<AdminPanel />} />
         </Routes>
         <Footer />
       </div>

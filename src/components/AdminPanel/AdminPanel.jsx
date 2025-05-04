@@ -18,6 +18,7 @@ function AdminPanel() {
       setLoading(true);
       setError(null);
 
+      // Check if user is admin
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData.session) {
         setError('Пожалуйста, войдите в систему.');
@@ -38,15 +39,18 @@ function AdminPanel() {
         return;
       }
 
+      // Fetch all users
       const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select('id, username, email, role, telegram_username, is_admin');
+
       if (usersError) {
         setError('Ошибка загрузки данных пользователей: ' + usersError.message);
         setLoading(false);
         return;
       }
 
+      // Fetch projects from all tables
       const tables = ['interior', 'motion', 'three_d', 'illustration', 'other'];
       let allProjects = [];
       for (const table of tables) {
@@ -65,29 +69,48 @@ function AdminPanel() {
       setProjects(allProjects || []);
       setLoading(false);
 
+      // Set up real-time subscriptions
       const userSubscription = supabase
         .channel('users-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, (payload) => {
-          if (payload.eventType === 'INSERT') setUsers(prev => [...prev, payload.new]);
-          else if (payload.eventType === 'UPDATE') setUsers(prev => prev.map(user => (user.id === payload.new.id ? payload.new : user)));
-          else if (payload.eventType === 'DELETE') setUsers(prev => prev.filter(user => user.id !== payload.old.id));
-        })
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'users' },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setUsers(prev => [...prev, payload.new]);
+            } else if (payload.eventType === 'UPDATE') {
+              setUsers(prev => prev.map(user => (user.id === payload.new.id ? payload.new : user)));
+            } else if (payload.eventType === 'DELETE') {
+              setUsers(prev => prev.filter(user => user.id !== payload.old.id));
+            }
+          }
+        )
         .subscribe();
 
       const projectSubscriptions = tables.map(table =>
         supabase
           .channel(`${table}-changes`)
-          .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
-            if (payload.eventType === 'INSERT') setProjects(prev => [...prev, { ...payload.new, table }]);
-            else if (payload.eventType === 'UPDATE')
-              setProjects(prev =>
-                prev.map(project =>
-                  project.id === payload.new.id && project.table === table ? { ...payload.new, table } : project
-                )
-              );
-            else if (payload.eventType === 'DELETE')
-              setProjects(prev => prev.filter(project => !(project.id === payload.old.id && project.table === table)));
-          })
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table },
+            (payload) => {
+              if (payload.eventType === 'INSERT') {
+                setProjects(prev => [...prev, { ...payload.new, table }]);
+              } else if (payload.eventType === 'UPDATE') {
+                setProjects(prev =>
+                  prev.map(project =>
+                    project.id === payload.new.id && project.table === table
+                      ? { ...payload.new, table }
+                      : project
+                  )
+                );
+              } else if (payload.eventType === 'DELETE') {
+                setProjects(prev =>
+                  prev.filter(project => !(project.id === payload.old.id && project.table === table))
+                );
+              }
+            }
+          )
           .subscribe()
       );
 
@@ -101,23 +124,47 @@ function AdminPanel() {
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const formatTime = (date) =>
-    date.toLocaleDateString('ru-RU', {
+  const formatTime = (date) => {
+    return date.toLocaleDateString('ru-RU', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit',
+      second: '2-digit'
     });
+  };
 
-  if (loading) return <div className="app-container"><main><div className="admin-details-container"><div className="loading">Загрузка...</div></div></main></div>;
-  if (error) return <div className="app-container"><main><div className="admin-details-container"><div className="error">{error}</div></div></main></div>;
+  if (loading) {
+    return (
+      <div className="app-container">
+        <main>
+          <div className="admin-container">
+            <div className="loading">Загрузка...</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="app-container">
+        <main>
+          <div className="admin-container">
+            <div className="error">{error}</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">
@@ -156,7 +203,9 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
   };
 
   useEffect(() => {
-    if (editMode && textareaRef.current) handleTextareaResize();
+    if (editMode && textareaRef.current) {
+      handleTextareaResize();
+    }
   }, [editMode]);
 
   const handleSave = async () => {
@@ -170,9 +219,10 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
           email: editedItem.email,
           role: editedItem.role,
           telegram_username: editedItem.telegram_username,
-          is_admin: editedItem.is_admin,
+          is_admin: editedItem.is_admin
         })
         .eq('id', editedItem.id);
+
       if (error) {
         alert('Ошибка при сохранении данных пользователя: ' + error.message);
         return;
@@ -186,9 +236,10 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
           category: editedItem.category,
           description: editedItem.description,
           price: Number(editedItem.price),
-          status: editedItem.status,
+          status: editedItem.status
         })
         .eq('id', editedItem.id);
+
       if (error) {
         alert('Ошибка при сохранении данных проекта: ' + error.message);
         return;
@@ -308,7 +359,7 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
                 <input
                   type="number"
                   name="price"
-                  value={editedItem.price || ''}
+                  value={editedItem.price}
                   onChange={handleInputChange}
                   placeholder="Цена"
                 />

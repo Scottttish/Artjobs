@@ -14,6 +14,8 @@ function AdminPanel() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const tables = ['interior', 'motion', 'three_d', 'illustration', 'other']; // Moved tables here
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);
@@ -43,7 +45,6 @@ function AdminPanel() {
         if (usersError) throw new Error('Ошибка загрузки данных пользователей: ' + usersError.message);
 
         // Fetch projects from all tables
-        const tables = ['interior', 'motion', 'three_d', 'illustration', 'other'];
         let allProjects = [];
         for (const table of tables) {
           const { data: projectData, error: projectError } = await supabase
@@ -60,59 +61,59 @@ function AdminPanel() {
       } finally {
         setLoading(false);
       }
-
-      // Set up real-time subscriptions
-      const userSubscription = supabase
-        .channel('users-changes')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'users' },
-          (payload) => {
-            if (payload.eventType === 'INSERT') {
-              setUsers(prev => [...prev, payload.new]);
-            } else if (payload.eventType === 'UPDATE') {
-              setUsers(prev => prev.map(user => (user.id === payload.new.id ? payload.new : user)));
-            } else if (payload.eventType === 'DELETE') {
-              setUsers(prev => prev.filter(user => user.id !== payload.old.id));
-            }
-          }
-        )
-        .subscribe();
-
-      const projectSubscriptions = tables.map(table =>
-        supabase
-          .channel(`${table}-changes`)
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table },
-            (payload) => {
-              if (payload.eventType === 'INSERT') {
-                setProjects(prev => [...prev, { ...payload.new, table }]);
-              } else if (payload.eventType === 'UPDATE') {
-                setProjects(prev =>
-                  prev.map(project =>
-                    project.id === payload.new.id && project.table === table
-                      ? { ...payload.new, table }
-                      : project
-                  )
-                );
-              } else if (payload.eventType === 'DELETE') {
-                setProjects(prev =>
-                  prev.filter(project => !(project.id === payload.old.id && project.table === table))
-                );
-              }
-            }
-          )
-          .subscribe()
-      );
-
-      return () => {
-        supabase.removeChannel(userSubscription);
-        projectSubscriptions.forEach(sub => supabase.removeChannel(sub));
-      };
     };
 
     fetchData();
+
+    // Set up real-time subscriptions
+    const userSubscription = supabase
+      .channel('users-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'users' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setUsers(prev => [...prev, payload.new]);
+          } else if (payload.eventType === 'UPDATE') {
+            setUsers(prev => prev.map(user => (user.id === payload.new.id ? payload.new : user)));
+          } else if (payload.eventType === 'DELETE') {
+            setUsers(prev => prev.filter(user => user.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    const projectSubscriptions = tables.map(table =>
+      supabase
+        .channel(`${table}-changes`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setProjects(prev => [...prev, { ...payload.new, table }]);
+            } else if (payload.eventType === 'UPDATE') {
+              setProjects(prev =>
+                prev.map(project =>
+                  project.id === payload.new.id && project.table === table
+                    ? { ...payload.new, table }
+                    : project
+                )
+              );
+            } else if (payload.eventType === 'DELETE') {
+              setProjects(prev =>
+                prev.filter(project => !(project.id === payload.old.id && project.table === table))
+              );
+            }
+          }
+        )
+        .subscribe()
+    );
+
+    return () => {
+      supabase.removeChannel(userSubscription);
+      projectSubscriptions.forEach(sub => supabase.removeChannel(sub));
+    };
   }, []);
 
   useEffect(() => {

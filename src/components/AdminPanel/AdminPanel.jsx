@@ -1,167 +1,379 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import './AdminPanel.css';
 
 function AdminPanel() {
-  const [jobs, setJobs] = useState([]);
-  const [employers, setEmployers] = useState([]);
-  const [freelancers, setFreelancers] = useState([]);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [users, setUsers] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      // Проверка роли пользователя
-      const { data: user } = await supabase.auth.getUser();
-      if (user.user && user.user.user_metadata.role !== 'admin') {
-        alert('Доступ запрещён. Только для администраторов.');
+      setLoading(true);
+      setError(null);
+
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        setError('Пожалуйста, войдите в систему.');
+        setLoading(false);
         return;
       }
 
-      // Загрузка вакансий
-      const { data: jobsData } = await supabase
-        .from('jobs') // Предполагаем объединённую таблицу или UNION всех категорий
-        .select('*');
-      setJobs(jobsData);
-
-      // Загрузка работодателей
-      const { data: employersData } = await supabase
+      const userId = sessionData.session.user.id;
+      const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('*')
-        .eq('role', 'employer');
-      setEmployers(employersData);
+        .select('is_admin')
+        .eq('id', userId)
+        .single();
 
-      // Загрузка фрилансеров
-      const { data: freelancersData } = await supabase
+      if (userError || !userData?.is_admin) {
+        setError('Доступ запрещён. Только для администраторов.');
+        setLoading(false);
+        return;
+      }
+
+      const { data: usersData, error: usersError } = await supabase
         .from('users')
-        .select('*')
-        .eq('role', 'freelancer');
-      setFreelancers(freelancersData);
+        .select('id, username, email, role, telegram_username, is_admin');
+
+      if (usersError) {
+        setError('Ошибка загрузки данных пользователей: ' + usersError.message);
+        setLoading(false);
+        return;
+      }
+
+      const tables = ['interior', 'motion', 'three_d', 'illustration', 'other'];
+      let allProjects = [];
+      for (const table of tables) {
+        const { data: projectData, error: projectError } = await supabase
+          .from(table)
+          .select('id, user_id, title, category, description, published_at, start_date, end_date, price, status');
+        if (projectError) {
+          setError(`Ошибка загрузки данных из ${table}: ` + projectError.message);
+          setLoading(false);
+          return;
+        }
+        allProjects = [...allProjects, ...projectData.map(project => ({ ...project, table }))];
+      }
+
+      setUsers(usersData || []);
+      setProjects(allProjects || []);
+      setLoading(false);
+
+      const userSubscription = supabase
+        .channel('users-changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'users' },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setUsers(prev => [...prev, payload.new]);
+            } else if (payload.eventType === 'UPDATE') {
+              setUsers(prev => prev.map(user => (user.id === payload.new.id ? payload.new : user)));
+            } else if (payload.eventType === 'DELETE') {
+              setUsers(prev => prev.filter(user => user.id !== payload.old.id));
+            }
+          }
+        )
+        .subscribe();
+
+      const projectSubscriptions = tables.map(table =>
+        supabase
+          .channel(`${table}-changes`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table },
+            (payload) => {
+              if (payload.eventType === 'INSERT') {
+                setProjects(prev => [...prev, { ...payload.new, table }]);
+              } else if (payload.eventType === 'UPDATE') {
+                setProjects(prev =>
+                  prev.map(project =>
+                    project.id === payload.new.id && project.table === table
+                      ? { ...payload.new, table }
+                      : project
+                  )
+                );
+              } else if (payload.eventType === 'DELETE') {
+                setProjects(prev =>
+                  prev.filter(project => !(project.id === payload.old.id && project.table === table))
+                );
+              }
+            }
+          )
+          .subscribe()
+      );
+
+      return () => {
+        supabase.removeChannel(userSubscription);
+        projectSubscriptions.forEach(sub => supabase.removeChannel(sub));
+      };
     };
+
     fetchData();
   }, []);
 
-  const handleDeleteJob = async (jobId) => {
-    const { error } = await supabase.from('jobs').delete().eq('id', jobId);
-    if (!error) setJobs(jobs.filter((job) => job.id !== jobId));
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (date) => {
+    return date.toLocaleDateString('ru-RU', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
   };
 
-  const handleEditJob = async (job) => {
-    setSelectedJob(job);
-    // Логика редактирования (например, открытие формы)
-  };
+  if (loading) {
+    return (
+      <div className="app-container">
+        <main>
+          <div className="admin-container">
+            <div className="loading">Загрузка...</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
-  const handleSaveJob = async (updatedJob) => {
-    const { error } = await supabase
-      .from('jobs')
-      .update(updatedJob)
-      .eq('id', updatedJob.id);
-    if (!error) {
-      setJobs(jobs.map((job) => (job.id === updatedJob.id ? updatedJob : job)));
-      setSelectedJob(null);
-    }
-  };
-
-  const handleDeleteUser = async (userId) => {
-    const { error } = await supabase.from('users').delete().eq('id', userId);
-    if (!error) {
-      setEmployers(employers.filter((user) => user.id !== userId));
-      setFreelancers(freelancers.filter((user) => user.id !== userId));
-    }
-  };
-
-  const handleEditUser = async (user) => {
-    setSelectedUser(user);
-    // Логика редактирования (например, открытие формы)
-  };
-
-  const handleSaveUser = async (updatedUser) => {
-    const { error } = await supabase
-      .from('users')
-      .update(updatedUser)
-      .eq('id', updatedUser.id);
-    if (!error) {
-      setEmployers(
-        employers.map((user) => (user.id === updatedUser.id ? updatedUser : user))
-      );
-      setFreelancers(
-        freelancers.map((user) => (user.id === updatedUser.id ? updatedUser : user))
-      );
-      setSelectedUser(null);
-    }
-  };
+  if (error) {
+    return (
+      <div className="app-container">
+        <main>
+          <div className="admin-container">
+            <div className="error">{error}</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
-    <div className="admin-panel">
-      <h1>Панель администратора</h1>
-
-      {/* Секция 1: Управление вакансиями */}
-      <section>
-        <h2>Управление вакансиями</h2>
-        {jobs.map((job) => (
-          <div key={job.id}>
-            <h3>{job.title}</h3>
-            <button onClick={() => handleEditJob(job)}>Редактировать</button>
-            <button onClick={() => handleDeleteJob(job.id)}>Удалить</button>
-          </div>
-        ))}
-        {selectedJob && (
-          <form onSubmit={(e) => { e.preventDefault(); handleSaveJob(selectedJob); }}>
-            <input
-              value={selectedJob.title}
-              onChange={(e) => setSelectedJob({ ...selectedJob, title: e.target.value })}
-            />
-            <button type="submit">Сохранить</button>
-            <button onClick={() => setSelectedJob(null)}>Отмена</button>
-          </form>
-        )}
-      </section>
-
-      {/* Секция 2: Управление работодателями */}
-      <section>
-        <h2>Управление работодателями</h2>
-        {employers.map((user) => (
-          <div key={user.id}>
-            <h3>{user.username}</h3>
-            <button onClick={() => handleEditUser(user)}>Редактировать</button>
-            <button onClick={() => handleDeleteUser(user.id)}>Удалить</button>
-          </div>
-        ))}
-        {selectedUser && (
-          <form onSubmit={(e) => { e.preventDefault(); handleSaveUser(selectedUser); }}>
-            <input
-              value={selectedUser.username}
-              onChange={(e) => setSelectedUser({ ...selectedUser, username: e.target.value })}
-            />
-            <button type="submit">Сохранить</button>
-            <button onClick={() => setSelectedUser(null)}>Отмена</button>
-          </form>
-        )}
-      </section>
-
-      {/* Секция 3: Управление художниками */}
-      <section>
-        <h2>Управление художниками</h2>
-        {freelancers.map((user) => (
-          <div key={user.id}>
-            <h3>{user.username}</h3>
-            <button onClick={() => handleEditUser(user)}>Редактировать</button>
-            <button onClick={() => handleDeleteUser(user.id)}>Удалить</button>
-          </div>
-        ))}
-        {selectedUser && (
-          <form onSubmit={(e) => { e.preventDefault(); handleSaveUser(selectedUser); }}>
-            <input
-              value={selectedUser.username}
-              onChange={(e) => setSelectedUser({ ...selectedUser, username: e.target.value })}
-            />
-            <button type="submit">Сохранить</button>
-            <button onClick={() => setSelectedUser(null)}>Отмена</button>
-          </form>
-        )}
-      </section>
+    <div className="app-container">
+      <div className="main-container">
+        <header className="admin-header">
+          <h1>Панель администратора</h1>
+          <div className="current-time">{formatTime(currentTime)}</div>
+        </header>
+        <AdminDetails users={users} projects={projects} setUsers={setUsers} setProjects={setProjects} />
+      </div>
     </div>
   );
 }
+
+const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
+  const [editMode, setEditMode] = useState(null);
+  const [editedItem, setEditedItem] = useState(null);
+  const textareaRef = useRef(null);
+
+  const handleEdit = (item, type) => {
+    setEditMode(type);
+    setEditedItem({ ...item });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedItem(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleTextareaResize = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  };
+
+  useEffect(() => {
+    if (editMode && textareaRef.current) {
+      handleTextareaResize();
+    }
+  }, [editMode]);
+
+  const handleSave = async () => {
+    if (!editMode || !editedItem) return;
+
+    if (editMode === 'user') {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          username: editedItem.username,
+          email: editedItem.email,
+          role: editedItem.role,
+          telegram_username: editedItem.telegram_username,
+          is_admin: editedItem.is_admin
+        })
+        .eq('id', editedItem.id);
+
+      if (error) {
+        alert('Ошибка при сохранении данных пользователя: ' + error.message);
+        return;
+      }
+      setUsers(prev => prev.map(user => (user.id === editedItem.id ? editedItem : user)));
+    } else if (editMode === 'project') {
+      const { error } = await supabase
+        .from(editedItem.table)
+        .update({
+          title: editedItem.title,
+          category: editedItem.category,
+          description: editedItem.description,
+          price: Number(editedItem.price),
+          status: editedItem.status
+        })
+        .eq('id', editedItem.id);
+
+      if (error) {
+        alert('Ошибка при сохранении данных проекта: ' + error.message);
+        return;
+      }
+      setProjects(prev =>
+        prev.map(project =>
+          project.id === editedItem.id && project.table === editedItem.table ? editedItem : project
+        )
+      );
+    }
+
+    alert('Данные успешно сохранены!');
+    setEditMode(null);
+    setEditedItem(null);
+  };
+
+  const handleDelete = async (item, type) => {
+    if (type === 'user') {
+      const { error } = await supabase.from('users').delete().eq('id', item.id);
+      if (error) {
+        alert('Ошибка при удалении пользователя: ' + error.message);
+        return;
+      }
+      setUsers(prev => prev.filter(user => user.id !== item.id));
+    } else if (type === 'project') {
+      const { error } = await supabase.from(item.table).delete().eq('id', item.id);
+      if (error) {
+        alert('Ошибка при удалении проекта: ' + error.message);
+        return;
+      }
+      setProjects(prev => prev.filter(project => !(project.id === item.id && project.table === item.table)));
+    }
+    alert('Элемент успешно удалён!');
+  };
+
+  return (
+    <div className="admin-details-container">
+      <div className="section">
+        <h3>Управление пользователями</h3>
+        {users.map(user => (
+          <div key={user.id} className="detail-row">
+            {editMode === 'user' && editedItem?.id === user.id ? (
+              <>
+                <input
+                  type="text"
+                  name="username"
+                  value={editedItem.username}
+                  onChange={handleInputChange}
+                  placeholder="Никнейм"
+                />
+                <input
+                  type="email"
+                  name="email"
+                  value={editedItem.email}
+                  onChange={handleInputChange}
+                  placeholder="Email"
+                />
+                <select name="role" value={editedItem.role} onChange={handleInputChange}>
+                  <option value="artist">Художник</option>
+                  <option value="hirer">Работодатель</option>
+                </select>
+                <input
+                  type="text"
+                  name="telegram_username"
+                  value={editedItem.telegram_username || ''}
+                  onChange={handleInputChange}
+                  placeholder="Telegram"
+                />
+                <select name="is_admin" value={editedItem.is_admin} onChange={handleInputChange}>
+                  <option value={true}>Админ</option>
+                  <option value={false}>Не админ</option>
+                </select>
+                <button onClick={handleSave} className="save-btn">Сохранить</button>
+                <button onClick={() => setEditMode(null)} className="cancel-btn">Отмена</button>
+              </>
+            ) : (
+              <>
+                <span className="value">{user.username} ({user.email}) - {user.role}</span>
+                <button onClick={() => handleEdit(user, 'user')} className="edit-btn">Редактировать</button>
+                <button onClick={() => handleDelete(user, 'user')} className="delete-btn">Удалить</button>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="section">
+        <h3>Управление проектами</h3>
+        {projects.map(project => (
+          <div key={`${project.table}-${project.id}`} className="detail-row">
+            {editMode === 'project' && editedItem?.id === project.id && editedItem?.table === project.table ? (
+              <>
+                <input
+                  type="text"
+                  name="title"
+                  value={editedItem.title}
+                  onChange={handleInputChange}
+                  placeholder="Название"
+                />
+                <input
+                  type="text"
+                  name="category"
+                  value={editedItem.category}
+                  onChange={handleInputChange}
+                  placeholder="Категория"
+                />
+                <textarea
+                  ref={textareaRef}
+                  name="description"
+                  value={editedItem.description}
+                  onChange={(e) => {
+                    handleInputChange(e);
+                    handleTextareaResize();
+                  }}
+                  placeholder="Описание"
+                />
+                <input
+                  type="number"
+                  name="price"
+                  value={editedItem.price}
+                  onChange={handleInputChange}
+                  placeholder="Цена"
+                />
+                <select name="status" value={editedItem.status} onChange={handleInputChange}>
+                  <option value="open">Открыт</option>
+                  <option value="closed">Закрыт</option>
+                </select>
+                <button onClick={handleSave} className="save-btn">Сохранить</button>
+                <button onClick={() => setEditMode(null)} className="cancel-btn">Отмена</button>
+              </>
+            ) : (
+              <>
+                <span className="value">{project.title} ({project.table}) - {project.status}</span>
+                <button onClick={() => handleEdit(project, 'project')} className="edit-btn">Редактировать</button>
+                <button onClick={() => handleDelete(project, 'project')} className="delete-btn">Удалить</button>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default AdminPanel;

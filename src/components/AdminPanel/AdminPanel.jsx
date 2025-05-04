@@ -182,7 +182,7 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
 
   const handleEdit = (item, type) => {
     setEditMode(type);
-    setEditedItem({ ...item });
+    setEditedItem({ ...item, category: item.category || item.table });
     setSaveError(null);
   };
 
@@ -340,14 +340,11 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
               <>
                 <span className="value">{user.username} ({user.email}) - {user.role}</span>
                 <button onClick={() => handleEdit(user, 'user')} className="edit-btn" disabled={isDeleting}>
-                  Ред主
-                  .edit-btn:hover {
-                    background-color: #f0f0f0;
-                  }
-                  .cancel-btn:hover {
-                    background-color: #f0f0f0;
-                  }
-                </style>
+                  Редактировать
+                </button>
+                <button onClick={() => handleDelete(user, 'user')} className="delete-btn" disabled={isDeleting}>
+                  {isDeleting ? 'Удаление...' : 'Удалить'}
+                </button>
               </>
             )}
           </div>

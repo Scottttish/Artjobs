@@ -5,6 +5,11 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+body {
+  background-color: transparent;
+  color: #555555;
+}
+
 .app-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -25,14 +30,12 @@
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .admin-header h1 {
   color: #000000;
   font-size: 1.8rem;
+  margin-bottom: 5px;
 }
 
 .current-time {
@@ -76,18 +79,12 @@
   font-size: 0.9rem;
 }
 
-.value, .value-multiline {
+.value {
   flex: 1;
   color: #555555;
 }
 
-.value-multiline {
-  white-space: pre-wrap;
-  max-width: 400px;
-  word-wrap: break-word;
-}
-
-input, select {
+input, select, textarea {
   flex: 1;
   max-width: 300px;
   padding: 8px 12px;
@@ -99,14 +96,7 @@ input, select {
 }
 
 textarea {
-  flex: 1;
   max-width: 400px;
-  padding: 8px 12px;
-  background: #f8f8f8;
-  border: 1px solid #d0d0d0;
-  color: #333333;
-  border-radius: 4px;
-  font-size: 0.9rem;
   overflow: hidden;
   resize: none;
 }

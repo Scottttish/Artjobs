@@ -21,7 +21,6 @@ function AdminPanel() {
       setError(null);
 
       try {
-        // Check if user is admin
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !sessionData.session) {
           throw new Error('Пожалуйста, войдите в систему.');
@@ -38,13 +37,11 @@ function AdminPanel() {
           throw new Error('Доступ запрещён. Только для администраторов.');
         }
 
-        // Fetch all users
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, username, email, role, telegram_username, is_admin');
         if (usersError) throw new Error('Ошибка загрузки данных пользователей: ' + usersError.message);
 
-        // Fetch projects from all tables
         let allProjects = [];
         for (const table of tables) {
           const { data: projectData, error: projectError } = await supabase
@@ -65,7 +62,6 @@ function AdminPanel() {
 
     fetchData();
 
-    // Set up real-time subscriptions
     const userSubscription = supabase
       .channel('users-changes')
       .on(
@@ -181,6 +177,8 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const textareaRef = useRef(null);
+
+  const categories = ['interior', 'motion', 'three_d', 'illustration', 'other'];
 
   const handleEdit = (item, type) => {
     setEditMode(type);
@@ -342,11 +340,14 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
               <>
                 <span className="value">{user.username} ({user.email}) - {user.role}</span>
                 <button onClick={() => handleEdit(user, 'user')} className="edit-btn" disabled={isDeleting}>
-                  Редактировать
-                </button>
-                <button onClick={() => handleDelete(user, 'user')} className="delete-btn" disabled={isDeleting}>
-                  {isDeleting ? 'Удаление...' : 'Удалить'}
-                </button>
+                  Ред主
+                  .edit-btn:hover {
+                    background-color: #f0f0f0;
+                  }
+                  .cancel-btn:hover {
+                    background-color: #f0f0f0;
+                  }
+                </style>
               </>
             )}
           </div>
@@ -366,13 +367,13 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
                   onChange={handleInputChange}
                   placeholder="Название"
                 />
-                <input
-                  type="text"
-                  name="category"
-                  value={editedItem.category}
-                  onChange={handleInputChange}
-                  placeholder="Категория"
-                />
+                <select name="category" value={editedItem.category} onChange={handleInputChange}>
+                  {categories.map(category => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
                 <textarea
                   ref={textareaRef}
                   name="description"

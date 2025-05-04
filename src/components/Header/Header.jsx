@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import supabase from '../../supabaseClient'; 
+import { supabase } from '../supabaseClient';
 import './Header.css';
 import logo from '../../assets/logo.png';
 import icon from '../../assets/icon.png';
@@ -11,6 +11,7 @@ function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -21,12 +22,13 @@ function Header() {
         setIsAuthenticated(true);
         const { data: userData, error } = await supabase
           .from('users')
-          .select('role')
+          .select('role, is_admin')
           .eq('id', sessionData.session.user.id)
           .single();
 
         if (userData && !error) {
           setUserRole(userData.role);
+          setIsAdmin(userData.is_admin);
         }
       }
     };
@@ -39,6 +41,7 @@ function Header() {
         checkSession();
       } else {
         setUserRole(null);
+        setIsAdmin(false);
       }
     });
 
@@ -70,6 +73,7 @@ function Header() {
       setIsAuthenticated(false);
       setShowDropdown(false);
       setUserRole(null);
+      setIsAdmin(false);
       navigate('/');
       alert('Вы успешно вышли из аккаунта!');
     } catch (error) {
@@ -79,7 +83,9 @@ function Header() {
   };
 
   const handleSettings = () => {
-    if (userRole === 'artist') {
+    if (isAdmin) {
+      navigate('/adminpanel');
+    } else if (userRole === 'artist') {
       navigate('/artprofile');
     } else if (userRole === 'hirer') {
       navigate('/hirerprofile');

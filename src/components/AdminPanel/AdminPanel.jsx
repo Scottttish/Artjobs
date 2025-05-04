@@ -171,22 +171,119 @@ function AdminPanel() {
 }
 
 const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
-  const [editMode, setEditMode] = useState(null);
-  const [editedItem, setEditedItem] = useState(null);
+  const [userModalOpen, setUserModalOpen] = useState(false);
+  const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [tempUser, setTempUser] = useState({
+    id: '',
+    username: '',
+    email: '',
+    role: 'artist',
+    telegram_username: '',
+    is_admin: 'false'
+  });
+  const [tempProject, setTempProject] = useState({
+    id: '',
+    title: '',
+    category: '',
+    description: '',
+    start_date: '',
+    end_date: '',
+    price: '',
+    status: 'open',
+    table: ''
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [modalError, setModalError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [saveError, setSaveError] = useState(null);
   const textareaRef = useRef(null);
 
-  const handleEdit = (item, type) => {
-    setEditMode(type);
-    setEditedItem({ ...item });
-    setSaveError(null);
+  const tableMap = {
+    '3D': 'three_d',
+    'Интерьер': 'interior',
+    'Моушн': 'motion',
+    'Иллюстрация': 'illustration',
+    'Другое': 'other'
   };
 
-  const handleInputChange = (e) => {
+  const isValidDateFormat = (dateString) => {
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateString)) return false;
+    const date = new Date(dateString);
+    return !isNaN(date.getTime());
+  };
+
+  const openUserModal = (user = null) => {
+    if (user) {
+      setIsEditing(true);
+      setEditingId(user.id);
+      setTempUser({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        telegram_username: user.telegram_username || '',
+        is_admin: user.is_admin.toString()
+      });
+    } else {
+      setIsEditing(false);
+      setEditingId(null);
+      setTempUser({
+        id: '',
+        username: '',
+        email: '',
+        role: 'artist',
+        telegram_username: '',
+        is_admin: 'false'
+      });
+    }
+    setModalError(null);
+    setUserModalOpen(true);
+  };
+
+  const openProjectModal = (project = null) => {
+    if (project) {
+      setIsEditing(true);
+      setEditingId(project.id);
+      setTempProject({
+        id: project.id,
+        title: project.title,
+        category: project.category,
+        description: project.description || '',
+        start_date: project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '',
+        end_date: project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '',
+        price: project.price,
+        status: project.status,
+        table: project.table
+      });
+    } else {
+      setIsEditing(false);
+      setEditingId(null);
+      setTempProject({
+        id: '',
+        title: '',
+        category: '',
+        description: '',
+        start_date: '',
+        end_date: '',
+        price: '',
+        status: 'open',
+        table: ''
+      });
+    }
+    setModalError(null);
+    setProjectModalOpen(true);
+  };
+
+  const handleUserInputChange = (e) => {
     const { name, value } = e.target;
-    setEditedItem(prev => ({ ...prev, [name]: value }));
+    setTempUser(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleProjectInputChange = (e) => {
+    const { name, value } = e.target;
+    setTempProject(prev => ({ ...prev, [name]: value }));
   };
 
   const handleTextareaResize = () => {
@@ -198,68 +295,148 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
   };
 
   useEffect(() => {
-    if (editMode && textareaRef.current) {
+    if (projectModalOpen && textareaRef.current) {
       handleTextareaResize();
     }
-  }, [editMode]);
+  }, [projectModalOpen]);
 
-  const handleSave = async () => {
-    if (!editMode || !editedItem || isSaving) return;
-    setSaveError(null);
+  const saveUser = async () => {
+    if (isSaving) return;
+    setModalError(null);
 
-    // Validation
-    if (editMode === 'user') {
-      if (!editedItem.username || !editedItem.email) {
-        setSaveError('Никнейм и email обязательны!');
-        return;
-      }
-    } else if (editMode === 'project') {
-      if (!editedItem.title || !editedItem.category || isNaN(editedItem.price)) {
-        setSaveError('Название, категория и цена обязательны, и цена должна быть числом!');
-        return;
-      }
+    const { username, email, role, telegram_username, is_admin } = tempUser;
+    if (!username || !email || !role) {
+      setModalError('Никнейм, email и роль обязательны!');
+      return;
     }
 
     setIsSaving(true);
     try {
-      if (editMode === 'user') {
-        console.log('Saving user:', editedItem);
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error('Пожалуйста, войдите в систему.');
+      }
+
+      const userData = {
+        username,
+        email,
+        role,
+        telegram_username: telegram_username || null,
+        is_admin: is_admin === 'true'
+      };
+
+      if (isEditing) {
+        console.log('Updating user:', userData);
         const { error } = await supabase
           .from('users')
-          .update({
-            username: editedItem.username,
-            email: editedItem.email,
-            role: editedItem.role,
-            telegram_username: editedItem.telegram_username || null,
-            is_admin: editedItem.is_admin === 'true' 
-          })
-          .eq('id', editedItem.id);
+          .update(userData)
+          .eq('id', editingId);
         if (error) throw error;
-        setUsers(prev => prev.map(user => (user.id === editedItem.id ? { ...editedItem, is_admin: editedItem.is_admin === 'true' } : user)));
-      } else if (editMode === 'project') {
-        console.log('Saving project:', editedItem);
-        const { error } = await supabase
-          .from(editedItem.table)
-          .update({
-            title: editedItem.title,
-            category: editedItem.category,
-            description: editedItem.description || null,
-            price: Number(editedItem.price),
-            status: editedItem.status
-          })
-          .eq('id', editedItem.id);
-        if (error) throw error;
+        setUsers(prev => prev.map(user => (user.id === editingId ? { ...userData, id: editingId } : user)));
+      }
+
+      setUserModalOpen(false);
+      setTempUser({
+        id: '',
+        username: '',
+        email: '',
+        role: 'artist',
+        telegram_username: '',
+        is_admin: 'false'
+      });
+      setIsEditing(false);
+      setEditingId(null);
+    } catch (error) {
+      console.error('Save user error:', error);
+      setModalError(`Ошибка при сохранении: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveProject = async () => {
+    if (isSaving) return;
+    setModalError(null);
+
+    const { title, category, description, start_date, end_date, price, status, table } = tempProject;
+    if (!title || !category || !price || !status) {
+      setModalError('Название, категория, цена и статус обязательны!');
+      return;
+    }
+    if (start_date && !isValidDateFormat(start_date)) {
+      setModalError('Дата начала должна быть в формате ГГГГ-ММ-ДД!');
+      return;
+    }
+    if (end_date && !isValidDateFormat(end_date)) {
+      setModalError('Дата окончания должна быть в формате ГГГГ-ММ-ДД!');
+      return;
+    }
+    if (isNaN(price) || Number(price) <= 0) {
+      setModalError('Цена должна быть положительным числом!');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error('Пожалуйста, войдите в систему.');
+      }
+
+      const projectTable = tableMap[category] || 'other';
+      const projectData = {
+        title,
+        category,
+        description: description || null,
+        start_date: start_date ? new Date(start_date).toISOString() : null,
+        end_date: end_date ? new Date(end_date).toISOString() : null,
+        price: Number(price),
+        status,
+        user_id: sessionData.session.user.id,
+        published_at: new Date().toISOString()
+      };
+
+      if (isEditing) {
+        console.log('Updating project:', projectData);
+        if (table === projectTable) {
+          const { error } = await supabase
+            .from(projectTable)
+            .update(projectData)
+            .eq('id', editingId);
+          if (error) throw error;
+        } else {
+          const { error: deleteError } = await supabase.from(table).delete().eq('id', editingId);
+          if (deleteError) throw error;
+          const { data, error: insertError } = await supabase.from(projectTable).insert(projectData).select();
+          if (insertError) throw error;
+          setEditingId(data[0].id);
+        }
         setProjects(prev =>
           prev.map(project =>
-            project.id === editedItem.id && project.table === editedItem.table ? editedItem : project
+            project.id === editingId && project.table === table
+              ? { ...projectData, id: editingId, table: projectTable }
+              : project
           )
         );
       }
-      setEditMode(null);
-      setEditedItem(null);
+
+      setProjectModalOpen(false);
+      setTempProject({
+        id: '',
+        title: '',
+        category: '',
+        description: '',
+        start_date: '',
+        end_date: '',
+        price: '',
+        status: 'open',
+        table: ''
+      });
+      setIsEditing(false);
+      setEditingId(null);
     } catch (error) {
-      console.error('Save error:', error);
-      setSaveError(`Ошибка при сохранении: ${error.message}`);
+      console.error('Save project error:', error);
+      setModalError(`Ошибка при сохранении: ${error.message}`);
     } finally {
       setIsSaving(false);
     }
@@ -283,7 +460,7 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
       }
     } catch (error) {
       console.error('Delete error:', error);
-      setSaveError(`Ошибка при удалении: ${error.message}`);
+      setModalError(`Ошибка при удалении: ${error.message}`);
     } finally {
       setIsDeleting(false);
     }
@@ -291,60 +468,18 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
 
   return (
     <div className="admin-details-container">
-      {saveError && <div className="error">{saveError}</div>}
+      {modalError && <div className="error">{modalError}</div>}
       <div className="section">
         <h3>Управление пользователями</h3>
         {users.map(user => (
           <div key={user.id} className="detail-row">
-            {editMode === 'user' && editedItem?.id === user.id ? (
-              <>
-                <input
-                  type="text"
-                  name="username"
-                  value={editedItem.username}
-                  onChange={handleInputChange}
-                  placeholder="Никнейм"
-                />
-                <input
-                  type="email"
-                  name="email"
-                  value={editedItem.email}
-                  onChange={handleInputChange}
-                  placeholder="Email"
-                />
-                <select name="role" value={editedItem.role} onChange={handleInputChange}>
-                  <option value="artist">Художник</option>
-                  <option value="hirer">Работодатель</option>
-                </select>
-                <input
-                  type="text"
-                  name="telegram_username"
-                  value={editedItem.telegram_username || ''}
-                  onChange={handleInputChange}
-                  placeholder="Telegram"
-                />
-                <select name="is_admin" value={editedItem.is_admin} onChange={handleInputChange}>
-                  <option value="true">Админ</option>
-                  <option value="false">Не админ</option>
-                </select>
-                <button onClick={handleSave} className="save-btn" disabled={isSaving}>
-                  {isSaving ? 'Сохранение...' : 'Сохранить'}
-                </button>
-                <button onClick={() => setEditMode(null)} className="cancel-btn" disabled={isSaving}>
-                  Отмена
-                </button>
-              </>
-            ) : (
-              <>
-                <span className="value">{user.username} ({user.email}) - {user.role}</span>
-                <button onClick={() => handleEdit(user, 'user')} className="edit-btn" disabled={isDeleting}>
-                  Редактировать
-                </button>
-                <button onClick={() => handleDelete(user, 'user')} className="delete-btn" disabled={isDeleting}>
-                  {isDeleting ? 'Удаление...' : 'Удалить'}
-                </button>
-              </>
-            )}
+            <span className="value">{user.username} ({user.email}) - {user.role}</span>
+            <button onClick={() => openUserModal(user)} className="edit-btn" disabled={isDeleting}>
+              Редактировать
+            </button>
+            <button onClick={() => handleDelete(user, 'user')} className="delete-btn" disabled={isDeleting}>
+              {isDeleting ? 'Удаление...' : 'Удалить'}
+            </button>
           </div>
         ))}
       </div>
@@ -353,64 +488,159 @@ const AdminDetails = ({ users, projects, setUsers, setProjects }) => {
         <h3>Управление проектами</h3>
         {projects.map(project => (
           <div key={`${project.table}-${project.id}`} className="detail-row">
-            {editMode === 'project' && editedItem?.id === project.id && editedItem?.table === project.table ? (
-              <>
-                <input
-                  type="text"
-                  name="title"
-                  value={editedItem.title}
-                  onChange={handleInputChange}
-                  placeholder="Название"
-                />
-                <input
-                  type="text"
-                  name="category"
-                  value={editedItem.category}
-                  onChange={handleInputChange}
-                  placeholder="Категория"
-                />
-                <textarea
-                  ref={textareaRef}
-                  name="description"
-                  value={editedItem.description || ''}
-                  onChange={(e) => {
-                    handleInputChange(e);
-                    handleTextareaResize();
-                  }}
-                  placeholder="Описание"
-                />
-                <input
-                  type="number"
-                  name="price"
-                  value={editedItem.price}
-                  onChange={handleInputChange}
-                  placeholder="Цена"
-                />
-                <select name="status" value={editedItem.status} onChange={handleInputChange}>
-                  <option value="open">Открыт</option>
-                  <option value="closed">Закрыт</option>
-                </select>
-                <button onClick={handleSave} className="save-btn" disabled={isSaving}>
-                  {isSaving ? 'Сохранение...' : 'Сохранить'}
-                </button>
-                <button onClick={() => setEditMode(null)} className="cancel-btn" disabled={isSaving}>
-                  Отмена
-                </button>
-              </>
-            ) : (
-              <>
-                <span className="value">{project.title} ({project.table}) - {project.status}</span>
-                <button onClick={() => handleEdit(project, 'project')} className="edit-btn" disabled={isDeleting}>
-                  Редактировать
-                </button>
-                <button onClick={() => handleDelete(project, 'project')} className="delete-btn" disabled={isDeleting}>
-                  {isDeleting ? 'Удаление...' : 'Удалить'}
-                </button>
-              </>
-            )}
+            <span className="value">{project.title} ({project.table}) - {project.status}</span>
+            <button onClick={() => openProjectModal(project)} className="edit-btn" disabled={isDeleting}>
+              Редактировать
+            </button>
+            <button onClick={() => handleDelete(project, 'project')} className="delete-btn" disabled={isDeleting}>
+              {isDeleting ? 'Удаление...' : 'Удалить'}
+            </button>
           </div>
         ))}
       </div>
+
+      {userModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Редактировать пользователя</h3>
+            {modalError && <div className="error">{modalError}</div>}
+            <div className="modal-field">
+              <label>Никнейм</label>
+              <input
+                type="text"
+                name="username"
+                value={tempUser.username}
+                onChange={handleUserInputChange}
+                required
+              />
+            </div>
+            <div className="modal-field">
+              <label>Email</label>
+              <input
+                type="email"
+                name="email"
+                value={tempUser.email}
+                onChange={handleUserInputChange}
+                required
+              />
+            </div>
+            <div className="modal-field">
+              <label>Роль</label>
+              <select name="role" value={tempUser.role} onChange={handleUserInputChange}>
+                <option value="artist">Художник</option>
+                <option value="hirer">Работодатель</option>
+              </select>
+            </div>
+            <div className="modal-field">
+              <label>Telegram</label>
+              <input
+                type="text"
+                name="telegram_username"
+                value={tempUser.telegram_username}
+                onChange={handleUserInputChange}
+                placeholder="@username"
+              />
+            </div>
+            <div className="modal-field">
+              <label>Администратор</label>
+              <select name="is_admin" value={tempUser.is_admin} onChange={handleUserInputChange}>
+                <option value="true">Админ</option>
+                <option value="false">Не админ</option>
+              </select>
+            </div>
+            <div className="modal-buttons">
+              <button onClick={() => setUserModalOpen(false)} disabled={isSaving}>Отмена</button>
+              <button onClick={saveUser} disabled={isSaving}>
+                {isSaving ? 'Сохранение...' : 'Сохранить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {projectModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Редактировать проект</h3>
+            {modalError && <div className="error">{modalError}</div>}
+            <div className="modal-field">
+              <label>Название</label>
+              <input
+                type="text"
+                name="title"
+                value={tempProject.title}
+                onChange={handleProjectInputChange}
+                required
+              />
+            </div>
+            <div className="modal-field">
+              <label>Категория</label>
+              <select name="category" value={tempProject.category} onChange={handleProjectInputChange} required>
+                <option value="">Выберите категорию</option>
+                <option value="3D">3D</option>
+                <option value="Интерьер">Интерьер</option>
+                <option value="Моушн">Моушн</option>
+                <option value="Иллюстрация">Иллюстрация</option>
+                <option value="Другое">Другое</option>
+              </select>
+            </div>
+            <div className="modal-field">
+              <label>Описание</label>
+              <textarea
+                ref={textareaRef}
+                name="description"
+                value={tempProject.description}
+                onChange={(e) => {
+                  handleProjectInputChange(e);
+                  handleTextareaResize();
+                }}
+                rows="4"
+              />
+            </div>
+            <div className="modal-field">
+              <label>Дата начала</label>
+              <input
+                type="date"
+                name="start_date"
+                value={tempProject.start_date}
+                onChange={handleProjectInputChange}
+              />
+            </div>
+            <div className="modal-field">
+              <label>Дата окончания</label>
+              <input
+                type="date"
+                name="end_date"
+                value={tempProject.end_date}
+                onChange={handleProjectInputChange}
+              />
+            </div>
+            <div className="modal-field">
+              <label>Цена</label>
+              <input
+                type="number"
+                name="price"
+                value={tempProject.price}
+                onChange={handleProjectInputChange}
+                required
+              />
+            </div>
+            <div className="modal-field">
+              <label>Статус</label>
+              <select name="status" value={tempProject.status} onChange={handleProjectInputChange}>
+                <option value="open">Открыт</option>
+                <option value="closed">Закрыт</option>
+              </select>
+            </div>
+            <div className="modal-buttons">
+              <button onClick={() => setProjectModalOpen(false)} disabled={isSaving}>Отмена</button>
+              <button onClick={saveProject} disabled={isSaving}>
+                {isSaving ? 'Сохранение...' : 'Сохранить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

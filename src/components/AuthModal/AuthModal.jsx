@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import bcrypt from 'bcryptjs';
 import './AuthModal.css';
 import mainImage from '../../assets/main.jpg';
 
@@ -87,6 +88,10 @@ function AuthModal({ onClose }) {
         return;
       }
 
+      // Hash the password before storing
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
       const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
 
       if (authError) {
@@ -105,9 +110,10 @@ function AuthModal({ onClose }) {
         return;
       }
 
+      // Store hashed password in the users table
       const { error: dbError } = await supabase
         .from('users')
-        .insert([{ id: authData.user.id, email, username, role: selectedRole, password }]);
+        .insert([{ id: authData.user.id, email, username, role: selectedRole, hashed_password: hashedPassword }]);
 
       if (dbError) {
         setError('Ошибка при сохранении пользователя');
@@ -118,16 +124,37 @@ function AuthModal({ onClose }) {
       onClose();
     } catch (err) {
       console.error(err);
+      setError('Ошибка регистрации');
     }
   };
 
   const handleLogin = async () => {
     try {
+      // First, attempt to sign in with Supabase auth
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setError('Неверный email или пароль');
         return;
       }
+
+      // Verify password against hashed password in users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('hashed_password')
+        .eq('email', email)
+        .single();
+
+      if (userError || !userData) {
+        setError('Пользователь не найден');
+        return;
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, userData.hashed_password);
+      if (!isPasswordValid) {
+        setError('Неверный пароль');
+        return;
+      }
+
       alert('Вход успешен!');
       onClose();
     } catch {

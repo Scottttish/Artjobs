@@ -53,7 +53,7 @@ const HirerProfile = () => {
 
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData.session) {
-        setError('Пожалуйста, войдите в систему.');
+        setError('Please log in.');
         setLoading(false);
         return;
       }
@@ -67,18 +67,18 @@ const HirerProfile = () => {
         .single();
 
       if (userError) {
-        setError('Ошибка загрузки данных пользователя: ' + userError.message);
+        setError('Error loading user data: ' + userError.message);
       } else {
         setUserInfo({
           nickname: userData.username || 'User123',
           email: userData.email || 'user@example.com',
-          password: userData.password || '********',
+          password: userData.password || '', // Не маскируем, оставляем пустым или как есть
           telegramUsername: userData.telegram_username || '',
         });
         setTempUserInfo({
           nickname: userData.username || 'User123',
           email: userData.email || 'user@example.com',
-          password: userData.password || '********',
+          password: userData.password || '', // Не маскируем
           telegramUsername: userData.telegram_username || '',
         });
       }
@@ -89,7 +89,7 @@ const HirerProfile = () => {
         .eq('user_id', userId);
 
       if (historyError) {
-        setError('Ошибка загрузки истории: ' + historyError.message);
+        setError('Error loading history: ' + historyError.message);
       } else {
         setHistoryItems(historyData.map(item => ({
           id: item.id,
@@ -116,7 +116,7 @@ const HirerProfile = () => {
           .eq('user_id', userId);
 
         if (error) {
-          setError(`Ошибка загрузки данных из таблицы ${table}: ${error.message}`);
+          setError(`Error loading data from table ${table}: ${error.message}`);
         } else {
           const mappedProducts = data.map(product => ({
             id: product.id,
@@ -159,7 +159,7 @@ const HirerProfile = () => {
   const saveChanges = async () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      alert('Пожалуйста, войдите в систему.');
+      alert('Please log in.');
       return;
     }
 
@@ -167,7 +167,7 @@ const HirerProfile = () => {
     const updatedUserData = {
       username: tempUserInfo.nickname,
       email: tempUserInfo.email,
-      password: tempUserInfo.password,
+      password: tempUserInfo.password, // Отправляем как есть, без хеширования
       telegram_username: tempUserInfo.telegramUsername,
     };
 
@@ -177,10 +177,10 @@ const HirerProfile = () => {
       .eq('id', userId);
 
     if (error) {
-      alert('Ошибка при сохранении данных пользователя: ' + error.message);
+      alert('Error saving user data: ' + error.message);
     } else {
       setUserInfo({ ...tempUserInfo });
-      alert('Данные пользователя успешно сохранены!');
+      alert('User data saved successfully!');
     }
     setModalOpen(false);
   };
@@ -205,7 +205,7 @@ const HirerProfile = () => {
           }
           return formatted;
         } catch (err) {
-          alert('Ошибка: Неверный формат даты. Ожидается "01 JAN 2023".');
+          alert('Error: Invalid date format. Expected "01 JAN 2023".');
           return '';
         }
       };
@@ -251,18 +251,18 @@ const HirerProfile = () => {
   const saveProduct = async () => {
     const { title, direction, description, startDate, endDate, price, status } = tempProduct;
     if (!title || !direction || !description || !startDate || !endDate || !price || !status) {
-      alert('Все поля обязательны для заполнения!');
+      alert('All fields are required!');
       return;
     }
 
     if (!isValidDateFormat(startDate) || !isValidDateFormat(endDate)) {
-      alert('Ошибка: Даты должны быть в формате ГГГГ-ММ-ДД (например, 2023-01-01).');
+      alert('Error: Dates must be in YYYY-MM-DD format (e.g., 2023-01-01).');
       return;
     }
 
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      alert('Пожалуйста, войдите в систему.');
+      alert('Please log in.');
       return;
     }
 
@@ -300,19 +300,19 @@ const HirerProfile = () => {
           .eq('id', editingProductId);
 
         if (error) {
-          alert('Ошибка при обновлении объявления: ' + error.message);
+          alert('Error updating listing: ' + error.message);
           return;
         }
       } else {
         const { error: deleteError } = await supabase.from(oldTable).delete().eq('id', editingProductId);
         if (deleteError) {
-          alert('Ошибка при удалении старого объявления: ' + deleteError.message);
+          alert('Error deleting old listing: ' + deleteError.message);
           return;
         }
 
         const { data, error: insertError } = await supabase.from(table).insert(productData).select();
         if (insertError) {
-          alert('Ошибка при создании нового объявления: ' + insertError.message);
+          alert('Error creating new listing: ' + insertError.message);
           return;
         }
 
@@ -340,7 +340,7 @@ const HirerProfile = () => {
       const { data, error } = await supabase.from(table).insert(productData).select();
 
       if (error) {
-        alert('Ошибка при создании объявления: ' + error.message);
+        alert('Error creating listing: ' + error.message);
         return;
       }
 
@@ -390,7 +390,7 @@ const HirerProfile = () => {
       const { error } = await supabase.from(table).delete().eq('id', productId);
 
       if (error) {
-        alert('Ошибка при удалении объявления: ' + error.message);
+        alert('Error deleting listing: ' + error.message);
         return;
       }
     }
@@ -409,7 +409,7 @@ const HirerProfile = () => {
   const handleComplete = async (product) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      alert('Пожалуйста, войдите в систему.');
+      alert('Please log in.');
       return;
     }
 
@@ -440,7 +440,7 @@ const HirerProfile = () => {
       .single();
 
     if (insertError) {
-      alert('Ошибка при добавлении в историю: ' + insertError.message);
+      alert('Error adding to history: ' + insertError.message);
       return;
     }
 
@@ -467,7 +467,7 @@ const HirerProfile = () => {
   const handleReject = async (product) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      alert('Пожалуйста, войдите в систему.');
+      alert('Please log in.');
       return;
     }
 
@@ -498,7 +498,7 @@ const HirerProfile = () => {
       .single();
 
     if (insertError) {
-      alert('Ошибка при добавлении в историю: ' + insertError.message);
+      alert('Error adding to history: ' + insertError.message);
       return;
     }
 
@@ -525,13 +525,13 @@ const HirerProfile = () => {
   const handleRestore = async (historyItem) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      alert('Пожалуйста, войдите в систему.');
+      alert('Please log in.');
       return;
     }
 
     const { error: deleteError } = await supabase.from('history').delete().eq('id', historyItem.id);
     if (deleteError) {
-      alert('Ошибка при удалении из истории: ' + deleteError.message);
+      alert('Error removing from history: ' + deleteError.message);
       return;
     }
 
@@ -543,7 +543,7 @@ const HirerProfile = () => {
       .single();
 
     if (fetchError || !productData) {
-      alert('Ошибка при восстановлении продукта: ' + (fetchError?.message || 'Продукт не найден'));
+      alert('Error restoring product: ' + (fetchError?.message || 'Product not found'));
       return;
     }
 
@@ -553,7 +553,7 @@ const HirerProfile = () => {
       .eq('id', historyItem.publication_id);
 
     if (updateError) {
-      alert('Ошибка при обновлении статуса продукта: ' + updateError.message);
+      alert('Error updating product status: ' + updateError.message);
       return;
     }
 
@@ -581,7 +581,7 @@ const HirerProfile = () => {
   const handleDeleteHistory = async () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      alert('Пожалуйста, войдите в систему.');
+      alert('Please log in.');
       return;
     }
 
@@ -593,7 +593,7 @@ const HirerProfile = () => {
       .eq('user_id', userId);
 
     if (fetchError) {
-      alert('Ошибка при получении истории: ' + fetchError.message);
+      alert('Error fetching history: ' + fetchError.message);
       return;
     }
 
@@ -605,7 +605,7 @@ const HirerProfile = () => {
         .eq('id', publication_id);
 
       if (deleteProductError) {
-        alert(`Ошибка при удалении продукта из таблицы ${table_name}: ${deleteProductError.message}`);
+        alert(`Error deleting product from table ${table_name}: ${deleteProductError.message}`);
         return;
       }
     }
@@ -616,7 +616,7 @@ const HirerProfile = () => {
       .eq('user_id', userId);
 
     if (deleteHistoryError) {
-      alert('Ошибка при удалении истории: ' + deleteHistoryError.message);
+      alert('Error deleting history: ' + deleteHistoryError.message);
       return;
     }
 
@@ -678,7 +678,7 @@ const HirerProfile = () => {
       <div className="dashboard">
         <main>
           <div className="job-listings-container">
-            <div className="loading">Загрузка...</div>
+            <div className="loading">Loading...</div>
           </div>
         </main>
       </div>
@@ -702,19 +702,19 @@ const HirerProfile = () => {
       <div className="sidebar">
         <div className="user-info">
           <div className="user-info-item">
-            <span>Имя: {userInfo.nickname}</span>
+            <span>Name: {userInfo.nickname}</span>
             <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
           <div className="user-info-item">
-            <span>Почта: {userInfo.email}</span>
+            <span>Email: {userInfo.email}</span>
             <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
           <div className="user-info-item">
-            <span>Пароль: {userInfo.password}</span>
+            <span>Password: {userInfo.password}</span>
             <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
           <div className="user-info-item">
-            <span>Telegram Username: {userInfo.telegramUsername || 'Не указано'}</span>
+            <span>Telegram Username: {userInfo.telegramUsername || 'Not specified'}</span>
             <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
         </div>
@@ -723,15 +723,15 @@ const HirerProfile = () => {
           <div className="track-header">
             <input
               type="text"
-              placeholder="Введите названия объявления"
+              placeholder="Enter listing title"
               value={searchQuery}
               onChange={handleSearchChange}
             />
-            <button>Поиск</button>
+            <button>Search</button>
           </div>
           <div className="history-header">
-            <h3>ИСТОРИЯ</h3>
-            <span onClick={handleDeleteHistory} className="delete-history">Удалить</span>
+            <h3>HISTORY</h3>
+            <span onClick={handleDeleteHistory} className="delete-history">Delete</span>
           </div>
           <div className="history-content">
             {filteredHistoryItems.length > 0 ? (
@@ -752,7 +752,7 @@ const HirerProfile = () => {
                 </div>
               ))
             ) : (
-              <div className="no-history">Объявление нету в истории</div>
+              <div className="no-history">No listings in history</div>
             )}
           </div>
         </div>
@@ -762,7 +762,7 @@ const HirerProfile = () => {
         <div className="product-search">
           <input
             type="text"
-            placeholder="Поиск по названию продукта..."
+            placeholder="Search by product name..."
             value={productSearchQuery}
             onChange={handleProductSearchChange}
           />
@@ -780,27 +780,27 @@ const HirerProfile = () => {
             <option>Другое</option>
           </select>
           <button className="sort-button" onClick={handleDateSort}>
-            Дата публикации {dateSortDirection === 'asc' ? '↑' : '↓'}
+            Publication Date {dateSortDirection === 'asc' ? '↑' : '↓'}
           </button>
           <button className="sort-button" onClick={handleDurationSort}>
-            Срок {durationSortDirection === 'asc' ? '↑' : '↓'}
+            Duration {durationSortDirection === 'asc' ? '↑' : '↓'}
           </button>
           <button onClick={() => openProductModal()} className="create-new">
-            Создать новый +
+            Create New +
           </button>
           <button
             onClick={handleRename}
             disabled={selectedProducts.length !== 1}
             className={selectedProducts.length !== 1 ? 'disabled' : 'rename'}
           >
-            Изменить
+            Edit
           </button>
           <button
             onClick={handleDelete}
             disabled={selectedProducts.length === 0}
             className={selectedProducts.length === 0 ? 'disabled' : 'delete'}
           >
-            Удалить
+            Delete
           </button>
         </div>
         <div className="product-grid">
@@ -818,33 +818,33 @@ const HirerProfile = () => {
                 />
               </div>
               <div className="product-direction-section">
-                <span>Направление</span>
+                <span>Direction</span>
                 <span>{product.direction}</span>
               </div>
               <div className="product-description">
-                <span>Описание</span>
+                <span>Description</span>
                 <span className="description">{product.description}</span>
               </div>
               <div className="product-footer">
                 <div className="product-left">
                   <div className="product-info">
-                    <span>Дата публикации</span>
+                    <span>Publication Date</span>
                     <span>{product.date}</span>
                   </div>
                   <div className="product-info">
-                    <span>Стоимость</span>
+                    <span>Price</span>
                     <span>{product.price}</span>
                   </div>
                 </div>
                 <div className="product-right">
                   <div className="product-info">
-                    <span>Срок</span>
+                    <span>Duration</span>
                     <span className="duration" title={product.durationTooltip}>
                       {product.duration}
                     </span>
                   </div>
                   <div className="product-info">
-                    <span>Статус</span>
+                    <span>Status</span>
                     <span className={`status ${product.status.toLowerCase()}`}>{product.status}</span>
                   </div>
                 </div>
@@ -854,13 +854,13 @@ const HirerProfile = () => {
                   className="complete-button"
                   onClick={() => handleComplete(product)}
                 >
-                  Завершить
+                  Complete
                 </button>
                 <button
                   className="reject-button"
                   onClick={() => handleReject(product)}
                 >
-                  Отклонить
+                  Reject
                 </button>
               </div>
             </div>
@@ -871,9 +871,9 @@ const HirerProfile = () => {
       {modalOpen && (
         <div className="modal">
           <div className="modal-content">
-            <h3>Редактировать данные пользователя</h3>
+            <h3>Edit User Data</h3>
             <div className="modal-field">
-              <label>Имя</label>
+              <label>Name</label>
               <input
                 type="text"
                 name="nickname"
@@ -883,7 +883,7 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Почта</label>
+              <label>Email</label>
               <input
                 type="email"
                 name="email"
@@ -893,7 +893,7 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Пароль</label>
+              <label>Password</label>
               <input
                 type="password"
                 name="password"
@@ -913,8 +913,8 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-buttons">
-              <button onClick={() => setModalOpen(false)}>Отмена</button>
-              <button onClick={saveChanges}>Сохранить</button>
+              <button onClick={() => setModalOpen(false)}>Cancel</button>
+              <button onClick={saveChanges}>Save</button>
             </div>
           </div>
         </div>
@@ -923,9 +923,9 @@ const HirerProfile = () => {
       {productModalOpen && (
         <div className="modal">
           <div className="modal-content">
-            <h3>{isEditing ? 'Редактировать продукт' : 'Добавить новый продукт'}</h3>
+            <h3>{isEditing ? 'Edit Product' : 'Add New Product'}</h3>
             <div className="modal-field">
-              <label>Название</label>
+              <label>Title</label>
               <input
                 type="text"
                 name="title"
@@ -935,23 +935,23 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Направление</label>
+              <label>Direction</label>
               <select
                 name="direction"
                 value={tempProduct.direction}
                 onChange={handleProductInputChange}
                 required
               >
-                <option value="">Выберите направление</option>
+                <option value="">Select direction</option>
                 <option value="3D">3D</option>
-                <option value="Интерьер">Интерьер</option>
-                <option value="Моушн">Моушн</option>
-                <option value="Иллюстрация">Иллюстрация</option>
-                <option value="Другое">Другое</option>
+                <option value="Интерьер">Interior</option>
+                <option value="Моушн">Motion</option>
+                <option value="Иллюстрация">Illustration</option>
+                <option value="Другое">Other</option>
               </select>
             </div>
             <div className="modal-field">
-              <label>Описание</label>
+              <label>Description</label>
               <textarea
                 name="description"
                 value={tempProduct.description}
@@ -961,7 +961,7 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Дата начала</label>
+              <label>Start Date</label>
               <input
                 type="date"
                 name="startDate"
@@ -971,7 +971,7 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Дата окончания</label>
+              <label>End Date</label>
               <input
                 type="date"
                 name="endDate"
@@ -981,7 +981,7 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Стоимость</label>
+              <label>Price</label>
               <input
                 type="text"
                 name="price"
@@ -992,20 +992,20 @@ const HirerProfile = () => {
               />
             </div>
             <div className="modal-field">
-              <label>Статус</label>
+              <label>Status</label>
               <select
                 name="status"
                 value={tempProduct.status}
                 onChange={handleProductInputChange}
                 required
               >
-                <option value="Active">Активный</option>
-                <option value="Inactive">Неактивный</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
               </select>
             </div>
             <div className="modal-buttons">
-              <button onClick={() => setProductModalOpen(false)}>Отмена</button>
-              <button onClick={saveProduct}>Сохранить</button>
+              <button onClick={() => setProductModalOpen(false)}>Cancel</button>
+              <button onClick={saveProduct}>Save</button>
             </div>
           </div>
         </div>

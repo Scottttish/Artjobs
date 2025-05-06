@@ -111,10 +111,10 @@ function AuthModal({ onClose }) {
         return;
       }
 
-      // Store hashed password in the users table
+      // Store hashed password in the password column
       const { data: insertData, error: dbError } = await supabase
         .from('users')
-        .insert([{ id: authData.user.id, email, username, role: selectedRole, hashed_password: hashedPassword }]);
+        .insert([{ id: authData.user.id, email, username, role: selectedRole, password: hashedPassword }]);
 
       if (dbError) {
         console.error('Database insert error:', dbError); // Debug: Log insert error
@@ -140,10 +140,10 @@ function AuthModal({ onClose }) {
         return;
       }
 
-      // Verify password against hashed password in users table
+      // Verify password against hashed password in password column
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('hashed_password')
+        .select('password')
         .eq('email', email)
         .single();
 
@@ -152,7 +152,7 @@ function AuthModal({ onClose }) {
         return;
       }
 
-      const isPasswordValid = await bcrypt.compare(password, userData.hashed_password);
+      const isPasswordValid = await bcrypt.compare(password, userData.password);
       if (!isPasswordValid) {
         setError('Неверный пароль');
         return;

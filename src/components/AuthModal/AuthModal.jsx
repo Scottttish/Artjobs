@@ -91,6 +91,7 @@ function AuthModal({ onClose }) {
       // Hash the password before storing
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
+      console.log('Generated hashed password:', hashedPassword); // Debug: Log hashed password
 
       const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
 
@@ -111,20 +112,22 @@ function AuthModal({ onClose }) {
       }
 
       // Store hashed password in the users table
-      const { error: dbError } = await supabase
+      const { data: insertData, error: dbError } = await supabase
         .from('users')
         .insert([{ id: authData.user.id, email, username, role: selectedRole, hashed_password: hashedPassword }]);
 
       if (dbError) {
-        setError('Ошибка при сохранении пользователя');
+        console.error('Database insert error:', dbError); // Debug: Log insert error
+        setError(`Ошибка при сохранении пользователя: ${dbError.message}`);
         return;
       }
 
+      console.log('User inserted successfully:', insertData); // Debug: Log insert result
       alert('Регистрация успешна!');
       onClose();
     } catch (err) {
-      console.error(err);
-      setError('Ошибка регистрации');
+      console.error('Registration error:', err); // Debug: Log general error
+      setError('Ошибка регистрации: ' + err.message);
     }
   };
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import bcrypt from 'bcryptjs';
 import './HirerProfile.css';
 
 const supabase = createClient(
@@ -14,13 +13,12 @@ const HirerProfile = () => {
   const [userInfo, setUserInfo] = useState({
     nickname: '',
     email: '',
-    password: '', // Stores hashed password from DB
     telegramUsername: '',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [tempUserInfo, setTempUserInfo] = useState({ ...userInfo, password: '' }); // Clear password in modal
+  const [tempUserInfo, setTempUserInfo] = useState({ ...userInfo });
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
@@ -63,7 +61,7 @@ const HirerProfile = () => {
 
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('username, email, password, telegram_username')
+        .select('username, email, telegram_username')
         .eq('id', userId)
         .single();
 
@@ -73,13 +71,11 @@ const HirerProfile = () => {
         setUserInfo({
           nickname: userData.username || 'User123',
           email: userData.email || 'user@example.com',
-          password: userData.password || '', // Store hashed password
           telegramUsername: userData.telegram_username || '',
         });
         setTempUserInfo({
           nickname: userData.username || 'User123',
           email: userData.email || 'user@example.com',
-          password: '', // Do not prefill password in modal
           telegramUsername: userData.telegram_username || '',
         });
       }
@@ -148,7 +144,7 @@ const HirerProfile = () => {
   }, []);
 
   const openModal = () => {
-    setTempUserInfo({ ...userInfo, password: '' }); // Clear password field
+    setTempUserInfo({ ...userInfo });
     setModalOpen(true);
   };
 
@@ -171,24 +167,17 @@ const HirerProfile = () => {
       telegram_username: tempUserInfo.telegramUsername,
     };
 
-    // Only update password if a new one is provided
-    if (tempUserInfo.password) {
-      const hashedPassword = await bcrypt.hash(tempUserInfo.password, 10);
-      updatedUserData.password = hashedPassword;
-    }
-
     const { error } = await supabase
       .from('users')
+
+
       .update(updatedUserData)
       .eq('id', userId);
 
     if (error) {
       alert('Error saving user data: ' + error.message);
     } else {
-      setUserInfo({
-        ...tempUserInfo,
-        password: updatedUserData.password || userInfo.password, // Update with hashed password or keep old
-      });
+      setUserInfo({ ...tempUserInfo });
       alert('User data saved successfully!');
     }
     setModalOpen(false);
@@ -719,10 +708,6 @@ const HirerProfile = () => {
             <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
           <div className="user-info-item">
-            <span>Password: {userInfo.password ? '********' : 'Not set'}</span>
-            <button className="edit-button" onClick={openModal}>✏️</button>
-          </div>
-          <div className="user-info-item">
             <span>Telegram Username: {userInfo.telegramUsername || 'Not specified'}</span>
             <button className="edit-button" onClick={openModal}>✏️</button>
           </div>
@@ -899,16 +884,6 @@ const HirerProfile = () => {
                 value={tempUserInfo.email}
                 onChange={handleModalInputChange}
                 required
-              />
-            </div>
-            <div className="modal-field">
-              <label>Password</label>
-              <input
-                type="password"
-                name="password"
-                value={tempUserInfo.password}
-                onChange={handleModalInputChange}
-                placeholder="Enter new password"
               />
             </div>
             <div className="modal-field">
